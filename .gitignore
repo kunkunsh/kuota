@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.vite/
+.turbo/
+coverage/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+*.credentials.json
+auth.json
+

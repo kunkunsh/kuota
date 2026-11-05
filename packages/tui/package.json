@@ -1,0 +1,28 @@
+{
+  "name": "@kuota/tui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/main.tsx",
+      "bun": "./src/main.tsx",
+      "default": "./dist/main.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack src/main.tsx",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@kuota/core": "workspace:*",
+    "@kuota/providers": "workspace:*",
+    "@uniview/tui-core": "0.0.3",
+    "@uniview/tui-react": "0.0.3",
+    "effect": "^3.22.4",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0"
+  }
+}

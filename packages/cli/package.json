@@ -1,0 +1,21 @@
+{
+  "name": "@kuota/cli",
+  "version": "0.0.0",
+  "private": true,
+  "bin": {
+    "kuota": "./dist/main.mjs"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "vp pack src/main.ts",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@effect/cli": "^0.77.2",
+    "@effect/platform-node": "^0.108.0",
+    "@kuota/core": "workspace:*",
+    "@kuota/providers": "workspace:*",
+    "@kuota/tui": "workspace:*",
+    "effect": "^3.22.4"
+  }
+}
