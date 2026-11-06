@@ -63,6 +63,11 @@ Future Kunkun plugin should call `@kuota/providers` through its permissions brok
 
 ## Design references
 
+- **[AI implementation handoff](HANDOFF.md)** — actual implementation status, next-agent instructions, safety/approval gates, verification and prompts.
+- [Phase 2 architecture and product design](docs/superpowers/specs/2026-11-06-kuota-phase2-design.md) — proposed refresh service, security, Kunkun path and history decision.
+- [Phase 2: refresh service implementation tasks](docs/superpowers/plans/2026-11-06-kuota-refresh-service.md), [provider hardening tasks](docs/superpowers/plans/2026-11-06-kuota-provider-hardening.md), [Kunkun integration tasks](docs/superpowers/plans/2026-11-06-kuota-kunkun-integration.md).
+- [Detailed provider methods and tradeoffs](docs/research/2026-11-06-kuota-provider-research.md).
+- [Google Drive `projects/kuota`](https://drive.google.com/drive/folders/10RVDLtwfJGPQnI9sX5LKpkqGVqLdXdU5).
 - [CodexBar](https://github.com/steipete/CodexBar) and its [Antigravity](https://github.com/steipete/CodexBar/blob/main/docs/antigravity.md) / [Claude](https://github.com/steipete/CodexBar/blob/main/docs/claude.md) provider documentation.
 - [UniView](https://github.com/HuakunShen/uniview)
 - [Vite Plus monorepos](https://viteplus.dev/guide/monorepo) and [package builds](https://viteplus.dev/guide/pack)
