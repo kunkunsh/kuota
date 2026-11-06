@@ -1,10 +1,47 @@
 {
-  "name": "kuota",
+  "name": "@kunkun.sh/kuota",
   "version": "0.1.0",
-  "description": "Truthful multi-provider AI quota monitoring, forecasting, and pacing suite (OpenAI Codex, Claude Code, Google Antigravity)",
+  "description": "Truthful multi-provider AI quota monitoring, forecasting, and parsing library & CLI suite (OpenAI Codex, Claude Code, Google Antigravity)",
   "license": "MIT",
   "author": "Huakun Shen",
   "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "kuota": "bin/kuota.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./parsers": {
+      "types": "./dist/parsers.d.ts",
+      "import": "./dist/parsers.mjs"
+    },
+    "./metrics": {
+      "types": "./dist/metrics.d.ts",
+      "import": "./dist/metrics.mjs"
+    },
+    "./history": {
+      "types": "./dist/history.d.ts",
+      "import": "./dist/history.mjs"
+    },
+    "./providers": {
+      "types": "./dist/providers.d.ts",
+      "import": "./dist/providers.mjs"
+    }
+  },
+  "files": [
+    "bin",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
@@ -16,25 +53,23 @@
     "ai",
     "quota",
     "usage",
+    "parser",
     "codex",
     "claude",
     "antigravity",
     "tui",
     "dashboard",
     "pace",
-    "forecast"
+    "forecast",
+    "kunkun"
   ],
-  "bin": {
-    "kuota": "bin/kuota.mjs"
-  },
-  "files": [
-    "bin",
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@effect/cli": "^0.77.2",
+    "@effect/platform-node": "^0.108.0",
+    "@uniview/tui-core": "^0.0.3",
+    "@uniview/tui-react": "^0.0.3",
+    "effect": "^3.22.4",
+    "react": "^19.2.0"
   },
   "scripts": {}
 }

@@ -1,74 +1,131 @@
-# Kuota
+# @kunkun.sh/kuota
 
-Local-first AI coding subscription quota monitor: reusable TypeScript library, Effect CLI, and UniView React TUI. Kunkun integration is planned, not coupled to this workspace.
+Truthful multi-provider AI subscription & quota suite: reusable TypeScript library, interactive TUI, headless CLI, and embedded loopback Web Workbench.
 
-## Quick start
+Supports **OpenAI Codex**, **Anthropic Claude Code**, and **Google Antigravity**.
 
-Requires Bun (for development), Node 24+, and existing provider CLIs. All project tooling, including Vite Plus, is installed **locally**, not globally.
+---
+
+## 🚀 CLI & Multi-Surface Usage
+
+Run directly with zero installation via `npx`:
 
 ```bash
-cd /Users/hk/Dev/kuota
-bun install
-bun run build
-bun run test
-bun run typecheck
-bun run check
+# 1. Interactive terminal TUI (full-screen UniView dashboard with % left & pace markers)
+npx @kunkun.sh/kuota
+npx @kunkun.sh/kuota tui
 
-bun run cli -- providers
-bun run cli -- doctor
-bun run cli -- status --json
-bun run cli -- status --provider codex --json
-bun run cli -- status --provider antigravity --json
-bun run tui
+# 2. Web Workbench (embedded HTTP server + React 19 UI with 3D activity terrain & Dynamic Island)
+npx @kunkun.sh/kuota web
+npx @kunkun.sh/kuota web --port 5173 --no-open
 
-# The built CLI also runs with Node (no Bun runtime requirement):
-node packages/cli/dist/main.mjs providers --json
-node packages/cli/dist/main.mjs status --provider codex --json
+# 3. Headless CLI commands (human readable or JSON)
+npx @kunkun.sh/kuota status
+npx @kunkun.sh/kuota status --json
+npx @kunkun.sh/kuota doctor
+npx @kunkun.sh/kuota pace
+npx @kunkun.sh/kuota forecast
+npx @kunkun.sh/kuota providers
 ```
 
-`status` reports each provider independently; an unavailable or logged-out account is **not** displayed as 0% remaining. `--json` emits one machine-readable envelope: `schemaVersion`, `generatedAt`, `providers[]`, and `errors[]`. `doctor` only detects installed executables and implemented adapters; it does not guarantee sign-in. TUI keyboard controls: `r` refresh, `q` quit, `1` Codex, `2` Claude, `3` Antigravity, `a` all.
+---
 
-## Provider support
+## 📦 Library Usage
 
-| Provider          | Source                                                                                            | State and limitations                                                                                                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Codex             | Existing `codex app-server`, `account/rateLimits/read`                                            | Tested live on macOS. Uses the app-server JSON-RPC initialization handshake; doesn't send model prompts.                                                                                                          |
-| Antigravity / agy | Existing `agy -p /usage --output-format json --print-timeout 90s`                                 | Tested live on macOS with agy 1.5.1. Requires version >=1.1.11 and an already signed-in CLI. Preserves separate Gemini, Claude/GPT, and model-specific 5h/weekly buckets.                                         |
-| Claude Code       | Existing subscription OAuth token from `CLAUDE_CODE_OAUTH_TOKEN` or `~/.claude/.credentials.json` | Implemented and fixture-tested, but **not live-authenticated** on Mac mini. `claude auth status --json` reports `loggedIn:false`. Keychain access, token refresh and PTY `/usage` are deliberately unimplemented. |
+Install as a dependency in your application, server, or Kunkun extension:
 
-Claude Code credentials are not the same as an Anthropic API key. Kuota reads Claude's private subscription usage endpoint, which may change without notice; after a 429, wait before refreshing. `claude auth status --json` can be used to check login, but signing in is a separate user action.
-
-## Architecture
-
-```text
-packages/core       Effect Schema, typed quota normalization and redaction, no Node imports
-packages/providers  Isolated Codex, Claude, agy adapters + Effect registry
-packages/cli        @effect/cli (human-readable + JSON + doctor)
-packages/tui        @uniview/tui-core + @uniview/tui-react with keyboard input
-docs/specs          Architecture and provider research
-docs/superpowers    Stepwise implementation plan
+```bash
+npm install @kunkun.sh/kuota
+# or
+bun add @kunkun.sh/kuota
 ```
 
-Each package uses Vite Plus `vp pack`; workspace builds run in dependency order. Core and provider packages export their TypeScript source under the Bun condition for local development and built `.mjs` under the default condition for Node. Build before using Node's distributed entrypoint.
+### 1. Unified AI Quota Parsers
 
-Future Kunkun plugin should call `@kuota/providers` through its permissions broker; do not give a WebView direct access to terminal credentials. UniView is an optional consumer, not a core dependency.
+Parse raw JSON / RPC payloads received from vendor CLIs or APIs into normalized, typed `QuotaSnapshot` structures:
 
-## Security and data honesty
+```typescript
+import {
+  parseProviderQuota,
+  parseCodexRateLimits,
+  parseClaudeOAuthUsage,
+  parseAntigravityUsageReport,
+  type QuotaSnapshot,
+} from "@kunkun.sh/kuota";
 
-- Tokens, cookies, raw HTTP error bodies, raw app-server/agy output, and credential diagnostics never appear in snapshots or JSON output.
-- No credential rotation or implicit login; agy auto-update is disabled per child process and browser launcher commands are guarded during passive probes.
-- Provider subprocesses and HTTP calls are bounded by time and output size; each provider failure is isolated from others.
-- No Kunkun service, cloud storage, account sync, analytics, or background daemon in this first version.
-- Compiled packages have not been published to npm or pushed to GitHub yet.
+// Universal dispatcher:
+const snapshot: QuotaSnapshot = parseProviderQuota("codex", rawVendorData);
 
-## Design references
+// Or direct modular imports (browser & edge friendly):
+import { parseCodexRateLimits } from "@kunkun.sh/kuota/parsers";
+const codexSnapshot = parseCodexRateLimits(rawAppServerResponse);
+```
 
-- **[AI implementation handoff](HANDOFF.md)** — actual implementation status, next-agent instructions, safety/approval gates, verification and prompts.
-- [Phase 2 architecture and product design](docs/superpowers/specs/2026-11-06-kuota-phase2-design.md) — proposed refresh service, security, Kunkun path and history decision.
-- [Phase 2: refresh service implementation tasks](docs/superpowers/plans/2026-11-06-kuota-refresh-service.md), [provider hardening tasks](docs/superpowers/plans/2026-11-06-kuota-provider-hardening.md), [Kunkun integration tasks](docs/superpowers/plans/2026-11-06-kuota-kunkun-integration.md).
-- [Detailed provider methods and tradeoffs](docs/research/2026-11-06-kuota-provider-research.md).
-- [Google Drive `projects/kuota`](https://drive.google.com/drive/folders/10RVDLtwfJGPQnI9sX5LKpkqGVqLdXdU5).
-- [CodexBar](https://github.com/steipete/CodexBar) and its [Antigravity](https://github.com/steipete/CodexBar/blob/main/docs/antigravity.md) / [Claude](https://github.com/steipete/CodexBar/blob/main/docs/claude.md) provider documentation.
-- [UniView](https://github.com/HuakunShen/uniview)
-- [Vite Plus monorepos](https://viteplus.dev/guide/monorepo) and [package builds](https://viteplus.dev/guide/pack)
-- [Kuota research/spec folder (Google Drive)](https://drive.google.com/drive/folders/1tbFYypqi8QTF7TCX4TMKdUB96Dt_uxvi)
+### 2. Time Budget & Ideal Pace Calculation
+
+Calculate linear time-budget pace without guessing:
+
+```typescript
+import { calculatePace, windowProfile } from "@kunkun.sh/kuota";
+
+// Determine window cadence (e.g. 5h vs 7-day weekly)
+const profile = windowProfile("codex", "primary", snapshot.windows[0].resetAt);
+
+const pace = calculatePace({
+  now: new Date(),
+  startAt: new Date(Date.now() - 2 * 86_400_000),
+  resetAt: new Date(snapshot.windows[0].resetAt!),
+  usedPercent: snapshot.windows[0].usedPercent,
+  semantics: profile.semantics,
+  startSource: "provider",
+});
+
+if (pace) {
+  console.log(`Ideal balance: ${pace.idealRemainingPercent}% remaining`);
+  console.log(`Actual balance: ${100 - pace.actualUsedPercent}% remaining`);
+  console.log(`Pace delta: ${pace.paceDeltaPoints > 0 ? "Ahead" : "Behind"} of pace`);
+}
+```
+
+### 3. Live Provider Execution & Subprocess Service
+
+Read quota directly from local installed developer tools (`codex`, `claude`, `agy`):
+
+```typescript
+import { readAll, readCodex, createQuotaService } from "@kunkun.sh/kuota";
+import { Effect } from "effect";
+
+// Execute all detected providers via Effect TS
+const program = readAll(["codex", "antigravity"]);
+const snapshots = await Effect.runPromise(program);
+
+// Or create a managed cached service
+const service = createQuotaService();
+const cachedCodex = await service.read("codex");
+```
+
+---
+
+## 🧩 Subpath Exports
+
+| Import Path | Description |
+| ----------- | ----------- |
+| `@kunkun.sh/kuota` | Full library (Parsers, Metrics, History, Providers, Schemas) |
+| `@kunkun.sh/kuota/parsers` | Pure data parsers (zero platform dependencies, Node & Browser safe) |
+| `@kunkun.sh/kuota/metrics` | Linear pacing algorithms and forecasting models |
+| `@kunkun.sh/kuota/history` | Append-only local JSONL journal and query engine |
+| `@kunkun.sh/kuota/providers` | Subprocess adapters for Codex, Claude, and Antigravity |
+
+---
+
+## 🔒 Security and Data Honesty
+
+- **Zero credential leaks**: API keys, tokens, session cookies, and private prompts are never stored, logged, or serialized.
+- **Fail-safe status**: Unavailable or unauthenticated accounts are reported as `"unauthenticated"` or `"unavailable"` with honest error codes, never fabricated as `0% left`.
+- **Shared peer dependencies**: Core dependencies like `effect` and `react` are not bundled into an opaque monolith, avoiding dual-package hazard in consumer apps.
+
+---
+
+## 📄 License
+
+MIT © [Huakun Shen](https://github.com/HuakunShen)

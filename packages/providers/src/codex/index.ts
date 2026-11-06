@@ -4,7 +4,7 @@ import { parseCodexRateLimits } from "./protocol.js";
 import { CodexTransportError, requestCodexRateLimits, type CodexRpcOptions } from "./transport.js";
 
 export { parseCodexRateLimits } from "./protocol.js";
-export { CodexTransportError, requestCodexRateLimits } from "./transport.js";
+export { CodexTransportError, requestCodexRateLimits, type CodexRpcOptions } from "./transport.js";
 
 export function readCodex(options: CodexRpcOptions = {}): Effect.Effect<QuotaSnapshot> {
   return Effect.promise(async () => {
