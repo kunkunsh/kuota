@@ -3,16 +3,38 @@
   "version": "0.1.0",
   "description": "Truthful multi-provider AI quota monitoring, forecasting, and pacing suite (OpenAI Codex, Claude Code, Google Antigravity)",
   "license": "MIT",
+  "author": "Huakun Shen",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HuakunShen/kuota.git"
+  },
+  "keywords": [
+    "ai",
+    "quota",
+    "usage",
+    "codex",
+    "claude",
+    "antigravity",
+    "tui",
+    "dashboard",
+    "pace",
+    "forecast"
+  ],
   "bin": {
     "kuota": "bin/kuota.mjs"
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {}
 }

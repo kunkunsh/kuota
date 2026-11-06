@@ -13,6 +13,7 @@
     "build": "vp run -r build",
     "build:release": "bun scripts/build-release.ts",
     "pack:smoke": "bun scripts/pack-smoke.ts",
+    "publish:npm": "bun run build:release && cd packages/npm-dist && npm publish --access public",
     "cli": "bun packages/cli/src/main.ts",
     "tui": "bun packages/cli/src/main.ts tui",
     "web": "bun packages/cli/src/main.ts web",

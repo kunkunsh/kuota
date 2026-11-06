@@ -90,7 +90,11 @@ const binFile = join(binRoot, "kuota.mjs");
 await writeFile(binFile, binShim, "utf8");
 await chmod(binFile, 0o755);
 
-// 6. Report bundle info
+// 6. Copy README and LICENSE to release package
+await cp(join(repoRoot, "README.md"), join(stagingRoot, "README.md"));
+await cp(join(repoRoot, "LICENSE"), join(stagingRoot, "LICENSE"));
+
+// 7. Report bundle info
 const bundleBytes = (await stat(cliOutfile)).size;
 const webBytes = (await stat(join(distRoot, "web", "index.html"))).size;
 

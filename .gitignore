@@ -13,5 +13,7 @@ auth.json
 references/
 packages/npm-dist/dist/
 packages/npm-dist/bin/
+packages/npm-dist/README.md
+packages/npm-dist/LICENSE
 *.tgz
 
