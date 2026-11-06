@@ -143,12 +143,43 @@ async function resolveToken(options: ClaudeOptions): Promise<string | null> {
   if (options.token) return options.token.trim() || null;
   const fromEnvironment = process.env.CLAUDE_CODE_OAUTH_TOKEN;
   if (fromEnvironment?.trim()) return fromEnvironment.trim();
-  try {
-    const file = options.credentialsFile ?? join(homedir(), ".claude", ".credentials.json");
-    return extractClaudeOAuthToken(JSON.parse(await readFile(file, "utf8")));
-  } catch {
-    return null;
+
+  if (options.credentialsFile) {
+    try {
+      return extractClaudeOAuthToken(JSON.parse(await readFile(options.credentialsFile, "utf8")));
+    } catch {
+      return null;
+    }
   }
+
+  try {
+    const file = join(homedir(), ".claude", ".credentials.json");
+    const token = extractClaudeOAuthToken(JSON.parse(await readFile(file, "utf8")));
+    if (token) return token;
+  } catch {
+    // Continue to platform-specific credential store
+  }
+
+  if (process.platform === "darwin") {
+    try {
+      const { execFile } = await import("node:child_process");
+      const { promisify } = await import("node:util");
+      const execFileAsync = promisify(execFile);
+      const { stdout } = await execFileAsync(
+        "security",
+        ["find-generic-password", "-s", "Claude Code-credentials", "-w"],
+        { timeout: 2000, encoding: "utf8" },
+      );
+      if (stdout?.trim()) {
+        const token = extractClaudeOAuthToken(JSON.parse(stdout.trim()));
+        if (token) return token;
+      }
+    } catch {
+      // Keychain item not found or unavailable
+    }
+  }
+
+  return null;
 }
 
 /** No Keychain UI access, credential refresh, browser sign-in or CLI session side effects. */

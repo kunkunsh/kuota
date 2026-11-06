@@ -23,6 +23,10 @@ const binRoot = join(stagingRoot, "bin");
 
 console.log("🚀 Building @kunkun.sh/kuota library & CLI release bundle...");
 
+// 0. Build workspace dependencies so dist/ references are fresh
+console.log("🔨 Building workspace packages...");
+await run("bun", ["run", "build"], { cwd: repoRoot });
+
 // 1. Validate manifest does not leak workspace:* dependencies
 const manifest = JSON.parse(
   await readFile(join(stagingRoot, "package.json"), "utf8"),
