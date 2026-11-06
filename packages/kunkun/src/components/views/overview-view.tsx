@@ -5,6 +5,7 @@ import { PacedProgress } from "../paced-progress.js";
 import { SparklineChart } from "../charts/sparkline-chart.js";
 import { MetricCard } from "../charts/metric-card.js";
 import { ProviderIcon } from "../ui/provider-icon.js";
+import { cn } from "../../lib/utils.js";
 import {
   calculatePace,
   windowProfile,
@@ -132,8 +133,8 @@ export function OverviewView({
       </div>
 
       {/* Main Provider Cards Grid (01-overview.png) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {snapshots.map((snapshot) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {snapshots.map((snapshot, index) => {
           const providerId = snapshot.provider;
           const label =
             providerId === "claude"
@@ -171,29 +172,32 @@ export function OverviewView({
           return (
             <Card
               key={providerId}
-              className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+              className={cn(
+                "bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group",
+                index === 2 ? "md:col-span-2 xl:col-span-1" : "",
+              )}
               onClick={() => onSelectProvider?.(providerId)}
             >
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
                       <ProviderIcon provider={providerId} size={18} />
                     </div>
-                    <CardTitle className="text-sm font-semibold text-zinc-100">{label}</CardTitle>
+                    <CardTitle className="text-sm font-semibold text-zinc-100 truncate">{label}</CardTitle>
                   </div>
                   {delta !== null && (
                     <Badge
                       variant={delta > 3 ? "destructive" : delta < -3 ? "success" : "default"}
-                      className="text-[10px]"
+                      className="text-[10px] whitespace-nowrap shrink-0 px-2 py-0.5"
                     >
                       {delta > 0
-                        ? `${delta.toFixed(0)} pp ahead of pace`
-                        : `${Math.abs(delta).toFixed(0)} pp below pace`}
+                        ? `+${delta.toFixed(0)} pp ahead`
+                        : `${delta.toFixed(0)} pp pace`}
                     </Badge>
                   )}
                 </div>
-                <CardDescription className="text-xs text-zinc-400">
+                <CardDescription className="text-xs text-zinc-400 truncate mt-1">
                   {primaryWindow?.windowId ?? "primary"} · Resets in{" "}
                   {reset ? `${Math.max(1, Math.round((reset.getTime() - now.getTime()) / 3_600_000))}h` : "unknown"}
                 </CardDescription>
@@ -230,7 +234,7 @@ export function OverviewView({
       </div>
 
       {/* Bottom Row: Kokonut Metric Card + History/Forecast + Upcoming Resets */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
         {/* Kokonut UI: Metric Card with Dual-Curve Scrubber & Sub-Breakdown */}
         <MetricCard
           title="Cycle API Spend Velocity"
@@ -241,16 +245,16 @@ export function OverviewView({
 
         {/* Center: Claude Code Usage - History & Forecast */}
         <Card className="bg-[#111113] border-zinc-800">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold text-zinc-100">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
+            <div className="min-w-0">
+              <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
                 Claude Code usage — history & forecast
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400">
+              <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
                 Weekly window observed through today, projected to reset.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10">
+            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 bg-amber-500/10 whitespace-nowrap shrink-0 px-2 py-0.5">
               Projected limit · Nov 11
             </Badge>
           </CardHeader>
@@ -318,10 +322,10 @@ export function OverviewView({
         </Card>
 
         {/* Right: Upcoming Resets Table */}
-        <Card className="bg-[#111113] border-zinc-800">
+        <Card className="bg-[#111113] border-zinc-800 md:col-span-2 xl:col-span-1">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-zinc-100">Upcoming resets</CardTitle>
-            <CardDescription className="text-xs text-zinc-400">
+            <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
               Reset times and remaining balance across all verified active windows.
             </CardDescription>
           </CardHeader>
@@ -329,42 +333,42 @@ export function OverviewView({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-500 font-medium pb-2">
-                    <th className="py-2">Provider</th>
-                    <th className="py-2">Scope</th>
-                    <th className="py-2">Resets in</th>
-                    <th className="py-2">Reset at</th>
-                    <th className="py-2 text-right">Current use</th>
+                  <tr className="border-b border-zinc-800 text-zinc-400 font-medium pb-2 text-[11px]">
+                    <th className="py-2 pr-3 whitespace-nowrap font-medium">Provider</th>
+                    <th className="py-2 pr-3 whitespace-nowrap font-medium">Scope</th>
+                    <th className="py-2 pr-3 whitespace-nowrap font-medium">Resets in</th>
+                    <th className="py-2 pr-3 whitespace-nowrap font-medium">Reset at</th>
+                    <th className="py-2 text-right whitespace-nowrap font-medium">Current use</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
                   <tr>
-                    <td className="py-2.5 font-medium text-zinc-200">Claude Code</td>
-                    <td className="py-2.5 text-zinc-400">5-hour</td>
-                    <td className="py-2.5 text-amber-400 font-medium">1h 14m</td>
-                    <td className="py-2.5 text-zinc-400">Today 13:00</td>
-                    <td className="py-2.5 text-right font-medium">78%</td>
+                    <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap">Claude Code</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">5-hour</td>
+                    <td className="py-2.5 pr-3 text-amber-400 font-medium whitespace-nowrap">1h 14m</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Today 13:00</td>
+                    <td className="py-2.5 text-right font-medium whitespace-nowrap">78%</td>
                   </tr>
                   <tr>
-                    <td className="py-2.5 font-medium text-zinc-200">Claude Code</td>
-                    <td className="py-2.5 text-zinc-400">Weekly</td>
-                    <td className="py-2.5 text-zinc-300">3d 12h</td>
-                    <td className="py-2.5 text-zinc-400">Nov 9 09:00</td>
-                    <td className="py-2.5 text-right font-medium">55%</td>
+                    <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap">Claude Code</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Weekly</td>
+                    <td className="py-2.5 pr-3 text-zinc-300 whitespace-nowrap">3d 12h</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Nov 9 09:00</td>
+                    <td className="py-2.5 text-right font-medium whitespace-nowrap">55%</td>
                   </tr>
                   <tr>
-                    <td className="py-2.5 font-medium text-zinc-200">Codex</td>
-                    <td className="py-2.5 text-zinc-400">Weekly</td>
-                    <td className="py-2.5 text-zinc-300">5d 1h</td>
-                    <td className="py-2.5 text-zinc-400">Nov 11 00:00</td>
-                    <td className="py-2.5 text-right font-medium">39%</td>
+                    <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap">Codex</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Weekly</td>
+                    <td className="py-2.5 pr-3 text-zinc-300 whitespace-nowrap">5d 1h</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Nov 11 00:00</td>
+                    <td className="py-2.5 text-right font-medium whitespace-nowrap">39%</td>
                   </tr>
                   <tr>
-                    <td className="py-2.5 font-medium text-zinc-200">Antigravity</td>
-                    <td className="py-2.5 text-zinc-400">Gemini</td>
-                    <td className="py-2.5 text-zinc-300">5h</td>
-                    <td className="py-2.5 text-zinc-400">Today 17:00</td>
-                    <td className="py-2.5 text-right font-medium">50%</td>
+                    <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap">Antigravity</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Gemini</td>
+                    <td className="py-2.5 pr-3 text-zinc-300 whitespace-nowrap">5h</td>
+                    <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">Today 17:00</td>
+                    <td className="py-2.5 text-right font-medium whitespace-nowrap">50%</td>
                   </tr>
                 </tbody>
               </table>

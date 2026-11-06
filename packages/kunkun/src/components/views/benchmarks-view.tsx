@@ -40,7 +40,7 @@ export function BenchmarksView() {
           <CardDescription>Observed effective token throughput before rate limits</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-xs">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="rounded-lg bg-zinc-900/60 p-3 border border-zinc-800">
               <div className="text-[10px] text-zinc-500 uppercase font-semibold">
                 25th Percentile

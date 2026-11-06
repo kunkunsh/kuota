@@ -102,16 +102,16 @@ export function PacedProgress({
 
       {/* Legend & Pace Delta */}
       {showLegend && (
-        <div className="flex items-center justify-between text-[11px] text-zinc-400">
-          <div>
+        <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-400 pt-0.5">
+          <div className="min-w-0 truncate">
             {remaining !== null ? (
-              <span className="font-semibold text-zinc-100">{remaining.toFixed(0)}% left</span>
+              <span className="font-semibold text-zinc-100 whitespace-nowrap">{remaining.toFixed(0)}% left</span>
             ) : (
-              <span className="text-zinc-500">Unmeasured</span>
+              <span className="text-zinc-500 whitespace-nowrap">Unmeasured</span>
             )}
             {idealRemaining !== null && (
-              <span className="ml-2 text-zinc-400">
-                · ideal <span className="text-white font-medium">{idealRemaining.toFixed(0)}% left</span> ({quality})
+              <span className="ml-1.5 text-zinc-400 whitespace-nowrap">
+                · ideal <span className="text-white font-medium">{idealRemaining.toFixed(0)}%</span>
               </span>
             )}
           </div>
@@ -119,7 +119,7 @@ export function PacedProgress({
           {paceDelta !== null && (
             <div
               className={cn(
-                "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                "text-[10px] font-medium px-1.5 py-0.5 rounded whitespace-nowrap shrink-0",
                 paceDelta < -5
                   ? "bg-amber-950/60 text-amber-400 border border-amber-800/40"
                   : paceDelta > 5
@@ -128,9 +128,9 @@ export function PacedProgress({
               )}
             >
               {paceDelta < -5
-                ? `${Math.abs(paceDelta).toFixed(0)}% ahead of pace`
+                ? `+${Math.abs(paceDelta).toFixed(0)}% ahead`
                 : paceDelta > 5
-                  ? `${paceDelta.toFixed(0)}% under pace`
+                  ? `-${paceDelta.toFixed(0)}% under`
                   : "On pace"}
             </div>
           )}

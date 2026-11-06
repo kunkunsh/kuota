@@ -52,7 +52,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        "rounded-3xl bg-[#0c0c0e] border border-zinc-800/80 p-6 shadow-2xl space-y-4 select-none max-w-md",
+        "rounded-3xl bg-[#0c0c0e] border border-zinc-800/80 p-5 sm:p-6 shadow-2xl space-y-4 select-none w-full",
         className,
       )}
       {...props}
@@ -178,21 +178,21 @@ export function MetricCard({
       </div>
 
       {/* Segment Breakdown Rows */}
-      <div className="space-y-2 pt-1 text-xs">
+      <div className="space-y-2.5 pt-1 text-xs">
         {segments.map((seg, i) => (
-          <div key={i} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-zinc-300">
+          <div key={i} className="flex items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 text-zinc-300 min-w-0">
               <span
                 className={cn(
                   "w-2 h-2 rounded-full shrink-0",
                   seg.color ? seg.color : i === 0 ? "bg-white" : i === 1 ? "bg-zinc-400" : "bg-zinc-600",
                 )}
               />
-              <span className="truncate">{seg.label}</span>
+              <span className="truncate whitespace-nowrap text-zinc-300">{seg.label}</span>
             </div>
-            <div className="flex items-center space-x-3 text-right">
-              <span className="font-semibold text-zinc-100">{seg.value}</span>
-              <span className="text-zinc-500 w-8">{seg.sharePercent}%</span>
+            <div className="flex items-center space-x-2.5 text-right shrink-0">
+              <span className="font-semibold text-zinc-100 whitespace-nowrap">{seg.value}</span>
+              <span className="text-zinc-500 w-7 text-right whitespace-nowrap">{seg.sharePercent}%</span>
             </div>
           </div>
         ))}

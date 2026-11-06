@@ -41,7 +41,7 @@ export function DataSyncView() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {/* Local Journal */}
         <Card className={localHistory ? "border-zinc-700 bg-zinc-900/60" : "opacity-75"}>
           <CardHeader className="pb-3">
