@@ -70,9 +70,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
   const currentEvents = events.filter(
     (e) => e.provider === provider && ("windowId" in e ? e.windowId === windowId : true),
   );
-  const currentForecast = forecasts.find(
-    (f) => f.provider === provider && f.windowId === windowId,
-  );
+  const currentForecast = forecasts.find((f) => f.provider === provider && f.windowId === windowId);
 
   return (
     <div className="flex flex-col space-y-6">
@@ -86,7 +84,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
             History & Forecast
           </h2>
           <p className="text-xs text-zinc-400">
-            Quota usage history, forecast to limit, and expected exhaustion for the selected provider and window.
+            Quota usage history, forecast to limit, and expected exhaustion for the selected
+            provider and window.
           </p>
         </div>
 
@@ -101,9 +100,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={provider}
                 onChange={(e) => setProvider(e.target.value as any)}
               >
-                <option value="claude" className="bg-zinc-900">Claude Code</option>
-                <option value="codex" className="bg-zinc-900">Codex</option>
-                <option value="antigravity" className="bg-zinc-900">Antigravity</option>
+                <option value="claude" className="bg-zinc-900">
+                  Claude Code
+                </option>
+                <option value="codex" className="bg-zinc-900">
+                  Codex
+                </option>
+                <option value="antigravity" className="bg-zinc-900">
+                  Antigravity
+                </option>
               </select>
             </div>
 
@@ -115,9 +120,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={windowId}
                 onChange={(e) => setWindowId(e.target.value)}
               >
-                <option value="weekly" className="bg-zinc-900">Weekly</option>
-                <option value="primary" className="bg-zinc-900">Primary (5-hour)</option>
-                <option value="sonnet" className="bg-zinc-900">Sonnet Family</option>
+                <option value="weekly" className="bg-zinc-900">
+                  Weekly
+                </option>
+                <option value="primary" className="bg-zinc-900">
+                  Primary (5-hour)
+                </option>
+                <option value="sonnet" className="bg-zinc-900">
+                  Sonnet Family
+                </option>
               </select>
             </div>
 
@@ -129,9 +140,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={range}
                 onChange={(e) => setRange(e.target.value)}
               >
-                <option value="7d" className="bg-zinc-900">Last 7 days</option>
-                <option value="14d" className="bg-zinc-900">Last 14 days</option>
-                <option value="30d" className="bg-zinc-900">Last 30 days</option>
+                <option value="7d" className="bg-zinc-900">
+                  Last 7 days
+                </option>
+                <option value="14d" className="bg-zinc-900">
+                  Last 14 days
+                </option>
+                <option value="30d" className="bg-zinc-900">
+                  Last 30 days
+                </option>
               </select>
             </div>
 
@@ -143,8 +160,12 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={mode}
                 onChange={(e) => setMode(e.target.value as any)}
               >
-                <option value="all-window" className="bg-zinc-900">All-window</option>
-                <option value="recent-activity" className="bg-zinc-900">Recent-activity</option>
+                <option value="all-window" className="bg-zinc-900">
+                  All-window
+                </option>
+                <option value="recent-activity" className="bg-zinc-900">
+                  Recent-activity
+                </option>
               </select>
             </div>
           </div>
@@ -168,7 +189,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                   Quota Usage — History & Forecast
                 </CardTitle>
                 <CardDescription className="text-xs text-zinc-400">
-                  Weekly quota for {provider === "claude" ? "Claude Code" : provider}. Observed through Nov 5, forecast to limit with uncertainty.
+                  Weekly quota for {provider === "claude" ? "Claude Code" : provider}. Observed
+                  through Nov 5, forecast to limit with uncertainty.
                 </CardDescription>
               </div>
             </div>
@@ -177,7 +199,11 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <CardContent className="space-y-4 pt-1">
             {/* SVG Visual Representation matching 02-history-forecast.png */}
             <div className="h-64 w-full relative pt-4 pb-2">
-              <svg className="w-full h-full overflow-visible" viewBox="0 0 600 220" preserveAspectRatio="none">
+              <svg
+                className="w-full h-full overflow-visible"
+                viewBox="0 0 600 220"
+                preserveAspectRatio="none"
+              >
                 {/* Horizontal grid lines */}
                 {[0, 20, 40, 60, 80, 100].map((pct) => {
                   const y = 200 - (pct / 100) * 180;
@@ -192,29 +218,95 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 })}
 
                 {/* 100% limit red line */}
-                <line x1="35" y1="20" x2="570" y2="20" stroke="#ef4444" strokeDasharray="4 4" strokeWidth="1.5" />
-                <rect x="40" y="10" width="65" height="18" rx="4" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="1" />
-                <text x="72" y="22" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">100% limit</text>
+                <line
+                  x1="35"
+                  y1="20"
+                  x2="570"
+                  y2="20"
+                  stroke="#ef4444"
+                  strokeDasharray="4 4"
+                  strokeWidth="1.5"
+                />
+                <rect
+                  x="40"
+                  y="10"
+                  width="65"
+                  height="18"
+                  rx="4"
+                  fill="#ef4444"
+                  fillOpacity="0.2"
+                  stroke="#ef4444"
+                  strokeWidth="1"
+                />
+                <text
+                  x="72"
+                  y="22"
+                  fill="#ef4444"
+                  fontSize="9"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  100% limit
+                </text>
 
                 {/* NOW Vertical Line */}
-                <line x1="260" y1="20" x2="260" y2="200" stroke="#a1a1aa" strokeDasharray="3 3" strokeWidth="1.2" />
+                <line
+                  x1="260"
+                  y1="20"
+                  x2="260"
+                  y2="200"
+                  stroke="#a1a1aa"
+                  strokeDasharray="3 3"
+                  strokeWidth="1.2"
+                />
                 <rect x="245" y="4" width="30" height="14" rx="3" fill="#27272a" />
-                <text x="260" y="14" fill="#fafafa" fontSize="8" fontWeight="bold" textAnchor="middle">NOW</text>
+                <text
+                  x="260"
+                  y="14"
+                  fill="#fafafa"
+                  fontSize="8"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  NOW
+                </text>
 
                 {/* RESET Vertical Line */}
-                <line x1="550" y1="20" x2="550" y2="200" stroke="#71717a" strokeDasharray="3 3" strokeWidth="1" />
+                <line
+                  x1="550"
+                  y1="20"
+                  x2="550"
+                  y2="200"
+                  stroke="#71717a"
+                  strokeDasharray="3 3"
+                  strokeWidth="1"
+                />
                 <rect x="532" y="4" width="36" height="14" rx="3" fill="#27272a" />
-                <text x="550" y="14" fill="#a1a1aa" fontSize="8" fontWeight="bold" textAnchor="middle">RESET</text>
+                <text
+                  x="550"
+                  y="14"
+                  fill="#a1a1aa"
+                  fontSize="8"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  RESET
+                </text>
 
                 {/* Ideal Pace (Even distribution to reset) dotted line */}
-                <line x1="45" y1="200" x2="550" y2="20" stroke="#71717a" strokeDasharray="2 3" strokeWidth="1.2" opacity="0.6" />
+                <line
+                  x1="45"
+                  y1="200"
+                  x2="550"
+                  y2="20"
+                  stroke="#71717a"
+                  strokeDasharray="2 3"
+                  strokeWidth="1.2"
+                  opacity="0.6"
+                />
 
                 {/* Uncertainty ribbon for forecast */}
-                <polygon
-                  points="260,101 510,10 510,35 260,101"
-                  fill="#eab308"
-                  fillOpacity="0.12"
-                />
+                <polygon points="260,101 510,10 510,35 260,101" fill="#eab308" fillOpacity="0.12" />
 
                 {/* Observed solid green line */}
                 <path
@@ -235,18 +327,65 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 ))}
 
                 {/* NOW badge callout */}
-                <rect x="220" y="75" width="80" height="20" rx="4" fill="#052e16" stroke="#22c55e" strokeWidth="1" />
-                <text x="260" y="88" fill="#4ade80" fontSize="9" fontWeight="bold" textAnchor="middle">
+                <rect
+                  x="220"
+                  y="75"
+                  width="80"
+                  height="20"
+                  rx="4"
+                  fill="#052e16"
+                  stroke="#22c55e"
+                  strokeWidth="1"
+                />
+                <text
+                  x="260"
+                  y="88"
+                  fill="#4ade80"
+                  fontSize="9"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
                   Nov 5 (NOW) · 55%
                 </text>
 
                 {/* Projected dashed amber line */}
-                <line x1="260" y1="101" x2="510" y2="20" stroke="#eab308" strokeDasharray="5 4" strokeWidth="2.5" />
-                <circle cx="510" cy="20" r="4.5" fill="#eab308" stroke="#111113" strokeWidth="1.5" />
+                <line
+                  x1="260"
+                  y1="101"
+                  x2="510"
+                  y2="20"
+                  stroke="#eab308"
+                  strokeDasharray="5 4"
+                  strokeWidth="2.5"
+                />
+                <circle
+                  cx="510"
+                  cy="20"
+                  r="4.5"
+                  fill="#eab308"
+                  stroke="#111113"
+                  strokeWidth="1.5"
+                />
 
                 {/* Projected exhaustion callout */}
-                <rect x="445" y="40" width="120" height="30" rx="6" fill="#1c1917" stroke="#eab308" strokeWidth="1.2" />
-                <text x="505" y="52" fill="#fef08a" fontSize="9" fontWeight="bold" textAnchor="middle">
+                <rect
+                  x="445"
+                  y="40"
+                  width="120"
+                  height="30"
+                  rx="6"
+                  fill="#1c1917"
+                  stroke="#eab308"
+                  strokeWidth="1.2"
+                />
+                <text
+                  x="505"
+                  y="52"
+                  fill="#fef08a"
+                  fontSize="9"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
                   Projected exhaustion
                 </text>
                 <text x="505" y="64" fill="#eab308" fontSize="9" textAnchor="middle">
@@ -254,16 +393,27 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 </text>
 
                 {/* X axis labels */}
-                {["Nov 1", "Nov 2", "Nov 3", "Nov 4", "Nov 5", "Nov 6", "Nov 7", "Nov 8", "Nov 9", "Nov 10", "Nov 11", "Nov 12"].map(
-                  (label, i) => {
-                    const x = 45 + i * 46;
-                    return (
-                      <text key={label} x={x} y="215" fill="#71717a" fontSize="9" textAnchor="middle">
-                        {label}
-                      </text>
-                    );
-                  },
-                )}
+                {[
+                  "Nov 1",
+                  "Nov 2",
+                  "Nov 3",
+                  "Nov 4",
+                  "Nov 5",
+                  "Nov 6",
+                  "Nov 7",
+                  "Nov 8",
+                  "Nov 9",
+                  "Nov 10",
+                  "Nov 11",
+                  "Nov 12",
+                ].map((label, i) => {
+                  const x = 45 + i * 46;
+                  return (
+                    <text key={label} x={x} y="215" fill="#71717a" fontSize="9" textAnchor="middle">
+                      {label}
+                    </text>
+                  );
+                })}
               </svg>
             </div>
 
@@ -331,7 +481,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               <div>
                 <div className="text-[11px] font-medium text-zinc-400">Pace</div>
                 <div className="text-base font-bold text-amber-400 mt-0.5">+10% above even</div>
-                <div className="text-xs text-zinc-400 mt-0.5">Using ~10% more than the even pace</div>
+                <div className="text-xs text-zinc-400 mt-0.5">
+                  Using ~10% more than the even pace
+                </div>
               </div>
               <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <TrendingUp className="w-4 h-4" />
@@ -359,7 +511,10 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               <div>
                 <div className="text-[11px] font-medium text-zinc-400">Forecast confidence</div>
                 <div className="mt-1">
-                  <Badge variant="outline" className="text-amber-400 border-amber-500/40 bg-amber-500/10 font-bold">
+                  <Badge
+                    variant="outline"
+                    className="text-amber-400 border-amber-500/40 bg-amber-500/10 font-bold"
+                  >
                     MEDIUM
                   </Badge>
                 </div>
@@ -376,7 +531,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               <div>
                 <div className="text-[11px] font-medium text-zinc-400">Samples</div>
                 <div className="text-base font-bold text-zinc-100 mt-0.5">72 · Span 3.5 days</div>
-                <div className="text-xs text-zinc-400 mt-0.5">72 usage samples over 3.5 days (Nov 1 - Nov 5)</div>
+                <div className="text-xs text-zinc-400 mt-0.5">
+                  72 usage samples over 3.5 days (Nov 1 - Nov 5)
+                </div>
               </div>
               <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <Layers className="w-4 h-4" />
@@ -426,20 +583,30 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                   <tr>
                     <td colSpan={6} className="py-6 text-center text-zinc-500">
                       No raw snapshot logs recorded yet. Run{" "}
-                      <code className="text-zinc-300 font-mono">kuota collect --once</code> to save events.
+                      <code className="text-zinc-300 font-mono">kuota collect --once</code> to save
+                      events.
                     </td>
                   </tr>
                 ) : (
                   currentEvents.slice(0, 8).map((event) => (
                     <tr key={event.eventId} className="hover:bg-zinc-900/40 transition-colors">
                       <td className="py-2.5 font-mono text-zinc-400">{event.recordedAt}</td>
-                      <td className="py-2.5 font-medium text-zinc-200 capitalize">{event.provider}</td>
-                      <td className="py-2.5 text-zinc-400">{"windowId" in event ? event.windowId : "-"}</td>
+                      <td className="py-2.5 font-medium text-zinc-200 capitalize">
+                        {event.provider}
+                      </td>
+                      <td className="py-2.5 text-zinc-400">
+                        {"windowId" in event ? event.windowId : "-"}
+                      </td>
                       <td className="py-2.5 text-zinc-200 font-medium">
-                        {"usedPercent" in event && event.usedPercent !== null ? `${event.usedPercent}%` : "-"}
+                        {"usedPercent" in event && event.usedPercent !== null
+                          ? `${event.usedPercent}%`
+                          : "-"}
                       </td>
                       <td className="py-2.5">
-                        <Badge variant={event.kind === "quota_observed" ? "success" : "default"} className="text-[10px]">
+                        <Badge
+                          variant={event.kind === "quota_observed" ? "success" : "default"}
+                          className="text-[10px]"
+                        >
                           {event.kind}
                         </Badge>
                       </td>
@@ -466,7 +633,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/40 text-amber-200 text-xs">
         <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-amber-300">Rolling windows not modeled.</span> This forecast treats the window as a fixed quota that resets on Nov 12. If your provider uses a rolling window, the actual limit and exhaustion time may differ.
+          <span className="font-semibold text-amber-300">Rolling windows not modeled.</span> This
+          forecast treats the window as a fixed quota that resets on Nov 12. If your provider uses a
+          rolling window, the actual limit and exhaustion time may differ.
         </div>
       </div>
 
@@ -500,7 +669,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/80 p-3 space-y-2 text-zinc-400">
                 <div className="font-semibold text-zinc-200">Field Provenance Guarantee</div>
                 <p className="text-[11px] leading-normal">
-                  Snapshot timestamps reflect the true upstream vendor fetch time. No API tokens, keys, passwords, or session cookies are recorded or preserved in this envelope.
+                  Snapshot timestamps reflect the true upstream vendor fetch time. No API tokens,
+                  keys, passwords, or session cookies are recorded or preserved in this envelope.
                 </p>
               </div>
             </div>

@@ -96,14 +96,19 @@ export function calculatePace(input: PaceInput): PaceResult | null;
 
 ```ts
 export type WindowSemantics = "fixed" | "rolling" | "first_use" | "unknown";
-export interface QuotaHistoryEventV1 { /* fields fixed by history-cloud-spec §3 */ }
-export function historyEventsFromSnapshot(snapshot: QuotaSnapshot, options: {
-  deviceId: string;
-  accountScope: string | null;
-  recordedAt: string;
-  semanticsForWindow: (id: string) => WindowSemantics;
-  startForWindow: (id: string) => string | null;
-}): readonly QuotaHistoryEventV1[];
+export interface QuotaHistoryEventV1 {
+  /* fields fixed by history-cloud-spec §3 */
+}
+export function historyEventsFromSnapshot(
+  snapshot: QuotaSnapshot,
+  options: {
+    deviceId: string;
+    accountScope: string | null;
+    recordedAt: string;
+    semanticsForWindow: (id: string) => WindowSemantics;
+    startForWindow: (id: string) => string | null;
+  },
+): readonly QuotaHistoryEventV1[];
 ```
 
 - [ ] **Step 1 — red test:** 2 valid windows emit 2 typed per-window events with same fetchedAt; invalid percent does not create fake used=0; unauthenticated creates sanitized error event; unknown account remains null and does not manufacture email; stable event ID across retries, no raw source payload/token fields.
@@ -121,9 +126,17 @@ export function historyEventsFromSnapshot(snapshot: QuotaSnapshot, options: {
 ```ts
 export interface JournalStore {
   append(events: readonly QuotaHistoryEventV1[]): Promise<{ written: number; duplicates: number }>;
-  read(options: { from: string; to: string; provider?: string; windowId?: string }): AsyncIterable<QuotaHistoryEventV1>;
+  read(options: {
+    from: string;
+    to: string;
+    provider?: string;
+    windowId?: string;
+  }): AsyncIterable<QuotaHistoryEventV1>;
 }
-export function createLocalJsonlJournal(options: { directory: string; maxFileBytes?: number }): JournalStore;
+export function createLocalJsonlJournal(options: {
+  directory: string;
+  maxFileBytes?: number;
+}): JournalStore;
 ```
 
 - [ ] **Step 1 — red test:** append 2 and reread 2; repeated event ID writes 0 new; two concurrent appends yield complete newline records without corruption; partial trailing line is recognized and not mistaken for valid data; UTC date partition selection, from/to filter, missing directory creation.
@@ -140,8 +153,21 @@ export function createLocalJsonlJournal(options: { directory: string; maxFileByt
 
 ```ts
 export type ForecastQuality = "unsupported" | "insufficient" | "low" | "medium" | "high";
-export interface ForecastInput { now: Date; resetAt: Date; observations: readonly QuotaHistoryEventV1[]; mode: "all-window" | "recent-activity"; }
-export interface ForecastResult { slopePercentPerHour: number | null; exhaustedAt: string | null; projectedUsedAtResetPercent: number | null; sampleCount: number; observedSpanHours: number; quality: ForecastQuality; reasons: readonly string[]; }
+export interface ForecastInput {
+  now: Date;
+  resetAt: Date;
+  observations: readonly QuotaHistoryEventV1[];
+  mode: "all-window" | "recent-activity";
+}
+export interface ForecastResult {
+  slopePercentPerHour: number | null;
+  exhaustedAt: string | null;
+  projectedUsedAtResetPercent: number | null;
+  sampleCount: number;
+  observedSpanHours: number;
+  quality: ForecastQuality;
+  reasons: readonly string[];
+}
 export function forecastQuota(input: ForecastInput): ForecastResult;
 ```
 

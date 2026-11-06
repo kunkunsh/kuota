@@ -146,16 +146,26 @@ export function KuotaDashboard({
     { id: "island", label: "Island Preview", icon: AppWindow },
   ];
 
+  const isDesktop =
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+
   return (
     <div className="flex h-screen w-full bg-[#09090b] text-zinc-100 font-sans antialiased overflow-hidden">
       {/* Sidebar Navigation */}
-      <aside className="w-56 flex-shrink-0 border-r border-zinc-800 bg-[#111113] flex flex-col justify-between p-3 select-none">
+      <aside
+        className={`w-56 flex-shrink-0 border-r border-zinc-800 bg-[#111113] flex flex-col justify-between p-3 select-none ${
+          isDesktop ? "pt-8" : ""
+        }`}
+      >
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center space-x-2.5 px-2 py-2">
+          <div
+            data-tauri-drag-region
+            className="flex items-center space-x-2.5 px-2 py-2 cursor-default"
+          >
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 font-bold text-zinc-950 text-xs shadow-[0_0_10px_rgba(16,185,129,0.3)]">
               K
             </span>
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tauri-drag-region>
               <span className="font-semibold text-xs tracking-tight text-zinc-100">Kuota</span>
               <span className="text-[10px] text-zinc-500">Kunkun Quota Suite</span>
             </div>
@@ -195,7 +205,7 @@ export function KuotaDashboard({
       </aside>
 
       {/* Main Content Pane */}
-      <main className="flex-1 overflow-y-auto p-6 bg-[#09090b]">
+      <main className={`flex-1 overflow-y-auto p-6 bg-[#09090b] ${isDesktop ? "pt-8" : ""}`}>
         {route === "overview" && (
           <OverviewView
             snapshots={snapshots}
@@ -233,9 +243,7 @@ export function KuotaDashboard({
 
         {route === "settings" && <SettingsView />}
 
-        {route === "island" && (
-          <IslandView snapshots={snapshots} now={now} mode={islandMode} />
-        )}
+        {route === "island" && <IslandView snapshots={snapshots} now={now} mode={islandMode} />}
       </main>
     </div>
   );

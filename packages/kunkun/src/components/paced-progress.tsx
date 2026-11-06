@@ -105,7 +105,9 @@ export function PacedProgress({
         <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-400 pt-0.5">
           <div className="min-w-0 truncate">
             {remaining !== null ? (
-              <span className="font-semibold text-zinc-100 whitespace-nowrap">{remaining.toFixed(0)}% left</span>
+              <span className="font-semibold text-zinc-100 whitespace-nowrap">
+                {remaining.toFixed(0)}% left
+              </span>
             ) : (
               <span className="text-zinc-500 whitespace-nowrap">Unmeasured</span>
             )}

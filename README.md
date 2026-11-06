@@ -108,13 +108,13 @@ const cachedCodex = await service.read("codex");
 
 ## 🧩 Subpath Exports
 
-| Import Path | Description |
-| ----------- | ----------- |
-| `@kunkun.sh/kuota` | Full library (Parsers, Metrics, History, Providers, Schemas) |
-| `@kunkun.sh/kuota/parsers` | Pure data parsers (zero platform dependencies, Node & Browser safe) |
-| `@kunkun.sh/kuota/metrics` | Linear pacing algorithms and forecasting models |
-| `@kunkun.sh/kuota/history` | Append-only local JSONL journal and query engine |
-| `@kunkun.sh/kuota/providers` | Subprocess adapters for Codex, Claude, and Antigravity |
+| Import Path                  | Description                                                         |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `@kunkun.sh/kuota`           | Full library (Parsers, Metrics, History, Providers, Schemas)        |
+| `@kunkun.sh/kuota/parsers`   | Pure data parsers (zero platform dependencies, Node & Browser safe) |
+| `@kunkun.sh/kuota/metrics`   | Linear pacing algorithms and forecasting models                     |
+| `@kunkun.sh/kuota/history`   | Append-only local JSONL journal and query engine                    |
+| `@kunkun.sh/kuota/providers` | Subprocess adapters for Codex, Claude, and Antigravity              |
 
 ---
 

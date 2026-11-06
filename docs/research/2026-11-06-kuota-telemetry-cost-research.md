@@ -1,7 +1,7 @@
 # Kuota Telemetry / Forecast / Cloud Storage Research and Cost Model
 
 > 2026-11-06 (Toronto) · Research from official docs + engineering estimates. **No cloud deployment, paid service or telemetry ingestion was created.**  
-> Pricing in USD, Cloudflare public self-serve prices as viewed 2026-11-06; re-check before launch. Calculations assume the Kunkun Cloud account's included quotas are *not consumed by other applications*. HK's existing apps share those limits, so actual incremental bills may be higher.
+> Pricing in USD, Cloudflare public self-serve prices as viewed 2026-11-06; re-check before launch. Calculations assume the Kunkun Cloud account's included quotas are _not consumed by other applications_. HK's existing apps share those limits, so actual incremental bills may be higher.
 
 ## 1. Answer first
 
@@ -11,30 +11,30 @@
 
 ## 2. Cloudflare official price inputs
 
-| Product | Included / free reference | Paid marginal price | Source |
-| --- | --- | --- | --- |
-| Workers Standard | Paid account minimum **$5/month**; **10M requests/month** + **30M CPU-ms/month** included; free workers 100k requests/day | $0.30 / 1M extra requests; $0.02 / 1M extra CPU-ms; no bill for idle wall-time | [Cloudflare Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) |
-| D1 reads | Paid **25B rows read/month included**, Free 5M/day | $0.001 / 1M additional rows read | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) |
-| D1 writes | Paid **50M rows written/month included**, Free 100k/day | $1 / 1M additional rows written; indexes and DELETE/UPDATE can add counted writes | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) |
-| D1 storage | Paid first **5GB** included (Free 5GB total but lower per-db max) | $0.75 / additional GB-month | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/) |
-| D1 database max | **10GB per DB paid**, **500MB per DB free**; paid total storage max 1TB account subject to limits | Shard or compact before single-db limit | [D1 limits](https://developers.cloudflare.com/d1/platform/limits/) |
-| R2 Standard | First **10GB-month**, **1M Class A** and **10M Class B** operations/month included | $0.015 / GB-month, PUT Class A $4.50 / 1M, GET Class B $0.36 / 1M; **egress free** | [R2 pricing](https://developers.cloudflare.com/r2/pricing/) |
-| R2 Infrequent Access | Different price category, minimum storage duration, retrieval fees | $0.01 / GB-month, $0.01 / GB retrieval + requests | [R2 storage classes](https://developers.cloudflare.com/r2/buckets/storage-classes/) |
-| Cron Triggers | Worker `scheduled()` runs on Cloudflare, not users' machines | Part of Workers execution billing | [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/) |
-| R2 read-after-write | Strong consistency, but concurrent PUT/DELETE to same key: **last completion wins** | Never model JSONL as remotely appendable | [R2 consistency](https://developers.cloudflare.com/r2/reference/consistency/) |
+| Product              | Included / free reference                                                                                                 | Paid marginal price                                                                | Source                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Workers Standard     | Paid account minimum **$5/month**; **10M requests/month** + **30M CPU-ms/month** included; free workers 100k requests/day | $0.30 / 1M extra requests; $0.02 / 1M extra CPU-ms; no bill for idle wall-time     | [Cloudflare Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) |
+| D1 reads             | Paid **25B rows read/month included**, Free 5M/day                                                                        | $0.001 / 1M additional rows read                                                   | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)                      |
+| D1 writes            | Paid **50M rows written/month included**, Free 100k/day                                                                   | $1 / 1M additional rows written; indexes and DELETE/UPDATE can add counted writes  | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)                      |
+| D1 storage           | Paid first **5GB** included (Free 5GB total but lower per-db max)                                                         | $0.75 / additional GB-month                                                        | [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)                      |
+| D1 database max      | **10GB per DB paid**, **500MB per DB free**; paid total storage max 1TB account subject to limits                         | Shard or compact before single-db limit                                            | [D1 limits](https://developers.cloudflare.com/d1/platform/limits/)                        |
+| R2 Standard          | First **10GB-month**, **1M Class A** and **10M Class B** operations/month included                                        | $0.015 / GB-month, PUT Class A $4.50 / 1M, GET Class B $0.36 / 1M; **egress free** | [R2 pricing](https://developers.cloudflare.com/r2/pricing/)                               |
+| R2 Infrequent Access | Different price category, minimum storage duration, retrieval fees                                                        | $0.01 / GB-month, $0.01 / GB retrieval + requests                                  | [R2 storage classes](https://developers.cloudflare.com/r2/buckets/storage-classes/)       |
+| Cron Triggers        | Worker `scheduled()` runs on Cloudflare, not users' machines                                                              | Part of Workers execution billing                                                  | [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/)   |
+| R2 read-after-write  | Strong consistency, but concurrent PUT/DELETE to same key: **last completion wins**                                       | Never model JSONL as remotely appendable                                           | [R2 consistency](https://developers.cloudflare.com/r2/reference/consistency/)             |
 
 Workers Paid is **$5 minimum per account** (not $5 for every Kuota application). D1's index row writes and deleting hot rows matter in usage estimates; Workers CPU is nonzero for JSON validation, auth, D1 writes and aggregations. Cloud storage/account plans are shared with other services. Billing rounds operations, so estimates below are not invoices.
 
 ## 3. Transparent volume assumptions
 
-Base-case one active device per subscriber, 24h/day × 30 days, **one combined 1KB snapshot payload per hour** containing all current provider windows (NOT one HTTP call per provider). Approximately 720 observations per user-month and 336 in a 14-day hot window. Other devices multiply collection; a 10m/15m interval multiplies requests by 6/4; 3 separate provider uploads/h instead of one batch triples requests. `1KB` is an *illustrative persisted-envelope payload*, not a measured actual Kuota schema size. D1 SQLite overhead, indexes, archive manifests, request headers and retries are not inside that 1KB.
+Base-case one active device per subscriber, 24h/day × 30 days, **one combined 1KB snapshot payload per hour** containing all current provider windows (NOT one HTTP call per provider). Approximately 720 observations per user-month and 336 in a 14-day hot window. Other devices multiply collection; a 10m/15m interval multiplies requests by 6/4; 3 separate provider uploads/h instead of one batch triples requests. `1KB` is an _illustrative persisted-envelope payload_, not a measured actual Kuota schema size. D1 SQLite overhead, indexes, archive manifests, request headers and retries are not inside that 1KB.
 
 | Active users | Combined cloud writes / month | Ingest requests / day | 1KB raw payload / month | 14-day hot D1 raw payload | 1-year raw if all retained |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 100 | 72,000 | 2,400 | 72MB | 33.6MB | 0.864GB |
-| 1,000 | 720,000 | 24,000 | 720MB | 336MB | 8.64GB |
-| 10,000 | 7,200,000 | 240,000 | 7.2GB | 3.36GB | 86.4GB |
-| 100,000 | 72,000,000 | 2,400,000 | 72GB | 33.6GB | 864GB |
+| -----------: | ----------------------------: | --------------------: | ----------------------: | ------------------------: | -------------------------: |
+|          100 |                        72,000 |                 2,400 |                    72MB |                    33.6MB |                    0.864GB |
+|        1,000 |                       720,000 |                24,000 |                   720MB |                     336MB |                     8.64GB |
+|       10,000 |                     7,200,000 |               240,000 |                   7.2GB |                    3.36GB |                     86.4GB |
+|      100,000 |                    72,000,000 |             2,400,000 |                    72GB |                    33.6GB |                      864GB |
 
 **Local only:** 1KB × 24 × 30 ≈ **0.72MB/user-month**; ~8.76MB/user-year, before rotation/metadata. At 5KB/payload, ~3.6MB/month. The Mac's per-hour short-lived Node/Bun process memory is not persistent; the provider CLIs and their transport startup dominate elapsed seconds and upstream rate-limit exposure. One hour may be **too sparse for 5-hour rolling windows**; sample adaptively while active and respect cooldown.
 
@@ -46,12 +46,12 @@ Persist one `snapshot_batch` JSON record indexed by `user_id+observed_at`, not o
 
 **D1 steady state:** each snapshot added then eventually removed after archival. In a mature 14d hot rolling system, ~N inserts/month and ~N deletes/month; with one indexed column set, approximate billable writes are **2–4× N**, depending on index maintenance and actual measured statement metrics. Verify with `meta.rows_written`, don't assume one insert equals one billable row. Hot SQLite physical capacity use **1–2KB per snapshot** illustrative range (JSON + row + index); 10k users ~3.36–6.72GB before page fragmentation. A single D1 remains below its 10GB limit in that example, but could exceed at a larger payload, added devices or multiple indexed window rows.
 
-| Users | Worker requests/mo | D1 steady write units/mo (2–4× snapshot events) | D1 hot physical size proxy | R2 archive PUT/mo if one/user/day | Cloudflare marginal expectation |
-| ---: | ---: | ---: | ---: | ---: | --- |
-| 100 | 72k | 0.14–0.29M | 34–67MB | 3k | May fit **free**; ~$0 incremental on paid shared account |
-| 1,000 | 0.72M | 1.4–2.9M | 0.34–0.67GB | 30k | D1 Free per-db 500MB can fail; paid shared account roughly $0 incremental |
-| 10,000 | 7.2M | 14.4–28.8M | 3.36–6.72GB | 300k | Within paid Workers+50M D1-write included quotas; storage over 5GB potentially **~$0–$1.3/mo**, plus small CPU/read/other uses; paid base **$5/mo** if account not already paid |
-| 100,000 | 72M | 144–288M | 33.6–67.2GB, **must shard D1** | 3M | Incremental Workers requests ~$18.60; D1 writes ~$94–$238; D1 hot storage ~$21–$47; R2 PUT ~$9; plus CPU, reads, ops: **roughly $150–$350+/month** on the base scenario |
+|   Users | Worker requests/mo | D1 steady write units/mo (2–4× snapshot events) |     D1 hot physical size proxy | R2 archive PUT/mo if one/user/day | Cloudflare marginal expectation                                                                                                                                                 |
+| ------: | -----------------: | ----------------------------------------------: | -----------------------------: | --------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     100 |                72k |                                      0.14–0.29M |                        34–67MB |                                3k | May fit **free**; ~$0 incremental on paid shared account                                                                                                                        |
+|   1,000 |              0.72M |                                        1.4–2.9M |                    0.34–0.67GB |                               30k | D1 Free per-db 500MB can fail; paid shared account roughly $0 incremental                                                                                                       |
+|  10,000 |               7.2M |                                      14.4–28.8M |                    3.36–6.72GB |                              300k | Within paid Workers+50M D1-write included quotas; storage over 5GB potentially **~$0–$1.3/mo**, plus small CPU/read/other uses; paid base **$5/mo** if account not already paid |
+| 100,000 |                72M |                                        144–288M | 33.6–67.2GB, **must shard D1** |                                3M | Incremental Workers requests ~$18.60; D1 writes ~$94–$238; D1 hot storage ~$21–$47; R2 PUT ~$9; plus CPU, reads, ops: **roughly $150–$350+/month** on the base scenario         |
 
 **Critical caveats:** These are **engineering estimates**, not official quotes; no 100k-user guarantee. At 100k users a single D1 DB cannot hold the hot history (10GB max) and a single serialized writer is a throughput risk; shard by stable user partition or redesign hot storage. At 10k users, randomized client schedules yield an average 2.78 writes/s, but synchronized hourly startup can burst; add 0–180s jitter and backpressure. Extra indexes, 4–8 windows as separate DB rows, 2+ devices/user, missing auth retries, dashboards, backups, WAF and raw logs can multiply cost. Cost include **Cloudflare's existing global account quota usage**, not hypothetical isolated full included quotas.
 
@@ -74,28 +74,28 @@ At 10k users, **one R2 PUT per user per hour** =7.2M Class A/month, about `(7.2-
 
 ## 5. R2 + D1 lifecycle verification checklist
 
-| Step | Action | Loss-prevention condition |
-| --- | --- | --- |
-| 1 | Select closed daily D1 range with high-water event ID | Deterministic `(user,date,range)` manifest; late arrivals redirected or reconciled |
-| 2 | Upload immutable gzip JSONL to R2 with unique part key | No concurrent overwrites, checksum and row count recorded |
-| 3 | Read back/checksum, register `archive_manifest.state=verified` in D1 | Existence alone insufficient; verify bytes/row count/schema |
-| 4 | Grace period + idempotent D1 chunk delete | Delete only rows covered by verified manifest; limit batch and retry |
-| 5 | Audit retrieval/restore and orphan scans | Test random user historical download and rehydration; alert gaps |
-| 6 | Apply user delete/retention | Propagate to D1, R2 private archives, derived research pool policy |
+| Step | Action                                                               | Loss-prevention condition                                                          |
+| ---- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1    | Select closed daily D1 range with high-water event ID                | Deterministic `(user,date,range)` manifest; late arrivals redirected or reconciled |
+| 2    | Upload immutable gzip JSONL to R2 with unique part key               | No concurrent overwrites, checksum and row count recorded                          |
+| 3    | Read back/checksum, register `archive_manifest.state=verified` in D1 | Existence alone insufficient; verify bytes/row count/schema                        |
+| 4    | Grace period + idempotent D1 chunk delete                            | Delete only rows covered by verified manifest; limit batch and retry               |
+| 5    | Audit retrieval/restore and orphan scans                             | Test random user historical download and rehydration; alert gaps                   |
+| 6    | Apply user delete/retention                                          | Propagate to D1, R2 private archives, derived research pool policy                 |
 
 At least one disaster-recovery test must simulate crash between steps 2 and 4 and prove no lost rows. Consider legal/requested deletion of research aggregates and public statistics separately. R2 lifecycle rules can enforce age expiration but are not a substitute for archival checkpoint correctness. [Official lifecycle docs](https://developers.cloudflare.com/r2/buckets/object-lifecycles/).
 
 ## 6. Browser Parquet / OLAP alternatives
 
-| Choice | Benefit | Drawback | Kuota recommendation |
-| --- | --- | --- | --- |
-| JSONL locally | Append, inspect, export, easy migration | Need range scans/rotation; no index | **MVP local store** |
-| SQLite locally | Fast ranges/index, transaction/dedupe, portable | Extra platform adapter/binding | Add if JSONL complexity grows; isolated `packages/history` |
-| D1 hot 14d | Serverless query/auth, no always-on DB | 10GB per-db cap, row writes/index costs, serial writes per DB | **Yes**, one combined batch row, shard later |
-| R2 `jsonl.gz` cold | Cheap bytes, delete/export per user | Object immutable, whole-file fetch per day | **Yes**, archive daily after verification |
-| R2 Parquet research | Efficient column scan + compression | Small-file penalty, partition/compaction, JS decoding complexity | **Yes later** for opt-in pool, 1–100MB partitions |
-| DuckDB ephemeral | SQL over Parquet/R2, no permanent server | Need scheduled job host/containers and S3 credentials | **Yes later**, daily/weekly batch |
-| Always-on OLAP | High-dimensional interactive analytic workloads | Idle billing/ops/data migration | **No** initially |
+| Choice              | Benefit                                         | Drawback                                                         | Kuota recommendation                                       |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| JSONL locally       | Append, inspect, export, easy migration         | Need range scans/rotation; no index                              | **MVP local store**                                        |
+| SQLite locally      | Fast ranges/index, transaction/dedupe, portable | Extra platform adapter/binding                                   | Add if JSONL complexity grows; isolated `packages/history` |
+| D1 hot 14d          | Serverless query/auth, no always-on DB          | 10GB per-db cap, row writes/index costs, serial writes per DB    | **Yes**, one combined batch row, shard later               |
+| R2 `jsonl.gz` cold  | Cheap bytes, delete/export per user             | Object immutable, whole-file fetch per day                       | **Yes**, archive daily after verification                  |
+| R2 Parquet research | Efficient column scan + compression             | Small-file penalty, partition/compaction, JS decoding complexity | **Yes later** for opt-in pool, 1–100MB partitions          |
+| DuckDB ephemeral    | SQL over Parquet/R2, no permanent server        | Need scheduled job host/containers and S3 credentials            | **Yes later**, daily/weekly batch                          |
+| Always-on OLAP      | High-dimensional interactive analytic workloads | Idle billing/ops/data migration                                  | **No** initially                                           |
 
 Browser Parquet **is possible**: [hyparquet](https://github.com/hyparam/hyparquet) is a JS browser parser; [DuckDB-Wasm](https://duckdb.org/docs/stable/clients/wasm/overview) runs in a browser; [DuckDB Parquet](https://duckdb.org/docs/data/parquet) and [R2 via S3-compatible DuckDB](https://www.duckdb.org/docs/current/guides/network_cloud_storage/s3_import) provide server/batch options. Consider CSP/CORS/range requests/large Wasm cost; for Kuota charts, return precomputed JSON series and optionally let the user download raw Parquet.
 
@@ -113,7 +113,7 @@ Cloud community row example (no user/project ID): `{provider, planBucket, window
 
 For the first thousands of users, aggregate in a scheduled Cloudflare Worker with bounded D1 indexed scans and write finalized daily aggregates to D1. When cohorts outgrow this or need robust models, export sanitized opt-in partitions to R2 and run **ephemeral DuckDB** from a job/CI/container under budget, commit final metrics back to D1. Do not depend on HK's personal Mac mini being always online for production retention. Avoid querying all private per-user files to create an ostensibly anonymous research pool.
 
-Cloudflare Analytics Engine is an alternative for *sampled aggregate telemetry*, not exact user history: [pricing](https://developers.cloudflare.com/analytics/analytics-engine/pricing/). Cloudflare Queues can be added for burst buffering, but its operation model can add costs and operational objects; [Queues pricing](https://developers.cloudflare.com/queues/platform/pricing/). Neither is needed in the MVP.
+Cloudflare Analytics Engine is an alternative for _sampled aggregate telemetry_, not exact user history: [pricing](https://developers.cloudflare.com/analytics/analytics-engine/pricing/). Cloudflare Queues can be added for burst buffering, but its operation model can add costs and operational objects; [Queues pricing](https://developers.cloudflare.com/queues/platform/pricing/). Neither is needed in the MVP.
 
 ## 9. Business packaging as a Kunkun feature
 
@@ -128,14 +128,14 @@ Suggested tier split **subject to product validation**:
 
 ## 10. Complexity and rollout recommendation
 
-| Phase | Feature | Rough AI-assisted engineering range (not elapsed guarantee) | Main unknown |
-| --- | --- | --- | --- |
-| A | White pace tick + typed pure function + CLI forecast field | 0.5–1.5d | Correct fixed/rolling semantics |
-| B | Local scheduler, JSONL history, ranged query, TUI trend | 2–5d | Account identity, OS sleep, safe append |
-| C | Robust forecast, confidence, plots/alerts, backtests | 2–5d | Provider cadence and model calibration |
-| D | Kunkun host bridge + React shadcn dashboard | 3–7d | Actual plugin SDK/permissions verified |
-| E | Authenticated cloud sync + D1 hot / R2 archive | 4–10d | Consent, idempotency, safe archive recovery |
-| F | Public research cohorts + token cap inference + API | 1–3wk | Reidentification defense and statistical validity |
+| Phase | Feature                                                    | Rough AI-assisted engineering range (not elapsed guarantee) | Main unknown                                      |
+| ----- | ---------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| A     | White pace tick + typed pure function + CLI forecast field | 0.5–1.5d                                                    | Correct fixed/rolling semantics                   |
+| B     | Local scheduler, JSONL history, ranged query, TUI trend    | 2–5d                                                        | Account identity, OS sleep, safe append           |
+| C     | Robust forecast, confidence, plots/alerts, backtests       | 2–5d                                                        | Provider cadence and model calibration            |
+| D     | Kunkun host bridge + React shadcn dashboard                | 3–7d                                                        | Actual plugin SDK/permissions verified            |
+| E     | Authenticated cloud sync + D1 hot / R2 archive             | 4–10d                                                       | Consent, idempotency, safe archive recovery       |
+| F     | Public research cohorts + token cap inference + API        | 1–3wk                                                       | Reidentification defense and statistical validity |
 
 These overlap and depend on existing `refresh-service` plan; do not sum durations as a hard schedule. Compared with Xross kernel/P2P work, core math/storage are simpler; compared with CRUD, provider incompatibility, privacy and data provenance add real engineering complexity. **Build A+B before committing to E+F.**
 

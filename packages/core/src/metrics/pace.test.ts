@@ -33,13 +33,21 @@ describe("calculatePace", () => {
 
   it("reports no pace ratio before any of the window has elapsed", () => {
     expect(calculatePace({ ...fixed, now: start, usedPercent: 0 })).toMatchObject({
-      elapsedFraction: 0, idealUsedPercent: 0, paceRatio: null, paceDeltaPoints: 0,
+      elapsedFraction: 0,
+      idealUsedPercent: 0,
+      paceRatio: null,
+      paceDeltaPoints: 0,
     });
   });
 
   it("clamps the elapsed marker at reset even if observation is delayed", () => {
-    expect(calculatePace({ ...fixed, now: new Date("2026-11-09T00:00:00Z"), usedPercent: 100 })).toMatchObject({
-      elapsedFraction: 1, idealUsedPercent: 100, idealRemainingPercent: 0, remainingHours: 0,
+    expect(
+      calculatePace({ ...fixed, now: new Date("2026-11-09T00:00:00Z"), usedPercent: 100 }),
+    ).toMatchObject({
+      elapsedFraction: 1,
+      idealUsedPercent: 100,
+      idealRemainingPercent: 0,
+      remainingHours: 0,
     });
   });
 

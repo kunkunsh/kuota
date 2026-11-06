@@ -6,14 +6,14 @@
 
 Verified on this machine: `bun run test` **129 tests / 18 suites pass**, `bun run typecheck` passes, `bun run build` 6/6 succeeds. `bun run check` still reports formatting issues only in pre-existing docs and `metrics/pace*.ts` (left untouched; new sources are formatted). Nothing committed, pushed or deployed. No live provider probe was run.
 
-| Phase | Delivered | Where |
-| --- | --- | --- |
-| 1 Reliability | `QuotaObservation` wrapper; `createQuotaService` (TTL, singleflight, 429 cooldown that `force` cannot bypass, auth failure clears last-good, stale labelling, defect isolation, invalidate generations). TUI now uses one service. | `core/src/observation.ts`, `providers/src/service.ts` |
-| 2 History | Strict Effect Schema `QuotaHistoryEventV1`, pure sha256, `historyEventsFromSnapshot`, `windowProfile`; new `@kuota/history` JSONL journal (dedup across restarts, UTC-day partitions, size rotation, retention, cross-process lock with stale-lock recovery, truncated-last-line quarantine); CLI `collect --once`, `history`. | `core/src/history`, `packages/history`, `cli/src/history-commands.ts` |
-| 3 Forecast | `detectEpochs`, `forecastQuota`, `buildForecastV1` (fixed vs rolling/unknown → `unsupported`, confidence heuristics, ideal pace); CLI `forecast`, `pace`. | `core/src/forecast` |
-| 4 TUI | Progress bar with white `┃` ideal-pace marker, sparkline, exhaustion line, `p`/`1-3` provider and `w` window switching, read-only history view. | `tui/src/{app,dashboard,history-view}` |
-| 5 Kunkun | Implemented Kunkun v2.1 package `@kuota/kunkun` with manifest, React 19 + shadcn/ui dashboard across all 11 concept routes (Overview, History, Provider Detail, Connections, Usage & Value, Projects, Benchmarks, Data & Sync, Alerts, Settings, Island Glance). Strictly enforced 11 Gallery QA rules: single white tick per window, no fake request caps, k≥50 anonymity, independent opt-in privacy toggles. Configured `components.json` with Shadcn Studio registries for `${EMAIL}` and `${LICENSE_KEY}` via Context7 research. | `packages/kunkun` |
-| 6 Cloud | Design review only: `docs/design/2026-11-06-cloud-design-review.md`. | — |
+| Phase         | Delivered                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Where                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| 1 Reliability | `QuotaObservation` wrapper; `createQuotaService` (TTL, singleflight, 429 cooldown that `force` cannot bypass, auth failure clears last-good, stale labelling, defect isolation, invalidate generations). TUI now uses one service.                                                                                                                                                                                                                                                                                                    | `core/src/observation.ts`, `providers/src/service.ts`                 |
+| 2 History     | Strict Effect Schema `QuotaHistoryEventV1`, pure sha256, `historyEventsFromSnapshot`, `windowProfile`; new `@kuota/history` JSONL journal (dedup across restarts, UTC-day partitions, size rotation, retention, cross-process lock with stale-lock recovery, truncated-last-line quarantine); CLI `collect --once`, `history`.                                                                                                                                                                                                        | `core/src/history`, `packages/history`, `cli/src/history-commands.ts` |
+| 3 Forecast    | `detectEpochs`, `forecastQuota`, `buildForecastV1` (fixed vs rolling/unknown → `unsupported`, confidence heuristics, ideal pace); CLI `forecast`, `pace`.                                                                                                                                                                                                                                                                                                                                                                             | `core/src/forecast`                                                   |
+| 4 TUI         | Progress bar with white `┃` ideal-pace marker, sparkline, exhaustion line, `p`/`1-3` provider and `w` window switching, read-only history view.                                                                                                                                                                                                                                                                                                                                                                                       | `tui/src/{app,dashboard,history-view}`                                |
+| 5 Kunkun      | Implemented Kunkun v2.1 package `@kuota/kunkun` with manifest, React 19 + shadcn/ui dashboard across all 11 concept routes (Overview, History, Provider Detail, Connections, Usage & Value, Projects, Benchmarks, Data & Sync, Alerts, Settings, Island Glance). Strictly enforced 11 Gallery QA rules: single white tick per window, no fake request caps, k≥50 anonymity, independent opt-in privacy toggles. Configured `components.json` with Shadcn Studio registries for `${EMAIL}` and `${LICENSE_KEY}` via Context7 research. | `packages/kunkun`                                                     |
+| 6 Cloud       | Design review only: `docs/design/2026-11-06-cloud-design-review.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | —                                                                     |
 
 Design decisions and caveats:
 
@@ -26,7 +26,6 @@ Design decisions and caveats:
 - **Run `bun install` once with network**: `@kuota/history` workspace links and `bun.lock` entries were added by hand (offline), and `node_modules` symlinks were created manually.
 - Not yet done: `collect` has no adaptive/active-use scheduling; usage/token events (`usage_observed`) unimplemented; real-terminal TUI smoke not performed; the 11 concept images could not be read (`references/gdrive` blocked).
 
-
 ## 1. Current Mac mini repository state
 
 - Device: `HKs-Mac-mini.local`; repo `/Users/hk/Dev/kuota`; branch `main` at last check; no GitHub push/deploy performed.
@@ -37,15 +36,15 @@ Design decisions and caveats:
 
 ## 2. Current checks performed on Mac mini (actual output)
 
-| Check | Result | Evidence / caveat |
-| --- | --- | --- |
-| `bun run test packages/core/src/metrics/pace.test.ts` | **PASS: 13 tests** | Red-green observed: missing module initially failed, then implementation passed |
-| `bun run test` | **PASS: 8 suites, 45 tests** | 32 existing baseline tests + 13 pace tests, all passed |
-| `bun run typecheck` | **PASS** | `tsc --noEmit -p tsconfig.json` finished successfully |
-| `bun run check` | **NOT RUN after pace change** | May modify files depending toolchain mode; next AI should run safely |
-| `bun run build` | **NOT RUN after pace change** | Previous Nov 5 4/4 build was successful; next AI must re-run |
-| Live provider smoke | **NOT RUN this time** | Last Codex + agy live confirmation was Nov 5; Claude was logged out. Avoid repeat calls without need |
-| TUI genuine interactive Terminal.app smoke | **NOT VERIFIED** | Automated renderer passed baseline, real interactive check pending |
+| Check                                                 | Result                        | Evidence / caveat                                                                                    |
+| ----------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `bun run test packages/core/src/metrics/pace.test.ts` | **PASS: 13 tests**            | Red-green observed: missing module initially failed, then implementation passed                      |
+| `bun run test`                                        | **PASS: 8 suites, 45 tests**  | 32 existing baseline tests + 13 pace tests, all passed                                               |
+| `bun run typecheck`                                   | **PASS**                      | `tsc --noEmit -p tsconfig.json` finished successfully                                                |
+| `bun run check`                                       | **NOT RUN after pace change** | May modify files depending toolchain mode; next AI should run safely                                 |
+| `bun run build`                                       | **NOT RUN after pace change** | Previous Nov 5 4/4 build was successful; next AI must re-run                                         |
+| Live provider smoke                                   | **NOT RUN this time**         | Last Codex + agy live confirmation was Nov 5; Claude was logged out. Avoid repeat calls without need |
+| TUI genuine interactive Terminal.app smoke            | **NOT VERIFIED**              | Automated renderer passed baseline, real interactive check pending                                   |
 
 Captured `git status --short --branch` before new docs in this session:
 
@@ -64,14 +63,14 @@ Additional docs `docs/design/2026-11-06-kuota-concept-gallery.md` and `docs/hand
 
 ## 3. New design/research docs and Drive/Notion links
 
-| Subject | Local path | Google Drive link |
-| --- | --- | --- |
-| UX IA + **14 user stories** + component choice | `docs/specs/2026-11-06-kuota-dashboard-ux.md` | [UX/spec](https://drive.google.com/file/d/16pDKg1doGfwdghALxjw_gm0aJxCTFfc7/view) |
-| History/forecast/cloud architecture and privacy | `docs/specs/2026-11-06-kuota-history-cloud-spec.md` | [Technical spec](https://drive.google.com/file/d/1pRMXltsLe2WGeS7LQ5azmPAXFIO0oD9t/view) |
-| Cloudflare cost/crowdsource/DuckDB/R2 research | `docs/research/2026-11-06-kuota-telemetry-cost-research.md` | [Research](https://drive.google.com/file/d/1UNiWoditK8E9a9VtrWuftUhieQKJtxRO/view) |
+| Subject                                         | Local path                                                    | Google Drive link                                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| UX IA + **14 user stories** + component choice  | `docs/specs/2026-11-06-kuota-dashboard-ux.md`                 | [UX/spec](https://drive.google.com/file/d/16pDKg1doGfwdghALxjw_gm0aJxCTFfc7/view)             |
+| History/forecast/cloud architecture and privacy | `docs/specs/2026-11-06-kuota-history-cloud-spec.md`           | [Technical spec](https://drive.google.com/file/d/1pRMXltsLe2WGeS7LQ5azmPAXFIO0oD9t/view)      |
+| Cloudflare cost/crowdsource/DuckDB/R2 research  | `docs/research/2026-11-06-kuota-telemetry-cost-research.md`   | [Research](https://drive.google.com/file/d/1UNiWoditK8E9a9VtrWuftUhieQKJtxRO/view)            |
 | Local H1–H4 TDD steps and future approval gates | `docs/superpowers/plans/2026-11-06-kuota-history-forecast.md` | [Implementation plan](https://drive.google.com/file/d/1zONVPtLPS59C_D2tyMxlLzMPBgSiVV8C/view) |
-| 11 shadcn concept mockups with QA corrections | `docs/design/2026-11-06-kuota-concept-gallery.md` | [Design gallery](https://drive.google.com/drive/folders/1LndhYb13cKjFijWzclnRwiZ1whEpt4n-) |
-| AI handoff prompt | `docs/handoff/2026-11-06-kuota-ai-implementation-prompt.md` | See Handoff folder in Drive |
+| 11 shadcn concept mockups with QA corrections   | `docs/design/2026-11-06-kuota-concept-gallery.md`             | [Design gallery](https://drive.google.com/drive/folders/1LndhYb13cKjFijWzclnRwiZ1whEpt4n-)    |
+| AI handoff prompt                               | `docs/handoff/2026-11-06-kuota-ai-implementation-prompt.md`   | See Handoff folder in Drive                                                                   |
 
 All 11 image PNGs uploaded to Drive Design/Concepts with numbered filenames; reference links and page-by-page descriptions are in `docs/design/...-concept-gallery.md` and in a [Notion child design page](https://app.notion.com/p/410cefcfcbfd814fb4b9eff12b982b15?pvs=204) beneath existing [KUN-136 product intent](https://app.notion.com/p/40fcefcfcbfd812bb2aaeb13201ee108?pvs=204).
 
@@ -112,4 +111,3 @@ All 11 image PNGs uploaded to Drive Design/Concepts with numbered filenames; ref
    - `bun run test`: **18 test files, 133 tests passed** (0 failures).
    - `bun run typecheck`: **Clean pass** (0 errors).
    - `bun run build`: **6/6 packages built successfully** (`vp run -r build`).
-

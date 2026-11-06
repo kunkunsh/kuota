@@ -29,9 +29,19 @@ export function MetricCard({
   activePeriod = "30D",
   onPeriodChange,
   segments = [
-    { label: "Claude Code (Sonnet 3.7)", value: "$32,060", sharePercent: 62, color: "bg-[#da7756]" },
+    {
+      label: "Claude Code (Sonnet 3.7)",
+      value: "$32,060",
+      sharePercent: 62,
+      color: "bg-[#da7756]",
+    },
     { label: "Codex (GPT-4o Pro)", value: "$15,002", sharePercent: 29, color: "bg-[#5c82ff]" },
-    { label: "Antigravity (Gemini 2.5)", value: "$4,550", sharePercent: 9, color: "bg-emerald-400" },
+    {
+      label: "Antigravity (Gemini 2.5)",
+      value: "$4,550",
+      sharePercent: 9,
+      color: "bg-emerald-400",
+    },
   ],
   className,
   ...props
@@ -147,14 +157,7 @@ export function MetricCard({
           <circle cx="260" cy="95" r="3" fill="#f97316" />
 
           {/* Active Anchor Dot */}
-          <circle
-            cx="340"
-            cy="47"
-            r="4"
-            fill="#ffffff"
-            stroke="#09090b"
-            strokeWidth={1.5}
-          />
+          <circle cx="340" cy="47" r="4" fill="#ffffff" stroke="#09090b" strokeWidth={1.5} />
         </svg>
 
         {/* Scrubber Date Labels & Legend */}
@@ -185,14 +188,22 @@ export function MetricCard({
               <span
                 className={cn(
                   "w-2 h-2 rounded-full shrink-0",
-                  seg.color ? seg.color : i === 0 ? "bg-white" : i === 1 ? "bg-zinc-400" : "bg-zinc-600",
+                  seg.color
+                    ? seg.color
+                    : i === 0
+                      ? "bg-white"
+                      : i === 1
+                        ? "bg-zinc-400"
+                        : "bg-zinc-600",
                 )}
               />
               <span className="truncate whitespace-nowrap text-zinc-300">{seg.label}</span>
             </div>
             <div className="flex items-center space-x-2.5 text-right shrink-0">
               <span className="font-semibold text-zinc-100 whitespace-nowrap">{seg.value}</span>
-              <span className="text-zinc-500 w-7 text-right whitespace-nowrap">{seg.sharePercent}%</span>
+              <span className="text-zinc-500 w-7 text-right whitespace-nowrap">
+                {seg.sharePercent}%
+              </span>
             </div>
           </div>
         ))}

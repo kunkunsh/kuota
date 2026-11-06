@@ -16,4 +16,7 @@ packages/npm-dist/bin/
 packages/npm-dist/README.md
 packages/npm-dist/LICENSE
 *.tgz
+target/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
 

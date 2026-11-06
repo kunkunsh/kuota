@@ -95,19 +95,19 @@ For every subtask: (1) write failing fixture test; (2) run targeted red; (3) min
 
 Essential scenario matrix:
 
-| Scenario | Expected |
-| --- | --- |
-| 55% used at 3.5/7d fixed | Ideal 50% used (or 50% remaining on reversed bar); +5pp ahead |
-| Unknown start, rolling 5h, first-use unproven | No white tick or fixed-window ETA |
-| `fetchedAt` repeated across collection attempts | One history event, not multiple hourly increments |
-| Two simultaneous appenders, crash mid-write, restart | Complete lines only; never drop verified records; idempotent safe recovery |
-| Browser/CLI captures source 429 / login missing | Known stale quota and coded error; no fake zero, no silent auth |
-| Multiple accounts / device overlap | Never merge unknown accounts; cloud dedup is user-scoped and authorized |
-| Reset during history | Split window epoch, recompute slope; never interpret rolling refill as reset |
-| 1h burst then days idle | Low confidence / range / no precise ETA, not exaggerated certainty |
-| No model-token source | Cost/model screen shows unavailable, no invented token data |
-| Research OFF / cloud sync ON or vice versa | Opt-in settings operate independently; no covert flow |
-| Cohort <50 or differencing risk | Suppress aggregate and query response |
+| Scenario                                             | Expected                                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 55% used at 3.5/7d fixed                             | Ideal 50% used (or 50% remaining on reversed bar); +5pp ahead                |
+| Unknown start, rolling 5h, first-use unproven        | No white tick or fixed-window ETA                                            |
+| `fetchedAt` repeated across collection attempts      | One history event, not multiple hourly increments                            |
+| Two simultaneous appenders, crash mid-write, restart | Complete lines only; never drop verified records; idempotent safe recovery   |
+| Browser/CLI captures source 429 / login missing      | Known stale quota and coded error; no fake zero, no silent auth              |
+| Multiple accounts / device overlap                   | Never merge unknown accounts; cloud dedup is user-scoped and authorized      |
+| Reset during history                                 | Split window epoch, recompute slope; never interpret rolling refill as reset |
+| 1h burst then days idle                              | Low confidence / range / no precise ETA, not exaggerated certainty           |
+| No model-token source                                | Cost/model screen shows unavailable, no invented token data                  |
+| Research OFF / cloud sync ON or vice versa           | Opt-in settings operate independently; no covert flow                        |
+| Cohort <50 or differencing risk                      | Suppress aggregate and query response                                        |
 
 ### 5. Output after each milestone
 
@@ -115,7 +115,7 @@ Send HK a concise engineering report in Chinese:
 
 1. Which exact milestone(s) and tasks were done, with code file paths and commit SHA if any.
 2. Test table (targeted, full tests count, typecheck, check, build, real provider smoke: verified/failed/not run), and last `git status`.
-3. Screenshot/video of *actual* TUI/UI when available, clearly distinct from concept art.
+3. Screenshot/video of _actual_ TUI/UI when available, clearly distinct from concept art.
 4. Changed data contracts, security and privacy risks, provider API version issues.
 5. Next prioritized unchecked tasks, prerequisites, and decisions requiring HK's approval.
 6. Update local HANDOFF and Google Drive/Notion documentation with **exact links** if connected tooling is available; if unavailable, make the local Markdown authoritative and report missing sync without inventing a link.

@@ -28,8 +28,21 @@ interface PaceMarker {
   quality: Quality;
 }
 
-function theoreticalPace(now: number, start: number, end: number, usedPercent: number): PaceMarker | null {
-  if (!(Number.isFinite(now) && Number.isFinite(start) && Number.isFinite(end) && Number.isFinite(usedPercent))) return null;
+function theoreticalPace(
+  now: number,
+  start: number,
+  end: number,
+  usedPercent: number,
+): PaceMarker | null {
+  if (
+    !(
+      Number.isFinite(now) &&
+      Number.isFinite(start) &&
+      Number.isFinite(end) &&
+      Number.isFinite(usedPercent)
+    )
+  )
+    return null;
   if (end <= start || now < start || usedPercent < 0 || usedPercent > 100) return null;
   const x = Math.min(1, Math.max(0, (now - start) / (end - start)));
   const ideal = 100 * x;
@@ -48,7 +61,7 @@ function theoreticalPace(now: number, start: number, end: number, usedPercent: n
 
 **UI orientation:** If a bar fills according to **remaining** %, draw white tick at `idealRemainingPercent`; if it fills by **used** %, draw at `idealUsedPercent`. Explicit label ensures user knows what is being shown. With a 7-day fixed window and 3.5 days elapsed, ideal use is 50%. Actual 55% used = 5 percentage points faster than even pace; constant rate would exhaust at 7 / 1.1 = 6.36 days, about 15h before reset. This is a **pace heuristic**, not a statistically learned forecast.
 
-**Critical caveat:** Seeing `resetAt` alone does not always reveal the start. A fixed calendar month may begin at a stated timezone boundary; a 7-day fixed cycle may start 7 days before reset *only if provider confirms this semantics*. A `rolling 5h` limit may replenish continuously, and `starts on first use` may not match calendar. Only show the tick when start is supported or a clearly labeled inferred start; otherwise `pace:unavailable`.
+**Critical caveat:** Seeing `resetAt` alone does not always reveal the start. A fixed calendar month may begin at a stated timezone boundary; a 7-day fixed cycle may start 7 days before reset _only if provider confirms this semantics_. A `rolling 5h` limit may replenish continuously, and `starts on first use` may not match calendar. Only show the tick when start is supported or a clearly labeled inferred start; otherwise `pace:unavailable`.
 
 ## 2. Historical sampling: not every percent drop is a reset
 
@@ -127,7 +140,7 @@ An **append-only journal event ID** can be `sha256(localProviderKey + epoch + wi
 3. Start with a **weighted robust median** of interval slopes, weighted by elapsed hours but cap one long gap at 6h so an unattended weekend cannot dominate. Future option: Huber regression with recency decay and uncertainty interval.
 4. `exhaustedAt = t + (100-u)/slope` if `slope>epsilon`. `projectedAtReset = u + slope * max(0, reset-t)`. The slope and timestamp must carry mode, samples and quality.
 5. If `slope~0`, mark "Stable at current activity" instead of "infinite quota"; if projected exhausted after reset, display "On pace" not false exact future timestamp.
-6. Confidence policy proposal: `<3` distinct samples, `<2h` observed span = `insufficient`; `<24h` or `<10% used` = `low`; `1–3d` with ≥6 changes = `medium`; `≥3d` with ≥20 changes and low variability = `high`, conditional on fixed epoch and fresh sources. These are *heuristics*, not statistically calibrated probabilities; test with backtesting.
+6. Confidence policy proposal: `<3` distinct samples, `<2h` observed span = `insufficient`; `<24h` or `<10% used` = `low`; `1–3d` with ≥6 changes = `medium`; `≥3d` with ≥20 changes and low variability = `high`, conditional on fixed epoch and fresh sources. These are _heuristics_, not statistically calibrated probabilities; test with backtesting.
 7. Backtest sliding cutoffs: forecast from the first 1h, 24h, 3d of each prior real window, compare error in exhaustion time/outcome vs full actual window. Publish MAE, false-warning frequency and calibration before claiming any numeric 80/95% interval.
 
 ### v2 recent vs all-window pace
@@ -136,7 +149,7 @@ For bursty AI usage, offer multiple **clearly named** scenarios: long-run slope 
 
 ### Effective subscription cap research
 
-An exploratory estimate `effectiveTokenCap ≈ ΔtokenCount / (ΔquotaUsed/100)` is **valid only when** both deltas represent the same provider, paid subscription, account, model billing weights and quota epoch. Provider can weight models, cached and reasoning tokens differently; token counters can cover other contexts; plan/boosts may change. Show `effective tokens under the observed workload`, not "official weekly token cap". Require ≥10 percentage-point quota movement, enough samples, stable source/plan, exact usage attribution and report *range* across intervals. Do not publicly compare providers by raw tokens or infer a cap from unrelated local Codex/Claude usage logs. Cross-plan change alerts need many independent opt-in accounts and a robust matched model-mix cohort.
+An exploratory estimate `effectiveTokenCap ≈ ΔtokenCount / (ΔquotaUsed/100)` is **valid only when** both deltas represent the same provider, paid subscription, account, model billing weights and quota epoch. Provider can weight models, cached and reasoning tokens differently; token counters can cover other contexts; plan/boosts may change. Show `effective tokens under the observed workload`, not "official weekly token cap". Require ≥10 percentage-point quota movement, enough samples, stable source/plan, exact usage attribution and report _range_ across intervals. Do not publicly compare providers by raw tokens or infer a cap from unrelated local Codex/Claude usage logs. Cross-plan change alerts need many independent opt-in accounts and a robust matched model-mix cohort.
 
 ## 5. Proposed service boundaries and flow
 
@@ -190,13 +203,13 @@ Same types behind authenticated `GET /v1/me/quota`, `GET /v1/me/history?provider
 
 ## 8. Consent + security acceptance
 
-| Data category | Local by default | Private cloud only if sync ON | Research contribution if separate consent ON | Public cohort |
-| --- | --- | --- | --- | --- |
-| Provider/window quota % and reset | Yes | Yes | Coarse time bucketing, no account/device ID | Aggregated k≥30 (prefer 50) |
-| Model family and token totals | If available | User's choice | Opt-in and bucketed by plan/model mix | Aggregated only |
-| Exact time of requests | If collected | User's choice | **No**, coarse to UTC day/window | No individual events |
-| Project name/path, repo, file, IDE activity | Separate opt-in | Separate opt-in | **Never in v1** | No |
-| Raw prompts/replies, OAuth token, API keys, cookies | **Never** | **Never** | **Never** | **Never** |
+| Data category                                       | Local by default | Private cloud only if sync ON | Research contribution if separate consent ON | Public cohort               |
+| --------------------------------------------------- | ---------------- | ----------------------------- | -------------------------------------------- | --------------------------- |
+| Provider/window quota % and reset                   | Yes              | Yes                           | Coarse time bucketing, no account/device ID  | Aggregated k≥30 (prefer 50) |
+| Model family and token totals                       | If available     | User's choice                 | Opt-in and bucketed by plan/model mix        | Aggregated only             |
+| Exact time of requests                              | If collected     | User's choice                 | **No**, coarse to UTC day/window             | No individual events        |
+| Project name/path, repo, file, IDE activity         | Separate opt-in  | Separate opt-in               | **Never in v1**                              | No                          |
+| Raw prompts/replies, OAuth token, API keys, cookies | **Never**        | **Never**                     | **Never**                                    | **Never**                   |
 
 Research opt-in record: consent version, date, categories, retention, revocation policy. Explicit preview of payload. Do not mislabel pseudonymization as guaranteed anonymity; longitudinal model/plan/timestamp patterns may re-identify. Suppress rare cohorts and add minimum data coverage. Support account deletion, export and time-bounded retention. If mandatory data-sharing free tier is debated, run user-trust/product review; **recommend against compulsory tracking** because cloud storage cost is tiny and user trust is central to AI auth tooling.
 
@@ -221,15 +234,15 @@ Do not create `packages/history`, `apps/kuota-cloud` or `packages/kunkun` just b
 
 ## 10. Milestone gates
 
-| Gate | Completion evidence | Owner/approval |
-| --- | --- | --- |
-| H1 math | Pure pace tests for fixed/reset/unknown/remaining orientation, CLI v1 unchanged | Standalone Kuota |
-| H2 local events | JSONL append/dedupe/rotate/restore tests; `kuota collect --once`; test fake scheduler gap | Standalone Kuota |
-| H3 forecast | Synthetic fixed-window fixtures + backtest; no rolling-window false forecasts | Standalone Kuota |
-| H4 TUI | UniView summary, terminal real-TTY smoke, keyboard and stale/partial states | Kuota |
-| H5 Kunkun bridge | Actual v2.1 SDK proven, provider permissions and scheduler lifecycle verified | HK review |
-| H6 private cloud | Auth, batched ingest, D1 index/limits, R2 verified archive, deletion drill, cost logs | HK opt-in approval |
-| H7 research/API | Revocable contribution, cohort suppression, documented methodology, abuse controls | HK privacy/product approval |
+| Gate             | Completion evidence                                                                       | Owner/approval              |
+| ---------------- | ----------------------------------------------------------------------------------------- | --------------------------- |
+| H1 math          | Pure pace tests for fixed/reset/unknown/remaining orientation, CLI v1 unchanged           | Standalone Kuota            |
+| H2 local events  | JSONL append/dedupe/rotate/restore tests; `kuota collect --once`; test fake scheduler gap | Standalone Kuota            |
+| H3 forecast      | Synthetic fixed-window fixtures + backtest; no rolling-window false forecasts             | Standalone Kuota            |
+| H4 TUI           | UniView summary, terminal real-TTY smoke, keyboard and stale/partial states               | Kuota                       |
+| H5 Kunkun bridge | Actual v2.1 SDK proven, provider permissions and scheduler lifecycle verified             | HK review                   |
+| H6 private cloud | Auth, batched ingest, D1 index/limits, R2 verified archive, deletion drill, cost logs     | HK opt-in approval          |
+| H7 research/API  | Revocable contribution, cohort suppression, documented methodology, abuse controls        | HK privacy/product approval |
 
 ## 11. Non-goals / unresolved questions
 

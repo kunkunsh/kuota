@@ -262,7 +262,8 @@ export function ActivityTerrain({
           <div className="absolute top-2 left-6 pointer-events-none p-2 rounded-xl bg-zinc-900/95 border border-zinc-700/80 shadow-xl backdrop-blur-md text-xs space-y-0.5">
             <div className="font-semibold text-zinc-100">{hovered.label}</div>
             <div className="text-zinc-400">
-              Activity volume: <strong className="text-white">{hovered.value}%</strong> · {hovered.count} snapshots
+              Activity volume: <strong className="text-white">{hovered.value}%</strong> ·{" "}
+              {hovered.count} snapshots
             </div>
           </div>
         )}

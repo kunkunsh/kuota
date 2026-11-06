@@ -10,12 +10,12 @@ Cloudflare Worker (ingest + query) → D1 (recent, per-user rows) → nightly ar
 
 ## Alignment with what is implemented locally
 
-| Cloud need | Local building block (done) | Gap |
-| --- | --- | --- |
-| Idempotent upload | `eventId` = sha256 of safe metadata (`@kuota/core` `history/schema.ts`) | Worker must re-validate with the same strict schema |
-| No secrets in payload | Strict decode rejects unknown fields | Add server-side size and rate limits |
-| Day partitions | JSONL partitions per UTC day | Upload cursor/manifest per day not implemented |
-| Epoch-safe analytics | `epochId`, `semantics`, `detectEpochs` | Rolling windows must stay excluded from research aggregates |
+| Cloud need            | Local building block (done)                                             | Gap                                                         |
+| --------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Idempotent upload     | `eventId` = sha256 of safe metadata (`@kuota/core` `history/schema.ts`) | Worker must re-validate with the same strict schema         |
+| No secrets in payload | Strict decode rejects unknown fields                                    | Add server-side size and rate limits                        |
+| Day partitions        | JSONL partitions per UTC day                                            | Upload cursor/manifest per day not implemented              |
+| Epoch-safe analytics  | `epochId`, `semantics`, `detectEpochs`                                  | Rolling windows must stay excluded from research aggregates |
 
 ## Risks and required decisions before any build
 

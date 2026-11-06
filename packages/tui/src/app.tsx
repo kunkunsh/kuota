@@ -117,9 +117,7 @@ export function QuotaApp(props: QuotaAppProps): ReactElement {
   return (
     <Panel
       title={
-        inspectSnapshot
-          ? "Kuota · Snapshot Provenance Inspector"
-          : "Kuota · AI subscription usage"
+        inspectSnapshot ? "Kuota · Snapshot Provenance Inspector" : "Kuota · AI subscription usage"
       }
       focused
     >
@@ -137,7 +135,10 @@ export function QuotaApp(props: QuotaAppProps): ReactElement {
         {inspectSnapshot
           ? visible.map((snapshot) => (
               <Box key={snapshot.provider} flexDirection="column">
-                <Text bold color="cyan">{`${LABELS[snapshot.provider]} · status: ${snapshot.status}`}</Text>
+                <Text
+                  bold
+                  color="cyan"
+                >{`${LABELS[snapshot.provider]} · status: ${snapshot.status}`}</Text>
                 <Text>{`  source: ${snapshot.source} · fetchedAt: ${snapshot.fetchedAt}`}</Text>
                 {snapshot.errorCode && (
                   <Text color="red">{`  errorCode: ${safeTerminalText(snapshot.errorCode)}`}</Text>
@@ -147,8 +148,12 @@ export function QuotaApp(props: QuotaAppProps): ReactElement {
                   return (
                     <Box key={window.windowId} flexDirection="column">
                       <Text>{`  [window] ${safeTerminalText(window.windowId)}`}</Text>
-                      <Text dim>{`    used: ${window.usedPercent ?? "null"}% | remaining: ${window.remainingPercent ?? "null"}%`}</Text>
-                      <Text dim>{`    resetAt: ${window.resetAt ?? "none"} | semantics: ${profile.semantics}`}</Text>
+                      <Text
+                        dim
+                      >{`    used: ${window.usedPercent ?? "null"}% | remaining: ${window.remainingPercent ?? "null"}%`}</Text>
+                      <Text
+                        dim
+                      >{`    resetAt: ${window.resetAt ?? "none"} | semantics: ${profile.semantics}`}</Text>
                     </Box>
                   );
                 })}
@@ -182,14 +187,7 @@ export function QuotaApp(props: QuotaAppProps): ReactElement {
                       {remaining !== null && (
                         <Box flexDirection="row">
                           <Text>{"  "}</Text>
-                          {bar(
-                            barCells(
-                              remaining,
-                              idealRemaining,
-                              BAR_WIDTH,
-                            ),
-                            remaining,
-                          )}
+                          {bar(barCells(remaining, idealRemaining, BAR_WIDTH), remaining)}
                           <Text>
                             {` ${Math.round(remaining)}% left${idealRemaining !== null && pace ? ` · ideal ${Math.round(idealRemaining)}% left (${pace.quality})` : ""}`}
                           </Text>

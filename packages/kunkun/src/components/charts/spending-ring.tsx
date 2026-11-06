@@ -114,7 +114,11 @@ export function SpendingRing({
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-zinc-400">{title}</span>
         <span className="text-sm font-bold text-zinc-100">
-          ${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          $
+          {totalAmount.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </span>
       </div>
 
@@ -124,7 +128,10 @@ export function SpendingRing({
         <div className="text-zinc-100 text-[10px] mb-0.5 animate-pulse">▼</div>
 
         <div className="relative w-[240px] h-[240px] flex items-center justify-center">
-          <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full transform -rotate-0 cursor-pointer">
+          <svg
+            viewBox={`0 0 ${size} ${size}`}
+            className="w-full h-full transform -rotate-0 cursor-pointer"
+          >
             {arcSegments.map((seg) => {
               const isActive = seg.id === activeId;
               return (
@@ -164,7 +171,8 @@ export function SpendingRing({
             </div>
 
             <div className="text-[10px] text-zinc-500 pt-0.5 leading-tight">
-              {activeSlice.subtext ?? `${Math.round((activeSlice.amount / totalAmount) * 100)}% of total`}
+              {activeSlice.subtext ??
+                `${Math.round((activeSlice.amount / totalAmount) * 100)}% of total`}
             </div>
           </div>
         </div>

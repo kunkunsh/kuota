@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "type": "module",
   "scripts": {
@@ -12,6 +13,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "vp run -r build",
     "build:release": "bun scripts/build-release.ts",
+    "desktop": "bun scripts/build-desktop.ts",
+    "desktop:build": "bun scripts/build-desktop.ts",
+    "desktop:dev": "bun --cwd apps/desktop tauri dev",
     "pack:smoke": "bun scripts/pack-smoke.ts",
     "publish:npm": "bun run build:release && cd packages/npm-dist && npm publish --access public",
     "cli": "bun packages/cli/src/main.ts",

@@ -12,6 +12,7 @@
 - **Earlier design/research folder:** [Google Drive / projects / Kunkun V2.1 / Research / Kuota](https://drive.google.com/drive/folders/1tbFYypqi8QTF7TCX4TMKdUB96Dt_uxvi)
 
 > **2026-11-06 LATER UPDATE — coding resumed & Snapshot / Concept UI fully integrated.**
+>
 > - **CLI:** Complete suite including `status`, `providers`, `doctor`, `collect --once`, `history`, `forecast`, `pace`, `snapshot [--inspect] [--json]` (live vendor read with full field inspection), and `snapshots [--limit n] [--json]` (journal query).
 > - **TUI:** UniView interactive terminal dashboard (`p` provider cycle, `w` window cycle, `r` refresh, `s` snapshot inspector toggle, `q` quit).
 > - **Web UI / Kunkun v2.1:** Full React 19 + shadcn dashboard implementing all 11 concept screens from Google Drive and HK's reference screenshots. Added runnable Vite dev server (`bun run dev` or `bun run dev:web` on `http://localhost:5173`) with live/mock fixtures and interactive snapshot inspector drawers.
@@ -30,22 +31,22 @@
 - **Language:** TypeScript. **Monorepo:** Bun workspaces with **Vite Plus 1.5** project-local tooling. **Effects:** Effect TS 3, Effect CLI. **TUI:** HK's [`kunkunsh/uniview`](https://github.com/HuakunShen/uniview), React renderer, do not reinvent it.
 - Produce **both** useful headless CLI / reusable TypeScript library / UniView TUI; **future Kunkun plugin** through a permissioned adapter, not hardwired into core.
 - Test on HK's existing macOS **Mac mini** where `codex`, `agy`, `claude` CLIs are installed. Use existing authenticated sessions only. Do not auto-login or prompt the user.
-- Source inspiration: [CodexBar](https://github.com/steipete/CodexBar); providers use *different acquisition methods*. Do not assume a universal command.
+- Source inspiration: [CodexBar](https://github.com/steipete/CodexBar); providers use _different acquisition methods_. Do not assume a universal command.
 - Separate quota windows, honest missing-status reporting, privacy, minimal external dependencies, no end-user npm installation when eventually packaged into Kunkun.
 - **One exception:** pure fixed-window pacing (`packages/core/src/metrics/pace.ts`) and 13 tests were implemented and verified before HK asked to stop coding. **Everything else in the new history/forecast/cloud proposals remains unimplemented.**
 
 ## 1. What already works (baseline, not a promise of future functionality)
 
-| Capability | Code | State |
-| --- | --- | --- |
-| Typed quota windows and status | `packages/core/src/{types,normalize}.ts` | Implemented, unit tested |
-| Provider registry, failure isolation | `packages/providers/src/registry.ts` | Implemented, unit tested |
-| Codex rate limits | `packages/providers/src/codex/{protocol,transport,index}.ts` | Implemented, **live tested** via `codex app-server` |
-| Antigravity quota | `packages/providers/src/antigravity/index.ts` | Implemented, **live tested** via `agy -p /usage` |
-| Claude subscription quota | `packages/providers/src/claude/index.ts` | Implemented, fixture-tested; **not live tested** on Mac mini because Claude logged out |
-| CLI | `packages/cli/src/{main,commands}.ts` | `status`, `providers`, `doctor`, `tui`; `--json` schema 1 |
-| UniView TUI | `packages/tui/src/{main,app}.tsx` | Rendered in automated tests; **manual interactive TTY smoke pending** |
-| Build/test toolchain | root `package.json`, `vite.config.ts` | Four packages; Vite Plus `vp` commands |
+| Capability                           | Code                                                         | State                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Typed quota windows and status       | `packages/core/src/{types,normalize}.ts`                     | Implemented, unit tested                                                               |
+| Provider registry, failure isolation | `packages/providers/src/registry.ts`                         | Implemented, unit tested                                                               |
+| Codex rate limits                    | `packages/providers/src/codex/{protocol,transport,index}.ts` | Implemented, **live tested** via `codex app-server`                                    |
+| Antigravity quota                    | `packages/providers/src/antigravity/index.ts`                | Implemented, **live tested** via `agy -p /usage`                                       |
+| Claude subscription quota            | `packages/providers/src/claude/index.ts`                     | Implemented, fixture-tested; **not live tested** on Mac mini because Claude logged out |
+| CLI                                  | `packages/cli/src/{main,commands}.ts`                        | `status`, `providers`, `doctor`, `tui`; `--json` schema 1                              |
+| UniView TUI                          | `packages/tui/src/{main,app}.tsx`                            | Rendered in automated tests; **manual interactive TTY smoke pending**                  |
+| Build/test toolchain                 | root `package.json`, `vite.config.ts`                        | Four packages; Vite Plus `vp` commands                                                 |
 
 **Verification:** 2026-11-06: **8 suites / 45 tests passing**, including 13 new pace tests; `bun run typecheck` passed. `bun run build` / `bun run check` have **not** been repeated after pace addition; do not claim they are green. Earlier 2026-11-05: 7 suites / 32 tests, build 4/4, typecheck/check passed. Mac mini versions then: Bun 1.4.4, Node 24.13.0, Vite Plus 1.5.0, Claude Code 2.1.63, Codex 0.147.0, agy 1.5.1. `claude auth status --json` reported `loggedIn:false`; `~/.claude/.credentials.json` unavailable. All these source states can change; verify anew. Detailed logs: `docs/implementation-status-2026-11-06.md` and prior `2026-11-05.md`.
 
@@ -110,14 +111,14 @@ kuota/
 
 ## 3. Prioritized instructions for next implementation agent
 
-| Order | Plan | Why | Requires approval? |
-| --- | --- | --- | --- |
-| 1 | [`refresh-service.md`](docs/superpowers/plans/2026-11-06-kuota-refresh-service.md) | Rate-limit hygiene, singleflight, TUI freshness; clear isolation | No, local code and fixtures only |
-| 2 | [`provider-hardening.md`](docs/superpowers/plans/2026-11-06-kuota-provider-hardening.md) | Claude credential precedence, robust HTTP, Codex/agy transports | No, except **Keychain optional task K** |
-| 3 | Manual TUI/CLI smoke | Ensure actual macOS UX and child cleanup | HK may need to operate Terminal.app; do not obtain credentials |
-| 4 | [`kunkun-integration.md`](docs/superpowers/plans/2026-11-06-kuota-kunkun-integration.md) Task K0 | Need **actual Kunkun v2.1 SDK** / Deno permission broker before code | **Review/discovery gate** |
-| 5 | Kunkun host/React bridge (K1–K4) | Only after verified K0 and permission UX | Confirm architecture with HK |
-| 6 | Cloud quota history/report H0 | Product idea, depends on Kunkun sync/privacy/cost | **Separate opt-in approval** |
+| Order | Plan                                                                                             | Why                                                                  | Requires approval?                                             |
+| ----- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 1     | [`refresh-service.md`](docs/superpowers/plans/2026-11-06-kuota-refresh-service.md)               | Rate-limit hygiene, singleflight, TUI freshness; clear isolation     | No, local code and fixtures only                               |
+| 2     | [`provider-hardening.md`](docs/superpowers/plans/2026-11-06-kuota-provider-hardening.md)         | Claude credential precedence, robust HTTP, Codex/agy transports      | No, except **Keychain optional task K**                        |
+| 3     | Manual TUI/CLI smoke                                                                             | Ensure actual macOS UX and child cleanup                             | HK may need to operate Terminal.app; do not obtain credentials |
+| 4     | [`kunkun-integration.md`](docs/superpowers/plans/2026-11-06-kuota-kunkun-integration.md) Task K0 | Need **actual Kunkun v2.1 SDK** / Deno permission broker before code | **Review/discovery gate**                                      |
+| 5     | Kunkun host/React bridge (K1–K4)                                                                 | Only after verified K0 and permission UX                             | Confirm architecture with HK                                   |
+| 6     | Cloud quota history/report H0                                                                    | Product idea, depends on Kunkun sync/privacy/cost                    | **Separate opt-in approval**                                   |
 
 ### Immediate task slice: what I would give a non-frontier model
 

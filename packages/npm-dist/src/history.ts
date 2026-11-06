@@ -7,7 +7,4 @@ export {
   type ReadResult,
 } from "../../history/src/index.js";
 
-export {
-  historyEventsFromSnapshot,
-  decodeHistoryEvent,
-} from "../../core/src/index.js";
+export { historyEventsFromSnapshot, decodeHistoryEvent } from "../../core/src/index.js";

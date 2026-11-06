@@ -27,19 +27,30 @@ export interface PaceResult {
 /** Returns null when the provider has not proved a comparable fixed window. */
 export function calculatePace(input: PaceInput): PaceResult | null {
   if (
-    input.semantics === "rolling" || input.semantics === "unknown" ||
+    input.semantics === "rolling" ||
+    input.semantics === "unknown" ||
     input.startSource === "unknown" ||
     (input.semantics === "first_use" && input.startSource !== "provider") ||
-    input.startAt === null || input.resetAt === null ||
-    input.usedPercent === null || !Number.isFinite(input.usedPercent) ||
-    input.usedPercent < 0 || input.usedPercent > 100
-  ) return null;
+    input.startAt === null ||
+    input.resetAt === null ||
+    input.usedPercent === null ||
+    !Number.isFinite(input.usedPercent) ||
+    input.usedPercent < 0 ||
+    input.usedPercent > 100
+  )
+    return null;
 
   const now = input.now.getTime();
   const start = input.startAt.getTime();
   const reset = input.resetAt.getTime();
-  if (!Number.isFinite(now) || !Number.isFinite(start) || !Number.isFinite(reset) ||
-    reset <= start || now < start) return null;
+  if (
+    !Number.isFinite(now) ||
+    !Number.isFinite(start) ||
+    !Number.isFinite(reset) ||
+    reset <= start ||
+    now < start
+  )
+    return null;
 
   const elapsedFraction = Math.min(1, (now - start) / (reset - start));
   const idealUsedPercent = elapsedFraction * 100;

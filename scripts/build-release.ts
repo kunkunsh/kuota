@@ -28,9 +28,10 @@ console.log("🔨 Building workspace packages...");
 await run("bun", ["run", "build"], { cwd: repoRoot });
 
 // 1. Validate manifest does not leak workspace:* dependencies
-const manifest = JSON.parse(
-  await readFile(join(stagingRoot, "package.json"), "utf8"),
-) as Record<string, unknown>;
+const manifest = JSON.parse(await readFile(join(stagingRoot, "package.json"), "utf8")) as Record<
+  string,
+  unknown
+>;
 
 const deps = (manifest.dependencies ?? {}) as Record<string, string>;
 for (const [name, version] of Object.entries(deps)) {
@@ -107,7 +108,9 @@ const webBytes = (await stat(join(distRoot, "web", "index.html"))).size;
 
 console.log("\n✅ Release staging completed successfully!");
 console.log(`  Package: ${manifest.name}@${manifest.version}`);
-console.log(`  Library: dist/index.mjs (${(libBytes / 1024).toFixed(1)} KB) + dist/index.d.mts (${(dtsBytes / 1024).toFixed(1)} KB)`);
+console.log(
+  `  Library: dist/index.mjs (${(libBytes / 1024).toFixed(1)} KB) + dist/index.d.mts (${(dtsBytes / 1024).toFixed(1)} KB)`,
+);
 console.log(`  Subpaths: /parsers, /metrics, /history, /providers`);
 console.log(`  Binary:  dist/bin.mjs (${(binBytes / 1024).toFixed(1)} KB) + bin/kuota.mjs`);
 console.log(`  Web SPA: dist/web/ (index.html ${webBytes} B + assets)`);

@@ -10,7 +10,15 @@ import {
   type QuotaSnapshot,
   type QuotaForecastV1,
 } from "@kuota/core";
-import { AlertTriangle, Layers, Calendar, Clock, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Layers,
+  Calendar,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 
 export interface OverviewViewProps {
   snapshots: readonly QuotaSnapshot[];
@@ -33,7 +41,20 @@ function formatRemainingDuration(ms: number | null): string {
 }
 
 function formatResetDate(date: Date): string {
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const m = monthNames[date.getMonth()];
   const d = date.getDate();
   const hh = String(date.getHours()).padStart(2, "0");
@@ -98,7 +119,10 @@ export function OverviewView({
         <div>
           <div className="flex items-center space-x-2">
             <h2 className="text-xl font-bold tracking-tight text-zinc-100">KUOTA</h2>
-            <Badge variant="outline" className="text-[11px] text-zinc-400 bg-zinc-900 border-zinc-700">
+            <Badge
+              variant="outline"
+              className="text-[11px] text-zinc-400 bg-zinc-900 border-zinc-700"
+            >
               Today
             </Badge>
           </div>
@@ -121,7 +145,12 @@ export function OverviewView({
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <div className="text-[11px] font-medium text-zinc-400">At-risk windows</div>
-              <div className={cn("text-2xl font-bold mt-1", atRiskCount > 0 ? "text-amber-400" : "text-zinc-100")}>
+              <div
+                className={cn(
+                  "text-2xl font-bold mt-1",
+                  atRiskCount > 0 ? "text-amber-400" : "text-zinc-100",
+                )}
+              >
                 {atRiskCount}
               </div>
             </div>
@@ -182,11 +211,7 @@ export function OverviewView({
                 : "Google Antigravity";
 
           const planBadge =
-            providerId === "claude"
-              ? "Max 20x"
-              : providerId === "codex"
-                ? "Pro"
-                : "Gemini";
+            providerId === "claude" ? "Max 20x" : providerId === "codex" ? "Pro" : "Gemini";
 
           const primaryWindow = snapshot.windows[0];
           const profile = primaryWindow
@@ -249,11 +274,10 @@ export function OverviewView({
               <CardContent className="space-y-4 pt-1">
                 <div className="flex items-baseline justify-between">
                   <span className="text-3xl font-extrabold text-zinc-100">
-                    {remaining.toFixed(0)}% <span className="text-sm font-normal text-zinc-400">left</span>
+                    {remaining.toFixed(0)}%{" "}
+                    <span className="text-sm font-normal text-zinc-400">left</span>
                   </span>
-                  <span className="text-xs text-zinc-400">
-                    {used.toFixed(0)}% used
-                  </span>
+                  <span className="text-xs text-zinc-400">{used.toFixed(0)}% used</span>
                 </div>
 
                 {/* Paced progress bar representing remaining quota - pace delta with % rendered cleanly here */}
@@ -289,18 +313,26 @@ export function OverviewView({
                 All measured rate limits across local CLI & OAuth probes.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 whitespace-nowrap shrink-0 px-2 py-0.5">
+            <Badge
+              variant="outline"
+              className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 whitespace-nowrap shrink-0 px-2 py-0.5"
+            >
               {totalWindows} Windows Active
             </Badge>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2.5">
               {snapshots.map((s) => (
-                <div key={s.provider} className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/70 space-y-2">
+                <div
+                  key={s.provider}
+                  className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/70 space-y-2"
+                >
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-zinc-200 capitalize flex items-center space-x-1.5">
                       <ProviderIcon provider={s.provider} size={14} />
-                      <span>{s.provider === "antigravity" ? "Google Antigravity" : s.provider}</span>
+                      <span>
+                        {s.provider === "antigravity" ? "Google Antigravity" : s.provider}
+                      </span>
                     </span>
                     <span className="text-[11px] text-zinc-400">
                       {s.windows.length} {s.windows.length === 1 ? "window" : "windows"}
@@ -308,14 +340,23 @@ export function OverviewView({
                   </div>
                   <div className="space-y-1.5">
                     {s.windows.map((w) => (
-                      <div key={w.windowId} className="flex items-center justify-between text-[11px]">
-                        <span className="text-zinc-400 font-mono truncate max-w-[160px]">{w.windowId}</span>
+                      <div
+                        key={w.windowId}
+                        className="flex items-center justify-between text-[11px]"
+                      >
+                        <span className="text-zinc-400 font-mono truncate max-w-[160px]">
+                          {w.windowId}
+                        </span>
                         <div className="flex items-center space-x-2 shrink-0">
-                          <span className={cn(
-                            "font-medium",
-                            (w.remainingPercent ?? 0) <= 20 ? "text-amber-400" : "text-zinc-200"
-                          )}>
-                            {w.remainingPercent !== null ? `${w.remainingPercent.toFixed(0)}% left` : "unmeasured"}
+                          <span
+                            className={cn(
+                              "font-medium",
+                              (w.remainingPercent ?? 0) <= 20 ? "text-amber-400" : "text-zinc-200",
+                            )}
+                          >
+                            {w.remainingPercent !== null
+                              ? `${w.remainingPercent.toFixed(0)}% left`
+                              : "unmeasured"}
                           </span>
                         </div>
                       </div>
@@ -348,7 +389,10 @@ export function OverviewView({
                 Dynamic reset schedule sorted chronologically across all verified windows.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="text-[10px] text-zinc-400 border-zinc-700 bg-zinc-900 whitespace-nowrap shrink-0 px-2 py-0.5">
+            <Badge
+              variant="outline"
+              className="text-[10px] text-zinc-400 border-zinc-700 bg-zinc-900 whitespace-nowrap shrink-0 px-2 py-0.5"
+            >
               {upcomingResets.length} Scheduled
             </Badge>
           </CardHeader>
@@ -371,16 +415,25 @@ export function OverviewView({
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
                     {upcomingResets.map((row, i) => (
-                      <tr key={`${row.provider}-${row.scope}-${i}`} className="hover:bg-zinc-900/30 transition-colors">
+                      <tr
+                        key={`${row.provider}-${row.scope}-${i}`}
+                        className="hover:bg-zinc-900/30 transition-colors"
+                      >
                         <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap flex items-center space-x-1.5">
                           <ProviderIcon provider={row.provider} size={14} />
                           <span className="capitalize">{row.provider}</span>
                         </td>
-                        <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap font-mono text-[11px]">{row.scope}</td>
+                        <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap font-mono text-[11px]">
+                          {row.scope}
+                        </td>
                         <td className="py-2.5 pr-3 whitespace-nowrap font-medium">
-                          <span className={cn(
-                            (row.resetMs ?? 0) < 6 * 3_600_000 ? "text-amber-400 font-semibold" : "text-zinc-200"
-                          )}>
+                          <span
+                            className={cn(
+                              (row.resetMs ?? 0) < 6 * 3_600_000
+                                ? "text-amber-400 font-semibold"
+                                : "text-zinc-200",
+                            )}
+                          >
                             {formatRemainingDuration(row.resetMs)}
                           </span>
                         </td>
@@ -389,9 +442,15 @@ export function OverviewView({
                         </td>
                         <td className="py-2.5 text-right font-medium whitespace-nowrap">
                           {row.usedPercent !== null ? (
-                            <span className={cn(
-                              row.usedPercent >= 80 ? "text-red-400" : row.usedPercent >= 50 ? "text-amber-400" : "text-emerald-400"
-                            )}>
+                            <span
+                              className={cn(
+                                row.usedPercent >= 80
+                                  ? "text-red-400"
+                                  : row.usedPercent >= 50
+                                    ? "text-amber-400"
+                                    : "text-emerald-400",
+                              )}
+                            >
                               {row.usedPercent.toFixed(0)}%
                             </span>
                           ) : (

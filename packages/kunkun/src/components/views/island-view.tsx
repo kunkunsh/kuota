@@ -45,7 +45,9 @@ export function IslandView({
       <div className="flex items-center justify-between pb-2">
         <div className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-semibold tracking-tight text-zinc-200">Kuota Compact Surfaces</span>
+          <span className="text-xs font-semibold tracking-tight text-zinc-200">
+            Kuota Compact Surfaces
+          </span>
         </div>
         <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 text-[11px]">
           <button
@@ -162,7 +164,9 @@ export function IslandView({
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center space-x-1.5">
                           <ProviderIcon provider={s.provider} size={14} />
-                          <span className="font-semibold capitalize text-zinc-200">{s.provider}</span>
+                          <span className="font-semibold capitalize text-zinc-200">
+                            {s.provider}
+                          </span>
                         </div>
                         <span className="font-bold text-zinc-100">
                           {main.remainingPercent !== null
@@ -171,7 +175,10 @@ export function IslandView({
                         </span>
                       </div>
                       <div className="text-[10px] text-zinc-400">
-                        {main.windowId} · Resets in {reset ? `${Math.max(1, Math.round((reset.getTime() - now.getTime()) / 3_600_000))}h` : "unknown"}
+                        {main.windowId} · Resets in{" "}
+                        {reset
+                          ? `${Math.max(1, Math.round((reset.getTime() - now.getTime()) / 3_600_000))}h`
+                          : "unknown"}
                       </div>
                       {/* Exactly ONE white vertical pace tick on remaining balance bar */}
                       <PacedProgress
@@ -196,7 +203,10 @@ export function IslandView({
               {/* Forecast footer badge */}
               <div className="flex items-center space-x-2 p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 text-[10px] text-zinc-300">
                 <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <span>At this pace: likely 1 day before reset · <strong className="text-amber-400">medium confidence</strong></span>
+                <span>
+                  At this pace: likely 1 day before reset ·{" "}
+                  <strong className="text-amber-400">medium confidence</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -216,9 +226,13 @@ export function IslandView({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5 truncate">
                   <ProviderIcon provider="claude" size={14} />
-                  <span className="text-xs font-semibold text-zinc-200 truncate">Claude · huakun.shen@…</span>
+                  <span className="text-xs font-semibold text-zinc-200 truncate">
+                    Claude · huakun.shen@…
+                  </span>
                 </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono shrink-0">Max 20x</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono shrink-0">
+                  Max 20x
+                </span>
               </div>
               <div className="flex items-baseline justify-between">
                 <span className="text-[11px] text-zinc-400">Week ↻ 3d 4h</span>
@@ -293,9 +307,21 @@ export function IslandView({
               </div>
               {/* Warsaint 3-segment bar: Claude coral, Codex blue, Antigravity emerald */}
               <div className="h-1.5 w-full rounded-full bg-zinc-800/80 overflow-hidden flex space-x-0.5">
-                <div className="h-full bg-[#da7756]" style={{ width: "50%" }} title="Claude: $15.10" />
-                <div className="h-full bg-[#5c82ff]" style={{ width: "33%" }} title="Codex: $10.00" />
-                <div className="h-full bg-emerald-400" style={{ width: "17%" }} title="OpenCode: $5.13" />
+                <div
+                  className="h-full bg-[#da7756]"
+                  style={{ width: "50%" }}
+                  title="Claude: $15.10"
+                />
+                <div
+                  className="h-full bg-[#5c82ff]"
+                  style={{ width: "33%" }}
+                  title="Codex: $10.00"
+                />
+                <div
+                  className="h-full bg-emerald-400"
+                  style={{ width: "17%" }}
+                  title="OpenCode: $5.13"
+                />
               </div>
               <div className="text-[10px] text-zinc-400">256M tokens · 70% from cache</div>
             </div>

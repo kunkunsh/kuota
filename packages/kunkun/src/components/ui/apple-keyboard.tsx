@@ -30,7 +30,8 @@ export function AppleKey({
         "bg-gradient-to-b from-zinc-800 to-zinc-900 text-zinc-300",
         "border border-zinc-700/80 shadow-[0_2px_0_0_#18181b,inset_0_1px_0_0_rgba(255,255,255,0.15)]",
         "hover:from-zinc-700 hover:to-zinc-800 active:translate-y-0.5 active:shadow-[0_0px_0_0_#18181b] transition-all duration-75",
-        active && "from-indigo-600 to-indigo-700 text-white border-indigo-500 shadow-[0_1px_0_0_#312e81]",
+        active &&
+          "from-indigo-600 to-indigo-700 text-white border-indigo-500 shadow-[0_1px_0_0_#312e81]",
         sizeClasses,
         className,
       )}

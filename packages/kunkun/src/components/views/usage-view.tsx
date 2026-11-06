@@ -79,10 +79,7 @@ export function UsageView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Rotary Spending Ring */}
         <div className="flex justify-center">
-          <SpendingRing
-            title="Cycle spending by model"
-            className="w-full"
-          />
+          <SpendingRing title="Cycle spending by model" className="w-full" />
         </div>
 
         {/* Model Breakdown Bar Chart */}
@@ -90,7 +87,9 @@ export function UsageView() {
           <Card className="bg-[#111113] border-zinc-800">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-zinc-100">Model Breakdown</CardTitle>
-              <CardDescription className="text-xs text-zinc-400">Token distribution: input vs output vs cached tokens</CardDescription>
+              <CardDescription className="text-xs text-zinc-400">
+                Token distribution: input vs output vs cached tokens
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <TokenBarChart items={models} />

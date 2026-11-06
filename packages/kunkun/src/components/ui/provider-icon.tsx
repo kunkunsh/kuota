@@ -9,12 +9,7 @@ export interface ProviderIconProps extends React.SVGAttributes<SVGElement> {
   className?: string;
 }
 
-export function ProviderIcon({
-  provider,
-  size = 18,
-  className,
-  ...props
-}: ProviderIconProps) {
+export function ProviderIcon({ provider, size = 18, className, ...props }: ProviderIconProps) {
   const norm = provider.toLowerCase();
 
   if (norm.includes("claude") || norm.includes("anthropic")) {
@@ -29,7 +24,10 @@ export function ProviderIcon({
         {...props}
       >
         <path d="m4.84 6.77 4.19 3.03-.4 1.7-4.87-.72-.34-1.22 1.42-2.79zm-.8 5.6 4.9.46.22 1.74-4.66 1.7-.93-.86.47-3.04zm4.1 3.84 3.73-3.2 1.54.83-2.3 4.34-1.2.33-1.77-2.3zm5.72-2.18.24-4.93 1.62-.64 2.12 4.41-.67 1.09-3.31.07zm3.17-5.59-4.32-2.43.32-1.72 4.8.96.48 1.18-1.28 2.01zm-5.63-3.77-1.13 4.8-1.58.1-1.63-4.64.92-.88 3.42.62z" />
-        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" opacity="0.15" />
+        <path
+          d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+          opacity="0.15"
+        />
       </svg>
     );
   }

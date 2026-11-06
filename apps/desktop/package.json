@@ -1,0 +1,14 @@
+{
+  "name": "@kuota/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kuota desktop application (Tauri v2)",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:web": "bun x vp build ../../packages/kunkun"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.4"
+  }
+}

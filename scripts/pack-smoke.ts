@@ -48,9 +48,13 @@ try {
   console.log("  ✓ CLI verification: `kuota doctor --json` passed");
 
   // Smoke test B: kuota providers --json via npx
-  const providers = await run("npx", ["-y", "--package", tarballPath, "kuota", "providers", "--json"], {
-    cwd: testDir,
-  });
+  const providers = await run(
+    "npx",
+    ["-y", "--package", tarballPath, "kuota", "providers", "--json"],
+    {
+      cwd: testDir,
+    },
+  );
   const providersJson = JSON.parse(providers.stdout.trim());
   if (providersJson.schemaVersion !== 1 || !Array.isArray(providersJson.providers)) {
     throw new Error(`Invalid providers output: ${providers.stdout}`);
@@ -108,7 +112,9 @@ console.log("LIBRARY_OK");
   }
   console.log("  ✓ Library verification: import { parseProviderQuota, calculatePace } passed");
 
-  console.log("\n🎉 All smoke tests passed! Both CLI and Library contracts are 100% functional and ready to publish.");
+  console.log(
+    "\n🎉 All smoke tests passed! Both CLI and Library contracts are 100% functional and ready to publish.",
+  );
 } finally {
   await rm(tarballPath, { force: true });
   await rm(testDir, { recursive: true, force: true });

@@ -6,8 +6,8 @@
 
 ## 0. Design decisions (read before implementation)
 
-1. **Separate actual quota, time budget and forecast.** Provider quota percentages are the actual source; the white vertical marker represents *ideal time-based pace*; a dashed forecast is explicitly a statistical estimate. Never render inferred quota as an observed fact.
-2. **No cross-provider percentage.** Codex 60% remaining and Claude 45% remaining cannot be combined into meaningful global "52.5% remaining." Overview is a *collection of independently labeled windows*.
+1. **Separate actual quota, time budget and forecast.** Provider quota percentages are the actual source; the white vertical marker represents _ideal time-based pace_; a dashed forecast is explicitly a statistical estimate. Never render inferred quota as an observed fact.
+2. **No cross-provider percentage.** Codex 60% remaining and Claude 45% remaining cannot be combined into meaningful global "52.5% remaining." Overview is a _collection of independently labeled windows_.
 3. **One window at a time for deep analysis.** A provider may have five-hour, weekly, monthly, model-family, extra-credit or rolling windows. Every chart names the provider, account, metric, window, currency/units, freshness and next reset.
 4. **Dark shadcn baseline.** React 19, Tailwind CSS design tokens (`background`, `card`, `muted`, `foreground`, `primary`, `destructive`, `border`, `ring`), 12px radii, normal thin borders, compact tables, optional subtle motion. Do not make a flashy analytics landing page.
 5. **Local-first and credible privacy.** No account required for local tracking. **Cloud sync and crowdsourced research are separate choices**; unconsented metrics never leave the device. A paid plan does not become the only way to keep data private.
@@ -24,7 +24,7 @@
 
 ### US-02 — I want a fair-pace reference (P0)
 
-**As** a heavy coding subscriber, **I want** a narrow white tick on the progress bar indicating where my consumption *should* be if uniformly distributed over the window, **so** I can see instantly whether I am ahead of schedule.  
+**As** a heavy coding subscriber, **I want** a narrow white tick on the progress bar indicating where my consumption _should_ be if uniformly distributed over the window, **so** I can see instantly whether I am ahead of schedule.  
 **Acceptance:** Known window start and end yield exactly one tick; progress left/right semantics are clear; `unknown` / `rolling` / `reset not known` hides the tick with an explanation; no forecast data is required.
 
 ### US-03 — I want to know the likely exhaustion date (P1)
@@ -93,20 +93,20 @@ Primary sidebar: `Overview` → `Providers` → `History & Forecast` → `Usage 
 Top bar: project name, device + cloud state, refresh indicator, "last observed", compact account menu.  
 Nested routes:
 
-| Page / Route | Primary question | Data source | Actions | Priority |
-| --- | --- | --- | --- | --- |
-| `Overview /` | What should I do now? | Latest per-window observations + pace | Refresh, provider click, snooze alert | P0 |
-| `Providers /providers` | Which integrations work? | Adapter capability + status | Doctor, grant, choose account | P0 |
-| `Provider Detail /providers/:id` | What are this provider's windows? | One provider + windows + last N events | Switch window, view source, export | P1 |
-| `History /history?provider=&window=` | How is my pace changing? | Local 1–90d observations | Range, smoothing, projected ETA, export | P1 |
-| `Usage & Value /usage` | Which model/tokens/cost drivers? | Local parsed usage events (may be absent) | Model breakdown, cache ratio, estimated pricing | P2 |
-| `Projects /projects` | Where did AI time go? | Optional local project activity | Consent setup, group by project/model | Future |
-| `Benchmarks /benchmarks` | How do similar plans behave? | Privacy-safe daily cohort aggregates | Choose provider/plan, view sample and uncertainty | Future |
-| `Alerts /alerts` | When will I reach a limit? | Local forecast + user thresholds | Add/disable rules, test notification | P2 |
-| `Data & Sync /data` | What's stored where? | Local store, remote status, retention | Sync, export, delete, consent preview | P2 |
-| `Settings /settings` | How should Kuota run? | Provider settings, sampler, UI prefs | Interval, startup, network, theme | P1 |
-| Kunkun compact panel | Can I launch a task now? | Latest + pace/ETA | Expand dashboard, provider details | P1 |
-| macOS menu bar / Dynamic Island | How much is left at glance? | Latest cached values | Open panel, refresh with cooldown | Future |
+| Page / Route                         | Primary question                  | Data source                               | Actions                                           | Priority |
+| ------------------------------------ | --------------------------------- | ----------------------------------------- | ------------------------------------------------- | -------- |
+| `Overview /`                         | What should I do now?             | Latest per-window observations + pace     | Refresh, provider click, snooze alert             | P0       |
+| `Providers /providers`               | Which integrations work?          | Adapter capability + status               | Doctor, grant, choose account                     | P0       |
+| `Provider Detail /providers/:id`     | What are this provider's windows? | One provider + windows + last N events    | Switch window, view source, export                | P1       |
+| `History /history?provider=&window=` | How is my pace changing?          | Local 1–90d observations                  | Range, smoothing, projected ETA, export           | P1       |
+| `Usage & Value /usage`               | Which model/tokens/cost drivers?  | Local parsed usage events (may be absent) | Model breakdown, cache ratio, estimated pricing   | P2       |
+| `Projects /projects`                 | Where did AI time go?             | Optional local project activity           | Consent setup, group by project/model             | Future   |
+| `Benchmarks /benchmarks`             | How do similar plans behave?      | Privacy-safe daily cohort aggregates      | Choose provider/plan, view sample and uncertainty | Future   |
+| `Alerts /alerts`                     | When will I reach a limit?        | Local forecast + user thresholds          | Add/disable rules, test notification              | P2       |
+| `Data & Sync /data`                  | What's stored where?              | Local store, remote status, retention     | Sync, export, delete, consent preview             | P2       |
+| `Settings /settings`                 | How should Kuota run?             | Provider settings, sampler, UI prefs      | Interval, startup, network, theme                 | P1       |
+| Kunkun compact panel                 | Can I launch a task now?          | Latest + pace/ETA                         | Expand dashboard, provider details                | P1       |
+| macOS menu bar / Dynamic Island      | How much is left at glance?       | Latest cached values                      | Open panel, refresh with cooldown                 | Future   |
 
 ### Shared invariants across all screens
 
@@ -120,7 +120,7 @@ Nested routes:
 
 ### 3.1 Overview — decision in five seconds
 
-Layout desktop 1440px: sidebar 248px; content max-width 1400px, padding 24px, 12-column grid. Header `Kuota / Overview`, device status, `Last sync 4m ago`, `Refresh all`. Row of 3–4 independent KPI cards: `Next likely exhausted`, `At-risk windows`, `Tracked providers`, `Snapshots in last 24h` (never a combined quota percentage). Then provider cards in 2-column grid. Each card shows logo, account alias only if verified, provider plan, window chip, `45% left`, `resets in 3d 12h`, actual colored progress and white tick, `Slightly above pace`/`Below pace` pill, freshness. Under cards: one *selected* high-risk window's mini trend and `Upcoming resets` list; activity feed includes probe state, no raw tokens.
+Layout desktop 1440px: sidebar 248px; content max-width 1400px, padding 24px, 12-column grid. Header `Kuota / Overview`, device status, `Last sync 4m ago`, `Refresh all`. Row of 3–4 independent KPI cards: `Next likely exhausted`, `At-risk windows`, `Tracked providers`, `Snapshots in last 24h` (never a combined quota percentage). Then provider cards in 2-column grid. Each card shows logo, account alias only if verified, provider plan, window chip, `45% left`, `resets in 3d 12h`, actual colored progress and white tick, `Slightly above pace`/`Below pace` pill, freshness. Under cards: one _selected_ high-risk window's mini trend and `Upcoming resets` list; activity feed includes probe state, no raw tokens.
 
 Interactions: clicking card opens detail; select quick 5h/weekly tabs **inside card** with keyboard accessible `Tabs`; refresh respects TTL/cooldown; unavailable card placeholder maintains layout; 100% used warning high contrast, not solely color.
 
@@ -148,7 +148,7 @@ First-run consent screen explains that quota snapshots **cannot** infer actual p
 
 ### 3.7 Community Benchmarks — cohorts not people
 
-Header `Community Benchmarks / Aggregated, voluntary data`, research policy and sample date. Filter chips provider/plan/window/region (only if cohort size safe)/model mix (if available). Charts display median, p25/p75 distribution, cohort size, observed week, coverage and methodology; card `Possible cap shift — exploratory signal`. Prohibit leaderboards/user traces. No cohort below `k=30` published; aim `k=50` for rare plan/model combos. Clear distinction of estimated *effective tokens at workload* vs plan's true provider quota.
+Header `Community Benchmarks / Aggregated, voluntary data`, research policy and sample date. Filter chips provider/plan/window/region (only if cohort size safe)/model mix (if available). Charts display median, p25/p75 distribution, cohort size, observed week, coverage and methodology; card `Possible cap shift — exploratory signal`. Prohibit leaderboards/user traces. No cohort below `k=30` published; aim `k=50` for rare plan/model combos. Clear distinction of estimated _effective tokens at workload_ vs plan's true provider quota.
 
 ### 3.8 Alerts — action oriented
 
@@ -168,16 +168,16 @@ Kunkun compact 420–520px: one-line status, independently labeled provider mini
 
 ## 4. Design system and shadcn component implementation map
 
-| UI area | Recommended component(s) | Functional notes | Evidence |
-| --- | --- | --- | --- |
-| Navigation | shadcn `Sidebar`, `Breadcrumb`, `Command` | `Cmd+K` provider/page search; keyboard first | [shadcn Sidebar](https://ui.shadcn.com/docs/components/sidebar) |
-| Provider quota card | shadcn `Card`, `Badge`, `Tabs`, `Tooltip` + custom `PacedProgress` | Overlay white tick at precise X; use CSS custom prop, aria value | [shadcn Progress](https://ui.shadcn.com/docs/components/progress) |
-| Forecast history | shadcn `ChartContainer`, `ChartTooltip`, `ChartLegend` (Recharts) | SVG `ReferenceLine` at 100/reset, `Area` CI and dashed projection; zero guessing | [shadcn Charts](https://ui.shadcn.com/charts) |
-| Model, window, snapshot grid | TanStack Table + shadcn `Table`, `DataTable` | Virtualize if long; stable sorting/date; row expansion | [Shadcn Studio DataTable Grouping](https://shadcnstudio.com/blocks/datatable/datatable-grouping) (license tier to verify) |
-| Filters and time controls | shadcn `Select`, `Popover`, `Calendar`, `ToggleGroup`, `DatePicker` recipe | Faceted per-window filters; URL backed | [shadcn components](https://ui.shadcn.com/docs/components) |
-| Privacy / permissions | `Switch`, `RadioGroup`, `AlertDialog`, `Accordion`, `Drawer` | Explicit opt-in + redacted payload preview; focus return | [shadcn Drawer](https://ui.shadcn.com/docs/components/drawer) |
-| Toast and status | `Sonner`, `Alert`, `Skeleton`, `Empty` | Cache/stale/error consistent across pages | [shadcn Sonner](https://ui.shadcn.com/docs/components/sonner) |
-| Fine interactions | optional Animate UI `Combobox` / `Dropdown` | Animate open/close only, no table-row animations | [Animate UI](https://animate-ui.com/docs/primitives/base-ui/combobox) |
+| UI area                      | Recommended component(s)                                                   | Functional notes                                                                 | Evidence                                                                                                                  |
+| ---------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Navigation                   | shadcn `Sidebar`, `Breadcrumb`, `Command`                                  | `Cmd+K` provider/page search; keyboard first                                     | [shadcn Sidebar](https://ui.shadcn.com/docs/components/sidebar)                                                           |
+| Provider quota card          | shadcn `Card`, `Badge`, `Tabs`, `Tooltip` + custom `PacedProgress`         | Overlay white tick at precise X; use CSS custom prop, aria value                 | [shadcn Progress](https://ui.shadcn.com/docs/components/progress)                                                         |
+| Forecast history             | shadcn `ChartContainer`, `ChartTooltip`, `ChartLegend` (Recharts)          | SVG `ReferenceLine` at 100/reset, `Area` CI and dashed projection; zero guessing | [shadcn Charts](https://ui.shadcn.com/charts)                                                                             |
+| Model, window, snapshot grid | TanStack Table + shadcn `Table`, `DataTable`                               | Virtualize if long; stable sorting/date; row expansion                           | [Shadcn Studio DataTable Grouping](https://shadcnstudio.com/blocks/datatable/datatable-grouping) (license tier to verify) |
+| Filters and time controls    | shadcn `Select`, `Popover`, `Calendar`, `ToggleGroup`, `DatePicker` recipe | Faceted per-window filters; URL backed                                           | [shadcn components](https://ui.shadcn.com/docs/components)                                                                |
+| Privacy / permissions        | `Switch`, `RadioGroup`, `AlertDialog`, `Accordion`, `Drawer`               | Explicit opt-in + redacted payload preview; focus return                         | [shadcn Drawer](https://ui.shadcn.com/docs/components/drawer)                                                             |
+| Toast and status             | `Sonner`, `Alert`, `Skeleton`, `Empty`                                     | Cache/stale/error consistent across pages                                        | [shadcn Sonner](https://ui.shadcn.com/docs/components/sonner)                                                             |
+| Fine interactions            | optional Animate UI `Combobox` / `Dropdown`                                | Animate open/close only, no table-row animations                                 | [Animate UI](https://animate-ui.com/docs/primitives/base-ui/combobox)                                                     |
 
 **License boundary:** shadcn studio components vary Free/Pro; verify the individual block license before copying. This document identifies patterns; no third-party paid component source is included. Browser demo keyboard/dark-mode interaction not re-tested in this turn; items are architecture recommendations.
 
@@ -191,7 +191,7 @@ Kunkun compact 420–520px: one-line status, independently labeled provider mini
 
 ## 5. Screen flow + microcopy
 
-1. First launch → `Providers` detects codex/agy/claude independent states → show Overview with available data, prompt *only* to enable local history. No cloud account gate.
+1. First launch → `Providers` detects codex/agy/claude independent states → show Overview with available data, prompt _only_ to enable local history. No cloud account gate.
 2. User turns on local history → prompt sampling interval + path + retention, save a first observed snapshot → Overview mini chart becomes available after second distinct sample.
 3. Once sufficient data → Forecast card transitions from `Collecting data` to `Early estimate` to `Trend established`; hover explains evidence span and confidence, never a purely color-only signal.
 4. Optional cloud signup → `Data & Sync` explains private history vs community research separately → user sees sample payload and consent → remote sync. Uncheck research → stop future contribution immediately and offer delete-request path for retained raw research contributions.

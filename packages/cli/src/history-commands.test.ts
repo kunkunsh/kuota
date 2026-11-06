@@ -206,10 +206,7 @@ describe("kuota pace", () => {
 
 describe("kuota snapshot and snapshots", () => {
   it("kuota snapshot returns live snapshot with inspection details", async () => {
-    const r = await run(
-      ["snapshot", "--provider", "claude", "--inspect", "--json"],
-      [claude(45)],
-    );
+    const r = await run(["snapshot", "--provider", "claude", "--inspect", "--json"], [claude(45)]);
     expect(r.code).toBe(0);
     expect(r.json.schemaVersion).toBe(1);
     expect(r.json.inspect).toBe(true);

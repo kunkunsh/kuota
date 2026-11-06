@@ -172,6 +172,39 @@ const mockEvents: QuotaHistoryEventV1[] = [
   },
 ];
 
+async function loadQuotaStatus(forceFresh = false): Promise<QuotaSnapshot[] | null> {
+  const isTauri =
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+
+  if (isTauri) {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const command = forceFresh ? "refresh_quota" : "get_quota_status";
+      const json = await invoke<any>(command, { fresh: forceFresh });
+      if (json && Array.isArray(json.providers) && json.providers.length > 0) {
+        return json.providers;
+      }
+    } catch (err) {
+      console.warn("Tauri invoke failed, falling back to fetch", err);
+    }
+  }
+
+  try {
+    const endpoint = forceFresh ? "/api/status?fresh=1" : "/api/status";
+    const res = await fetch(endpoint);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && Array.isArray(json.providers) && json.providers.length > 0) {
+        return json.providers;
+      }
+    }
+  } catch {
+    // offline or static fallback
+  }
+
+  return null;
+}
+
 function DevApp() {
   const params = new URLSearchParams(window.location.search);
   const initialRoute = (params.get("route") || "overview") as any;
@@ -179,28 +212,29 @@ function DevApp() {
   const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  const fetchLiveStatus = React.useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/status");
-      if (res.ok) {
-        const json = await res.json();
-        if (json && Array.isArray(json.providers) && json.providers.length > 0) {
-          setSnapshots(json.providers);
-          return;
+  const fetchLiveStatus = React.useCallback(
+    async (forceFresh = false) => {
+      try {
+        setLoading(true);
+        const data = await loadQuotaStatus(forceFresh);
+        if (data && data.length > 0) {
+          setSnapshots(data);
+        } else if (snapshots.length === 0) {
+          setSnapshots(mockSnapshots);
         }
+      } catch {
+        if (snapshots.length === 0) {
+          setSnapshots(mockSnapshots);
+        }
+      } finally {
+        setLoading(false);
       }
-      setSnapshots(mockSnapshots);
-    } catch {
-      // In offline / standalone static mode, mockSnapshots remains active
-      setSnapshots(mockSnapshots);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [snapshots.length],
+  );
 
   React.useEffect(() => {
-    void fetchLiveStatus();
+    void fetchLiveStatus(false);
   }, [fetchLiveStatus]);
 
   if (loading && snapshots.length === 0) {
@@ -222,7 +256,7 @@ function DevApp() {
       forecasts={mockForecasts}
       series={mockSeries}
       events={mockEvents}
-      onRefresh={fetchLiveStatus}
+      onRefresh={() => fetchLiveStatus(true)}
     />
   );
 }

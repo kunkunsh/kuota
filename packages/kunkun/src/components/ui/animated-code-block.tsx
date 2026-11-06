@@ -142,7 +142,9 @@ export function AnimatedCodeBlock({
               key={idx}
               className={cn(
                 "flex items-start space-x-3 px-1.5 py-0.5 rounded transition-colors",
-                isHighlighted ? "bg-amber-500/10 border-l-2 border-amber-400 pl-2" : "hover:bg-zinc-900/60",
+                isHighlighted
+                  ? "bg-amber-500/10 border-l-2 border-amber-400 pl-2"
+                  : "hover:bg-zinc-900/60",
               )}
             >
               <span className="text-zinc-400 select-none text-right w-6 shrink-0 text-[10px] pt-0.5">

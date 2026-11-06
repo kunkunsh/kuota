@@ -1,38 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="dark">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kuota · AI Quota & Usage Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            background: '#09090b',
-            card: '#111113',
-            border: '#27272a',
-            foreground: '#fafafa',
-            muted: '#a1a1aa'
-          }
-        }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kuota · AI Quota & Usage Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#09090b",
+              card: "#111113",
+              border: "#27272a",
+              foreground: "#fafafa",
+              muted: "#a1a1aa",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #09090b;
+        color: #fafafa;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
       }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #09090b;
-      color: #fafafa;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
-</head>
-<body class="bg-[#09090b] text-zinc-100 min-h-screen antialiased selection:bg-zinc-800">
-  <div id="root"></div>
-  <script type="module" src="./src/dev-entry.tsx"></script>
-</body>
+    </style>
+  </head>
+  <body class="bg-[#09090b] text-zinc-100 min-h-screen antialiased selection:bg-zinc-800">
+    <div id="root"></div>
+    <script type="module" src="./src/dev-entry.tsx"></script>
+  </body>
 </html>
