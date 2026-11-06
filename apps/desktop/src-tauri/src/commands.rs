@@ -118,10 +118,9 @@ fn execute_probe() -> Result<Value, String> {
     }))
 }
 
-#[tauri::command]
-pub async fn get_quota_status(
+pub async fn get_quota_status_impl(
     fresh: Option<bool>,
-    state: State<'_, AppState>,
+    state: &AppState,
 ) -> Result<Value, String> {
     let force_fresh = fresh.unwrap_or(false);
 
@@ -147,9 +146,21 @@ pub async fn get_quota_status(
     Ok(result)
 }
 
+pub async fn refresh_quota_impl(state: &AppState) -> Result<Value, String> {
+    get_quota_status_impl(Some(true), state).await
+}
+
+#[tauri::command]
+pub async fn get_quota_status(
+    fresh: Option<bool>,
+    state: State<'_, AppState>,
+) -> Result<Value, String> {
+    get_quota_status_impl(fresh, &state).await
+}
+
 #[tauri::command]
 pub async fn refresh_quota(state: State<'_, AppState>) -> Result<Value, String> {
-    get_quota_status(Some(true), state).await
+    refresh_quota_impl(&state).await
 }
 
 #[tauri::command]
