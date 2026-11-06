@@ -121,7 +121,7 @@ export function KuotaDashboard({
     "claude/weekly.all": [20, 32, 40, 48, 55],
     "codex/secondary": [45, 52, 60, 64, 68],
   },
-  now = new Date("2026-11-06T01:00:00.000Z"),
+  now = new Date(),
   onRefresh,
 }: KuotaDashboardProps) {
   const resolvedEvents = events ?? historyEvents ?? [];

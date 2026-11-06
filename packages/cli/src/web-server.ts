@@ -84,6 +84,7 @@ export async function startWebServer(
   const shouldOpen = options.open ?? true;
 
   const webDir = await findWebDir();
+  let cachedEnvelope: { data: string; expiresAt: number } | null = null;
 
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     // Add CORS headers for local tooling and API calls
@@ -109,6 +110,14 @@ export async function startWebServer(
 
     if (pathname === "/api/status") {
       try {
+        const forceFresh = url.searchParams.get("fresh") === "1";
+        const now = Date.now();
+        if (!forceFresh && cachedEnvelope && now < cachedEnvelope.expiresAt) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(cachedEnvelope.data);
+          return;
+        }
+
         const ids = PROVIDER_METADATA.map((item) => item.id);
         const snapshots = await Effect.runPromise(readAll(ids, providers));
         const envelope = {
@@ -117,8 +126,10 @@ export async function startWebServer(
           providers: snapshots,
           errors: [],
         };
+        const serialized = JSON.stringify(envelope);
+        cachedEnvelope = { data: serialized, expiresAt: now + 15_000 };
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(envelope));
+        res.end(serialized);
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));

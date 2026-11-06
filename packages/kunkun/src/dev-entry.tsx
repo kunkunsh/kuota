@@ -176,8 +176,8 @@ function DevApp() {
   const params = new URLSearchParams(window.location.search);
   const initialRoute = (params.get("route") || "overview") as any;
   const islandMode = (params.get("mode") || "launcher") as any;
-  const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>(mockSnapshots);
-  const [loading, setLoading] = React.useState(false);
+  const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   const fetchLiveStatus = React.useCallback(async () => {
     try {
@@ -187,10 +187,13 @@ function DevApp() {
         const json = await res.json();
         if (json && Array.isArray(json.providers) && json.providers.length > 0) {
           setSnapshots(json.providers);
+          return;
         }
       }
+      setSnapshots(mockSnapshots);
     } catch {
       // In offline / standalone static mode, mockSnapshots remains active
+      setSnapshots(mockSnapshots);
     } finally {
       setLoading(false);
     }
@@ -199,6 +202,17 @@ function DevApp() {
   React.useEffect(() => {
     void fetchLiveStatus();
   }, [fetchLiveStatus]);
+
+  if (loading && snapshots.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full bg-[#09090b] text-zinc-400">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-medium">Connecting to local AI quota providers...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <KuotaDashboard
