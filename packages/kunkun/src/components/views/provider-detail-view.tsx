@@ -74,7 +74,7 @@ export function ProviderDetailView({
                 </TableHeader>
                 <TableBody>
                   {snapshot.windows.map((w) => {
-                    const profile = windowProfile(snapshot.provider, w.windowId);
+                    const profile = windowProfile(snapshot.provider, w.windowId, w.resetAt);
                     const reset = w.resetAt ? new Date(w.resetAt) : null;
                     const start =
                       reset && profile.durationMs !== null

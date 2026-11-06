@@ -138,7 +138,7 @@ export function IslandView({
                 {snapshots.map((s) => {
                   const main = s.windows[0];
                   if (!main) return null;
-                  const profile = windowProfile(s.provider, main.windowId);
+                  const profile = windowProfile(s.provider, main.windowId, main.resetAt, now);
                   const reset = main.resetAt ? new Date(main.resetAt) : null;
                   const start =
                     reset && profile.durationMs !== null

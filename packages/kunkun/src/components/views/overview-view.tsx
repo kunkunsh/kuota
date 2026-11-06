@@ -144,7 +144,7 @@ export function OverviewView({
 
           const primaryWindow = snapshot.windows[0];
           const profile = primaryWindow
-            ? windowProfile(snapshot.provider, primaryWindow.windowId)
+            ? windowProfile(snapshot.provider, primaryWindow.windowId, primaryWindow.resetAt, now)
             : null;
           const reset = primaryWindow?.resetAt ? new Date(primaryWindow.resetAt) : null;
           const start =

@@ -238,7 +238,7 @@ export function historyCommands(
       const at = now();
       const rows = snapshots.flatMap((snapshot) =>
         snapshot.windows.map((window) => {
-          const profile = windowProfile(snapshot.provider, window.windowId);
+          const profile = windowProfile(snapshot.provider, window.windowId, window.resetAt, at);
           const reset = window.resetAt ? new Date(window.resetAt) : null;
           const start =
             reset && profile.durationMs !== null
@@ -298,7 +298,7 @@ export function historyCommands(
               `  - Window: ${w.windowId} · ${w.usedPercent !== null ? `${w.usedPercent}% used` : "unknown"} (${w.remainingPercent !== null ? `${w.remainingPercent}% remaining` : "unknown"})${w.resetAt ? ` · resets ${w.resetAt}` : ""}`,
             );
             if (asInspect) {
-              const profile = windowProfile(s.provider, w.windowId);
+              const profile = windowProfile(s.provider, w.windowId, w.resetAt);
               lines.push(
                 `      [inspect] semantics: ${profile.semantics} | duration: ${profile.durationMs ? `${profile.durationMs / 3_600_000}h` : "unspecified"}`,
               );

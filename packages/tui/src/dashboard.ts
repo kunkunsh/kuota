@@ -60,7 +60,7 @@ export function windowPace(
   window: QuotaWindow,
   now: Date,
 ): PaceResult | null {
-  const profile = windowProfile(provider, window.windowId);
+  const profile = windowProfile(provider, window.windowId, window.resetAt, now);
   const reset = window.resetAt ? new Date(window.resetAt) : null;
   const start =
     reset && profile.durationMs !== null ? new Date(reset.getTime() - profile.durationMs) : null;

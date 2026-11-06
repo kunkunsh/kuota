@@ -16,9 +16,23 @@ export interface WindowProfile {
  * the id (5h / weekly / daily) are trusted; everything else stays `unknown` rather than guessed.
  * Codex `primary` / `secondary` follow the documented 5h / weekly convention of its app-server.
  */
-export function windowProfile(provider: ProviderId, windowId: string): WindowProfile {
+export function windowProfile(
+  provider: ProviderId,
+  windowId: string,
+  resetAt?: string | null,
+  now = new Date(),
+): WindowProfile {
   if (provider === "codex") {
-    if (windowId === "primary") return { semantics: "fixed", durationMs: 5 * HOUR };
+    if (windowId === "primary") {
+      if (resetAt) {
+        const resetMs = new Date(resetAt).getTime();
+        const nowMs = now.getTime();
+        if (Number.isFinite(resetMs) && resetMs - nowMs > 5 * HOUR) {
+          return { semantics: "fixed", durationMs: 168 * HOUR };
+        }
+      }
+      return { semantics: "fixed", durationMs: 5 * HOUR };
+    }
     if (windowId === "secondary") return { semantics: "fixed", durationMs: 168 * HOUR };
   }
   const id = windowId.toLowerCase();
@@ -146,7 +160,7 @@ export function historyEventsFromSnapshot(
 
   const state = options.stale ? "stale" : snapshot.status === "partial" ? "partial" : "ok";
   return measurable.map((window) => {
-    const profile = windowProfile(snapshot.provider, window.windowId);
+    const profile = windowProfile(snapshot.provider, window.windowId, window.resetAt);
     const semantics = options.semanticsForWindow?.(window.windowId) ?? profile.semantics;
     const resetMs = window.resetAt === null ? NaN : Date.parse(window.resetAt);
     const hasReset = Number.isFinite(resetMs);
