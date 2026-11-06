@@ -97,4 +97,12 @@ describe("Kuota Effect CLI", () => {
     expect(sink.stderr[0]).toContain("kuota status --json");
     expect(sink.stderr[0]).not.toContain("Unable to execute command");
   });
+
+  it("shows helpful guidance when run with no args in non-TTY environment", async () => {
+    const sink = recordingOutput();
+    const code = await runCli([], sink.output, []);
+    expect(code).toBe(0);
+    expect(sink.stdout[0]).toContain("Kuota — Multi-provider AI Quota & Usage Monitor");
+    expect(sink.stderr).toEqual([]);
+  });
 });

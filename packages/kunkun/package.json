@@ -1,0 +1,66 @@
+{
+  "name": "@kuota/kunkun",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "bun": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vp pack src/index.ts",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@iconify/react": "^6.0.4",
+    "@kuota/core": "workspace:*",
+    "@kuota/history": "workspace:*",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0"
+  },
+  "kunkun": {
+    "identifier": "sh.kunkun.kuota",
+    "name": "Kuota",
+    "shortDescription": "Truthful AI subscription and quota dashboard",
+    "longDescription": "Monitor and forecast OpenAI Codex, Claude, and Google Antigravity quotas with pacing markers and honest uncertainty.",
+    "permissions": [
+      "storage",
+      "notifications"
+    ],
+    "commands": [
+      {
+        "name": "dashboard",
+        "title": "Kuota Quota Dashboard",
+        "mode": "custom-view",
+        "main": "dist/index.js",
+        "dist": "dist",
+        "devMain": "http://127.0.0.1:5173",
+        "window": {
+          "title": "Kuota · AI Quota & Usage",
+          "width": 1280,
+          "height": 840,
+          "transparent": true,
+          "titleBarStyle": "hidden",
+          "vibrancy": "sidebar"
+        }
+      },
+      {
+        "name": "island",
+        "title": "Kuota Island Glance",
+        "mode": "worker-view",
+        "main": "dist/island.js"
+      }
+    ]
+  }
+}

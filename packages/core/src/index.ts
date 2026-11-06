@@ -1,2 +1,7 @@
 export * from "./types.js";
 export * from "./normalize.js";
+export * from "./metrics/pace.js";
+export * from "./observation.js";
+export * from "./hash.js";
+export * from "./history/schema.js";
+export * from "./forecast/forecast.js";

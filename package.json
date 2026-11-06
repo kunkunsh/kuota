@@ -11,11 +11,18 @@
     "check": "vp check",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "vp run -r build",
+    "build:release": "bun scripts/build-release.ts",
+    "pack:smoke": "bun scripts/pack-smoke.ts",
     "cli": "bun packages/cli/src/main.ts",
-    "tui": "bun packages/cli/src/main.ts tui"
+    "tui": "bun packages/cli/src/main.ts tui",
+    "web": "bun packages/cli/src/main.ts web",
+    "serve": "bun packages/cli/src/main.ts serve",
+    "dev": "vp dev packages/kunkun --port 5173",
+    "dev:web": "vp dev packages/kunkun --port 5173"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "scheduler": "^0.28.0",
     "typescript": "^5.9.3",
     "vite-plus": "1.5.0",
     "vitest": "5.1.0"

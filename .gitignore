@@ -10,4 +10,8 @@ coverage/
 !.env.example
 *.credentials.json
 auth.json
+references/
+packages/npm-dist/dist/
+packages/npm-dist/bin/
+*.tgz
 

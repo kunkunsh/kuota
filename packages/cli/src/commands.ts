@@ -4,6 +4,7 @@ import { Command, Options } from "@effect/cli";
 import * as NodeContext from "@effect/platform-node/NodeContext";
 import { Effect, Option } from "effect";
 import type { ProviderId, QuotaSnapshot } from "@kuota/core";
+import { historyCommands, type CliRuntime } from "./history-commands.js";
 import {
   PROVIDER_METADATA,
   builtInProviders,
@@ -69,6 +70,7 @@ export async function runCli(
     const module = await import("@kuota/tui");
     return module.startTui();
   },
+  runtime: CliRuntime = {},
 ): Promise<number> {
   let exitCode = 0;
 
@@ -131,8 +133,54 @@ export async function runCli(
 
   const tui = Command.make("tui", {}, () => Effect.promise(startTui));
 
-  const root = Command.make("kuota", {}, () => Effect.void).pipe(
-    Command.withSubcommands([status, providerList, doctor, tui]),
+  const makeWebCommand = (name: string) =>
+    Command.make(
+      name,
+      {
+        port: Options.optional(Options.integer("port")),
+        host: Options.optional(Options.text("host")),
+        noOpen: Options.boolean("no-open"),
+      },
+      ({ port, host, noOpen }) =>
+        Effect.promise(async () => {
+          const { startWebServer } = await import("./web-server.js");
+          await startWebServer(
+            {
+              port: Option.getOrUndefined(port),
+              host: Option.getOrUndefined(host),
+              open: !noOpen,
+            },
+            output,
+            providers,
+          );
+        }),
+    );
+
+  const web = makeWebCommand("web");
+  const serve = makeWebCommand("serve");
+
+  const root = Command.make("kuota", {}, () =>
+    Effect.promise(async () => {
+      if (process.stdout.isTTY) {
+        await startTui();
+      } else {
+        output.writeStdout(
+          "Kuota — Multi-provider AI Quota & Usage Monitor\nRun `kuota --help` for available commands, or `kuota web` to launch the web UI.",
+        );
+      }
+    }),
+  ).pipe(
+    Command.withSubcommands([
+      status,
+      providerList,
+      doctor,
+      tui,
+      web,
+      serve,
+      ...historyCommands(output, providers, runtime, (code) => {
+        exitCode = code;
+      }),
+    ]),
   );
   const cli = Command.run(root, { name: "Kuota", version: "0.1.0" });
 

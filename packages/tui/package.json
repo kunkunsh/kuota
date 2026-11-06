@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@kuota/core": "workspace:*",
+    "@kuota/history": "workspace:*",
     "@kuota/providers": "workspace:*",
     "@uniview/tui-core": "0.0.3",
     "@uniview/tui-react": "0.0.3",
