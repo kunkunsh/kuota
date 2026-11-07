@@ -32,7 +32,8 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app"],
+    "targets": "all",
+    "createUpdaterArtifacts": true,
     "category": "DeveloperTool",
     "shortDescription": "Truthful AI subscription and quota dashboard",
     "icon": [
@@ -43,5 +44,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["https://github.com/kunkunsh/kuota/releases/latest/download/latest.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM2QkI1Q0NGNEM3RDNDNTQKUldSVVBIMU16MXk3eHRxdWd0MEUvbEZMK05JeFpaeWFBcjI5OExhN0VSNGdZaTB0ckhqYzRBZTUK"
+    }
   }
 }
