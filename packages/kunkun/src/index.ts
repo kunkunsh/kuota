@@ -1,4 +1,5 @@
 export * from "./app.js";
+export * from "./router.js";
 export * from "./components/ui/kuota-logo.js";
 export * from "./components/kokonutui/loader.js";
 export * from "./lib/theme.js";

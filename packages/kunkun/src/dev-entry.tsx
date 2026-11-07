@@ -279,9 +279,12 @@ function DevApp() {
 
   if (isTray) {
     return (
-      <MenuBarPopoverView
+      <KuotaDashboard
+        initialRoute="popover"
+        islandMode={islandMode}
         snapshots={snapshots}
         forecasts={forecasts}
+        series={computeSeriesFromEvents(historyEvents)}
         events={historyEvents}
         isRefreshing={loading}
         onRefresh={() => fetchLiveStatus(true)}
