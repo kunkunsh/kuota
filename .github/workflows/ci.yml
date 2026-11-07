@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+
       - uses: oven-sh/setup-bun@v2
 
       - uses: dtolnay/rust-toolchain@stable
@@ -37,8 +42,8 @@ jobs:
       - name: Unit & integration tests
         run: bun run test
 
-      - name: Rust host tests
-        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
-
       - name: Compile web UI SPA
         run: bun --cwd packages/kunkun build:web
+
+      - name: Rust host tests
+        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
