@@ -42,8 +42,8 @@ jobs:
       - name: Unit & integration tests
         run: bun run test
 
-      - name: Compile web UI SPA
-        run: bun --cwd packages/kunkun build:web
+      - name: Build packages and web UI SPA
+        run: bun run build
 
       - name: Rust host tests
         run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml

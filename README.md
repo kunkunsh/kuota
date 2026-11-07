@@ -1,38 +1,122 @@
-# @kunkun.sh/kuota
+# Kuota
 
-Truthful multi-provider AI subscription & quota suite: reusable TypeScript library, interactive TUI, headless CLI, and embedded loopback Web Workbench.
+<div align="center">
 
-Supports **OpenAI Codex**, **Anthropic Claude Code**, and **Google Antigravity**.
+**真实、透明的多平台 AI 额度监控与智能预算看板**
+<br />
+**Truthful Multi-Provider AI Subscription & Quota Dashboard**
+
+[![Release](https://img.shields.io/github/v/release/kunkunsh/kuota?include_prereleases&logo=github&label=Desktop%20Release)](https://github.com/kunkunsh/kuota/releases)
+[![Homebrew Cask](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/HuakunShen/homebrew-tap)
+[![npm version](https://img.shields.io/npm/v/@kunkun.sh/kuota?logo=npm&label=npm)](https://www.npmjs.com/package/@kunkun.sh/kuota)
+[![CI](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[English](README.md) · [🇨🇳 简体中文](README.zh-CN.md)
+
+<br />
+
+<img src="docs/assets/kuota-desktop-overview.png" alt="Kuota Desktop Overview" width="880" />
+
+_Kuota Desktop App: Real-time quota balance, time budget pacing, and multi-provider telemetry across Claude Code, OpenAI Codex, and Google Antigravity._
+
+</div>
 
 ---
 
-## 🚀 CLI & Multi-Surface Usage
+## ⚡️ Key Features
 
-Run directly with zero installation via `npx`:
+- 🎯 **Truthful Quota Pacing**: Computes actual remaining budget against ideal time pacing without guessing or hallucinating missing official metadata.
+- 🤖 **Multi-Provider Unified Hub**: Native first-class adapters for **Claude Code**, **OpenAI Codex**, and **Google Antigravity**.
+- 🖥 **Four Ergonomic Surfaces**:
+  - **Native Desktop App (Tauri v2)**: Lightweight, ultra-fast macOS / Windows / Linux desktop dashboard with native draggable titlebar and dark/light themes.
+  - **Terminal TUI**: Keyboard-navigated fullscreen terminal dashboard with real-time refresh.
+  - **Web Workbench**: Embedded loopback HTTP server + React 19 UI with 3D activity terrain and Dynamic Island.
+  - **Headless CLI & Library**: Scriptable JSON/text output for scripts, dotfiles, and CI.
+- 🔒 **Local-First & Zero Cloud Leak**: Direct reads from local tool CLIs, OAuth credentials, and local RPC — zero telemetries sent to third-party servers. Cross-process caching powered by SQLite WAL.
+
+---
+
+## 📥 Installation
+
+### 1. Homebrew (macOS Cask - Recommended)
+
+Install Kuota Desktop directly via [HuakunShen/homebrew-tap](https://github.com/HuakunShen/homebrew-tap):
 
 ```bash
-# 1. Interactive terminal TUI (full-screen UniView dashboard with % left & pace markers)
-npx @kunkun.sh/kuota
+brew install --cask HuakunShen/tap/kuota
+```
+
+To update to the latest release:
+
+```bash
+brew upgrade kuota
+```
+
+> **Note on macOS Gatekeeper**: The app supports auto-updates via Tauri MiniSign signatures. If installing manually without brew, click _Open Anyway_ under System Settings → Privacy & Security on first launch.
+
+### 2. Direct Desktop Download
+
+Pre-built binaries for all major platforms are available on [GitHub Releases](https://github.com/kunkunsh/kuota/releases/latest):
+
+| Platform                              | Download Asset                       |
+| :------------------------------------ | :----------------------------------- |
+| **macOS Apple Silicon** (M1/M2/M3/M4) | `Kuota_x.y.z_aarch64.dmg`            |
+| **macOS Intel** (x86_64)              | `Kuota_x.y.z_x64.dmg`                |
+| **Windows**                           | `Kuota_x.y.z_x64-setup.exe` / `.msi` |
+| **Linux (Debian / Ubuntu)**           | `kuota_x.y.z_amd64.deb`              |
+| **Linux (Generic)**                   | `kuota_x.y.z_amd64.AppImage`         |
+
+---
+
+## 🚀 CLI & Terminal Usage
+
+Run instantly with zero installation via `npx`:
+
+```bash
+# 1. Interactive terminal TUI (full-screen UniView dashboard)
 npx @kunkun.sh/kuota tui
 
-# 2. Web Workbench (embedded HTTP server + React 19 UI with 3D activity terrain & Dynamic Island)
+# 2. Web Workbench (local loopback server + modern UI)
 npx @kunkun.sh/kuota web
-npx @kunkun.sh/kuota web --port 5173 --no-open
 
-# 3. Headless CLI commands (human readable or JSON)
+# 3. Headless CLI status check (formatted text or JSON)
 npx @kunkun.sh/kuota status
 npx @kunkun.sh/kuota status --json
 npx @kunkun.sh/kuota doctor
 npx @kunkun.sh/kuota pace
 npx @kunkun.sh/kuota forecast
-npx @kunkun.sh/kuota providers
 ```
 
 ---
 
-## 📦 Library Usage
+## 🖼 Gallery
 
-Install as a dependency in your application, server, or Kunkun extension:
+<div align="center">
+
+### Interactive Terminal TUI (`kuota tui`)
+
+<img src="docs/assets/kuota-tui-dashboard.png" alt="Kuota TUI Dashboard" width="800" />
+
+<br />
+
+### History Pacing & Depletion Forecasting
+
+<img src="docs/assets/kuota-history-forecast.png" alt="Kuota Quota Forecast" width="800" />
+
+<br />
+
+### Compact Dynamic Island HUD
+
+<img src="docs/assets/kuota-island-hud.png" alt="Kuota Island HUD" width="800" />
+
+</div>
+
+---
+
+## 📦 TypeScript Library
+
+Install as a dependency in your backend, CLI, or extension:
 
 ```bash
 npm install @kunkun.sh/kuota
@@ -40,92 +124,53 @@ npm install @kunkun.sh/kuota
 bun add @kunkun.sh/kuota
 ```
 
-### 1. Unified AI Quota Parsers
-
-Parse raw JSON / RPC payloads received from vendor CLIs or APIs into normalized, typed `QuotaSnapshot` structures:
-
 ```typescript
-import {
-  parseProviderQuota,
-  parseCodexRateLimits,
-  parseClaudeOAuthUsage,
-  parseAntigravityUsageReport,
-  type QuotaSnapshot,
-} from "@kunkun.sh/kuota";
+import { readAll, calculatePace } from "@kunkun.sh/kuota";
+import { Effect } from "effect";
 
-// Universal dispatcher:
-const snapshot: QuotaSnapshot = parseProviderQuota("codex", rawVendorData);
+// Query all detected local providers:
+const snapshots = await Effect.runPromise(readAll(["codex", "claude", "antigravity"]));
 
-// Or direct modular imports (browser & edge friendly):
-import { parseCodexRateLimits } from "@kunkun.sh/kuota/parsers";
-const codexSnapshot = parseCodexRateLimits(rawAppServerResponse);
-```
-
-### 2. Time Budget & Ideal Pace Calculation
-
-Calculate linear time-budget pace without guessing:
-
-```typescript
-import { calculatePace, windowProfile } from "@kunkun.sh/kuota";
-
-// Determine window cadence (e.g. 5h vs 7-day weekly)
-const profile = windowProfile("codex", "primary", snapshot.windows[0].resetAt);
-
-const pace = calculatePace({
-  now: new Date(),
-  startAt: new Date(Date.now() - 2 * 86_400_000),
-  resetAt: new Date(snapshot.windows[0].resetAt!),
-  usedPercent: snapshot.windows[0].usedPercent,
-  semantics: profile.semantics,
-  startSource: "provider",
-});
-
-if (pace) {
-  console.log(`Ideal balance: ${pace.idealRemainingPercent}% remaining`);
-  console.log(`Actual balance: ${100 - pace.actualUsedPercent}% remaining`);
-  console.log(`Pace delta: ${pace.paceDeltaPoints > 0 ? "Ahead" : "Behind"} of pace`);
+for (const snapshot of snapshots) {
+  console.log(`Provider: ${snapshot.providerId} (${snapshot.accountScope ?? "default"})`);
+  for (const win of snapshot.windows) {
+    console.log(`  Window: ${win.windowId} -> ${win.usedPercent}% used, resets at: ${win.resetAt}`);
+  }
 }
 ```
 
-### 3. Live Provider Execution & Subprocess Service
+---
 
-Read quota directly from local installed developer tools (`codex`, `claude`, `agy`):
+## 🛠 Building From Source
 
-```typescript
-import { readAll, readCodex, createQuotaService } from "@kunkun.sh/kuota";
-import { Effect } from "effect";
+Requirements: [Bun](https://bun.sh) (>= 1.2), [Rust](https://rust-lang.org) (stable), Node.js (>= 22).
 
-// Execute all detected providers via Effect TS
-const program = readAll(["codex", "antigravity"]);
-const snapshots = await Effect.runPromise(program);
+```bash
+# Clone the repository
+git clone https://github.com/kunkunsh/kuota.git
+cd kuota
 
-// Or create a managed cached service
-const service = createQuotaService();
-const cachedCodex = await service.read("codex");
+# Install dependencies
+bun install
+
+# Verify typecheck, linter, and tests
+bun run check
+bun run typecheck
+bun run test
+
+# Run Web Workbench in development
+bun run dev
+
+# Run Desktop App in development
+bun run desktop:dev
+
+# Build all packages & desktop bundle
+bun run build
+bun run desktop:build
 ```
-
----
-
-## 🧩 Subpath Exports
-
-| Import Path                  | Description                                                         |
-| ---------------------------- | ------------------------------------------------------------------- |
-| `@kunkun.sh/kuota`           | Full library (Parsers, Metrics, History, Providers, Schemas)        |
-| `@kunkun.sh/kuota/parsers`   | Pure data parsers (zero platform dependencies, Node & Browser safe) |
-| `@kunkun.sh/kuota/metrics`   | Linear pacing algorithms and forecasting models                     |
-| `@kunkun.sh/kuota/history`   | Append-only local JSONL journal and query engine                    |
-| `@kunkun.sh/kuota/providers` | Subprocess adapters for Codex, Claude, and Antigravity              |
-
----
-
-## 🔒 Security and Data Honesty
-
-- **Zero credential leaks**: API keys, tokens, session cookies, and private prompts are never stored, logged, or serialized.
-- **Fail-safe status**: Unavailable or unauthenticated accounts are reported as `"unauthenticated"` or `"unavailable"` with honest error codes, never fabricated as `0% left`.
-- **Shared peer dependencies**: Core dependencies like `effect` and `react` are not bundled into an opaque monolith, avoiding dual-package hazard in consumer apps.
 
 ---
 
 ## 📄 License
 
-MIT © [Huakun Shen](https://github.com/HuakunShen)
+[MIT](LICENSE) © 2026 [Kunkun](https://kunkun.sh) & Huakun Shen

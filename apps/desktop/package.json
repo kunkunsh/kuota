@@ -5,8 +5,9 @@
   "description": "Kuota desktop application (Tauri v2)",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tauri build",
-    "build:web": "bun x vp build ../../packages/kunkun"
+    "build": "bun run build:web",
+    "build:web": "bun --cwd ../../packages/kunkun build:web",
+    "tauri:build": "tauri build"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.4"
