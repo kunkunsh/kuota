@@ -3,6 +3,7 @@ import { getProviderMeta } from "./catalog.js";
 
 export type MenuBarDisplayMode =
   | "icon_only"
+  | "frontmost_app"
   | "primary_percent"
   | "lowest_quota"
   | "wallet_spend"
@@ -19,6 +20,7 @@ export interface QuotaAlertEvent {
 export function computeTrayTitle(
   snapshots: readonly QuotaSnapshot[],
   mode: MenuBarDisplayMode = "icon_only",
+  frontmostProvider?: string | null,
 ): string {
   if (mode === "icon_only") {
     return "";
@@ -26,7 +28,17 @@ export function computeTrayTitle(
 
   const active = snapshots.filter((s) => s.status === "ok");
   if (active.length === 0) {
-    return "Kuota";
+    return "";
+  }
+
+  if (mode === "frontmost_app") {
+    if (frontmostProvider) {
+      const matched = active.find((s) => s.provider === frontmostProvider);
+      if (matched && matched.windows.length > 0 && matched.windows[0].remainingPercent != null) {
+        return `${matched.windows[0].remainingPercent.toFixed(0)}%`;
+      }
+    }
+    return "";
   }
 
   if (mode === "lowest_quota") {

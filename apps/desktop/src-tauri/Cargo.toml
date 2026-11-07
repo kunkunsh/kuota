@@ -2,7 +2,7 @@
 
 [package]
 name = "kuota-desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "Kuota desktop application: native desktop shell for AI quota telemetry"
 edition = "2021"
 license = "MIT"

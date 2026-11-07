@@ -238,7 +238,7 @@ pub async fn refresh_quota(state: State<'_, AppState>) -> Result<Value, String> 
 pub fn get_app_info() -> Value {
     serde_json::json!({
         "name": "Kuota",
-        "version": "0.1.0",
+        "version": env!("CARGO_PKG_VERSION"),
         "platform": std::env::consts::OS,
         "arch": std::env::consts::ARCH,
         "mode": "desktop"
@@ -487,4 +487,144 @@ pub async fn get_quota_forecast(
 #[tauri::command]
 pub async fn collect_quota_snapshot() -> Result<Value, String> {
     execute_cli_subcommand("collect", &["--once", "--json"])
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct FrontmostAppInfo {
+    pub app_name: String,
+    pub bundle_id: Option<String>,
+    pub mapped_provider: Option<String>,
+}
+
+fn map_app_to_provider(name: &str, bundle_id: Option<&str>) -> Option<String> {
+    let lower_name = name.to_lowercase();
+    let lower_bundle = bundle_id.unwrap_or("").to_lowercase();
+
+    if lower_bundle.contains("antigravity") || lower_name.contains("antigravity") {
+        Some("antigravity".to_string())
+    } else if lower_bundle.contains("vscode")
+        || lower_name == "code"
+        || lower_bundle.contains("codex")
+        || lower_name.contains("codex")
+        || lower_bundle.contains("cursor")
+        || lower_name.contains("cursor")
+    {
+        Some("codex".to_string())
+    } else if lower_bundle.contains("claude")
+        || lower_name.contains("claude")
+        || lower_bundle.contains("ghostty")
+        || lower_name == "ghostty"
+        || lower_bundle.contains("iterm")
+        || lower_name == "iterm2"
+        || lower_bundle.contains("terminal")
+        || lower_name == "terminal"
+        || lower_bundle.contains("alacritty")
+        || lower_name == "alacritty"
+        || lower_bundle.contains("kitty")
+        || lower_name == "kitty"
+    {
+        Some("claude".to_string())
+    } else if lower_bundle.contains("opencode") || lower_name.contains("opencode") {
+        Some("opencodego".to_string())
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
+pub async fn get_frontmost_app() -> Result<Option<FrontmostAppInfo>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        let script = r#"tell application "System Events"
+            set p to first process whose frontmost is true
+            return (name of p) & "|||" & (bundle identifier of p)
+        end tell"#;
+        let output = Command::new("osascript")
+            .arg("-e")
+            .arg(script)
+            .output();
+
+        if let Ok(out) = output {
+            if out.status.success() {
+                let stdout = String::from_utf8_lossy(&out.stdout).trim().to_string();
+                let parts: Vec<&str> = stdout.split("|||").collect();
+                let app_name = parts.get(0).unwrap_or(&"").trim().to_string();
+                let bundle_id = parts.get(1).map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+
+                let mapped_provider = map_app_to_provider(&app_name, bundle_id.as_deref());
+
+                return Ok(Some(FrontmostAppInfo {
+                    app_name,
+                    bundle_id,
+                    mapped_provider,
+                }));
+            }
+        }
+    }
+    Ok(None)
+}
+
+use std::collections::HashSet;
+use std::sync::RwLock;
+
+static ALERTED_LOW_WINDOWS: std::sync::LazyLock<RwLock<HashSet<String>>> =
+    std::sync::LazyLock::new(|| RwLock::new(HashSet::new()));
+
+pub fn check_and_send_quota_alerts(status: &Value) {
+    let providers = match status.get("providers").and_then(|p| p.as_array()) {
+        Some(arr) => arr,
+        None => return,
+    };
+
+    let mut alerted = match ALERTED_LOW_WINDOWS.write() {
+        Ok(guard) => guard,
+        Err(_) => return,
+    };
+
+    for prov in providers {
+        let provider_id = prov.get("provider").and_then(|p| p.as_str()).unwrap_or("unknown");
+        let provider_name = match provider_id {
+            "codex" => "OpenAI Codex",
+            "claude" => "Claude Code",
+            "antigravity" => "Google Antigravity",
+            "opencodego" => "OpenCode Go",
+            _ => provider_id,
+        };
+
+        if let Some(windows) = prov.get("windows").and_then(|w| w.as_array()) {
+            for win in windows {
+                let win_id = win.get("windowId").and_then(|w| w.as_str()).unwrap_or("default");
+                let key = format!("{}:{}", provider_id, win_id);
+
+                if let Some(rem) = win.get("remainingPercent").and_then(|r| r.as_f64()) {
+                    if rem <= 15.0 {
+                        if !alerted.contains(&key) {
+                            alerted.insert(key.clone());
+                            let reset_desc = win.get("resetAt")
+                                .and_then(|r| r.as_str())
+                                .map(|_| " Check your dashboard for reset timing.".to_string())
+                                .unwrap_or_default();
+
+                            let _ = send_desktop_notification(
+                                "Kuota · Quota Low Warning".to_string(),
+                                Some(format!("{} Low Quota", provider_name)),
+                                format!("{}: only {:.0}% remaining.{}", provider_name, rem, reset_desc),
+                                Some(true),
+                            );
+                        }
+                    } else if rem >= 90.0 {
+                        if alerted.contains(&key) {
+                            alerted.remove(&key);
+                            let _ = send_desktop_notification(
+                                "Kuota · Quota Restored".to_string(),
+                                Some(format!("{} Restored", provider_name)),
+                                format!("{} quota has reset to {:.0}%!", provider_name, rem),
+                                Some(true),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

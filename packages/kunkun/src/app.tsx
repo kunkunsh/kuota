@@ -310,16 +310,16 @@ function KuotaDashboardInner({
   }
 
   return (
-    <div className="flex h-screen w-full bg-[#09090b] text-zinc-100 font-sans antialiased overflow-hidden">
+    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100 font-sans antialiased overflow-hidden transition-colors duration-200">
       {/* Sidebar Navigation */}
-      <aside className="w-56 flex-shrink-0 border-r border-zinc-800 bg-[#111113] flex flex-col justify-between select-none">
+      <aside className="w-56 flex-shrink-0 border-r border-slate-200 dark:border-zinc-800 bg-slate-100/90 dark:bg-[#111113] flex flex-col justify-between select-none">
         <div className="flex flex-col">
           {/* Top Logo / Drag Header */}
           <div
             data-tauri-drag-region
             onMouseDown={handleStartDragging}
             onDoubleClick={handleToggleMaximize}
-            className={`h-11 border-b border-zinc-800/80 flex items-center space-x-2.5 px-3 select-none cursor-default ${
+            className={`h-11 border-b border-slate-200 dark:border-zinc-800/80 flex items-center space-x-2.5 px-3 select-none cursor-default ${
               isDesktop ? "pl-[78px]" : ""
             }`}
           >
@@ -333,11 +333,11 @@ function KuotaDashboardInner({
             <div className="flex flex-col" data-tauri-drag-region>
               <span
                 data-tauri-drag-region
-                className="font-semibold text-xs tracking-tight text-zinc-100"
+                className="font-semibold text-xs tracking-tight text-slate-900 dark:text-zinc-100"
               >
                 Kuota
               </span>
-              <span data-tauri-drag-region className="text-[9px] text-zinc-500">
+              <span data-tauri-drag-region className="text-[9px] text-slate-500 dark:text-zinc-500">
                 AI Quota Suite
               </span>
             </div>
@@ -354,14 +354,14 @@ function KuotaDashboardInner({
                   data-no-drag
                   className={`flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
                     isActive
-                      ? "bg-zinc-800/90 text-zinc-100 font-semibold shadow-sm border border-zinc-750"
-                      : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+                      ? "bg-white dark:bg-zinc-800/90 text-slate-900 dark:text-zinc-100 font-semibold shadow-sm border border-slate-200 dark:border-zinc-750"
+                      : "text-slate-600 dark:text-zinc-400 hover:bg-slate-200/60 dark:hover:bg-zinc-800/50 hover:text-slate-900 dark:hover:text-zinc-200"
                   }`}
                   onClick={() => setRoute(item.id)}
                 >
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? "text-emerald-400" : "text-zinc-400"
+                      isActive ? "text-emerald-500 dark:text-emerald-400" : "text-slate-500 dark:text-zinc-400"
                     }`}
                   />
                   <span>{item.label}</span>
@@ -371,39 +371,39 @@ function KuotaDashboardInner({
           </nav>
         </div>
 
-        <div className="p-3 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex justify-between items-center">
+        <div className="p-3 border-t border-slate-200 dark:border-zinc-800/80 text-[10px] text-slate-500 dark:text-zinc-500 flex justify-between items-center">
           <div className="flex items-center space-x-1.5">
             <span
               className="w-1.5 h-1.5 rounded-full bg-emerald-500"
               title="All adapters healthy"
             />
-            <span>v0.1.0 · Local-First</span>
+            <span>v0.1.1 · Local-First</span>
           </div>
           <ThemeToggleButton />
         </div>
       </aside>
 
       {/* Main Content Pane with Header Chrome */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#09090b]">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50 dark:bg-[#09090b] transition-colors duration-200">
         {/* Top Header Drag Bar */}
         <header
           data-tauri-drag-region
           onMouseDown={handleStartDragging}
           onDoubleClick={handleToggleMaximize}
-          className="h-11 shrink-0 border-b border-zinc-800 bg-[#0c0c0e] flex items-center justify-between px-4 select-none cursor-default"
+          className="h-11 shrink-0 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-[#0c0c0e] flex items-center justify-between px-4 select-none cursor-default backdrop-blur-md"
         >
           <div data-tauri-drag-region className="flex items-center space-x-2 flex-1 h-full">
-            <span data-tauri-drag-region className="text-xs font-semibold text-zinc-200 capitalize">
+            <span data-tauri-drag-region className="text-xs font-semibold text-slate-800 dark:text-zinc-200 capitalize">
               {route === "detail"
                 ? "Provider Detail"
                 : route === "island"
                   ? "Island Preview"
                   : route}
             </span>
-            <span data-tauri-drag-region className="text-zinc-600 text-xs">
+            <span data-tauri-drag-region className="text-slate-400 dark:text-zinc-600 text-xs">
               •
             </span>
-            <span data-tauri-drag-region className="text-[11px] text-zinc-400">
+            <span data-tauri-drag-region className="text-[11px] text-slate-500 dark:text-zinc-400">
               Live Quota Telemetry &amp; Pacing
             </span>
           </div>
@@ -417,23 +417,23 @@ function KuotaDashboardInner({
                 data-no-drag
                 disabled={activeRefreshing}
                 onClick={handleRefresh}
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-white text-[11px] font-medium transition-colors border border-zinc-700/50 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 text-slate-700 hover:text-slate-900 dark:text-zinc-300 dark:hover:text-white text-[11px] font-medium transition-colors border border-slate-300 dark:border-zinc-700/50 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 title="Trigger immediate live quota probe"
               >
                 {activeRefreshing ? (
                   <>
                     <Loader size="xs" variant="emerald" />
-                    <span className="text-emerald-400 font-medium">Probing...</span>
+                    <span className="text-emerald-500 dark:text-emerald-400 font-medium">Probing...</span>
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-3 h-3 text-zinc-400" />
+                    <RefreshCw className="w-3 h-3 text-slate-500 dark:text-zinc-400" />
                     <span>Refresh</span>
                   </>
                 )}
               </button>
             )}
-            <span className="flex items-center space-x-1.5 text-[11px] text-zinc-400" data-no-drag>
+            <span className="flex items-center space-x-1.5 text-[11px] text-slate-500 dark:text-zinc-400" data-no-drag>
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   activeRefreshing ? "bg-amber-400 animate-ping" : "bg-emerald-500 animate-pulse"

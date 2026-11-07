@@ -3,11 +3,31 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-background: #09090b;
-  --color-card: #111113;
-  --color-border: #27272a;
-  --color-foreground: #fafafa;
-  --color-muted: #a1a1aa;
+  --color-background: var(--app-bg);
+  --color-card: var(--app-surface);
+  --color-border: var(--app-border);
+  --color-foreground: var(--app-text);
+  --color-muted: var(--app-text-muted);
+}
+
+:root, html.light {
+  --app-bg: #f8fafc;
+  --app-surface: #ffffff;
+  --app-sidebar: #f1f5f9;
+  --app-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  color-scheme: light;
+}
+
+html.dark {
+  --app-bg: #09090b;
+  --app-surface: #111113;
+  --app-sidebar: #111113;
+  --app-border: #27272a;
+  --app-text: #fafafa;
+  --app-text-muted: #a1a1aa;
+  color-scheme: dark;
 }
 
 body {
@@ -16,4 +36,7 @@ body {
     Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

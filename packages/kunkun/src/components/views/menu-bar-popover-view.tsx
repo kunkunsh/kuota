@@ -4,6 +4,8 @@ import {
   formatCurrencyAmount,
   isBalanceFirst,
   resolveIdealPace,
+  computeTrayTitle,
+  type MenuBarDisplayMode,
   type QuotaSnapshot,
   type QuotaWindow,
   type QuotaForecastV1,
@@ -11,6 +13,7 @@ import {
 } from "@kuota/core";
 import { ProviderIcon } from "../ui/provider-icon.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
+import { ThemeToggleButton } from "../../lib/theme.js";
 import { cn } from "../../lib/utils.js";
 import {
   Settings,
@@ -134,6 +137,70 @@ export function MenuBarPopoverView({
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [copiedFallback, setCopiedFallback] = React.useState<boolean>(false);
   const [popoverSize, setPopoverSize] = React.useState<"standard" | "tall" | "compact">("standard");
+
+  // Frontmost App Intelligence (CodexBar feature parity)
+  const [frontmostInfo, setFrontmostInfo] = React.useState<{
+    appName: string;
+    bundleId?: string;
+    mappedProvider?: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const checkFrontmost = async () => {
+      try {
+        if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+          const { invoke } = await import("@tauri-apps/api/core");
+          const info = await invoke<any>("get_frontmost_app");
+          if (mounted && info) {
+            setFrontmostInfo({
+              appName: info.app_name,
+              bundleId: info.bundle_id,
+              mappedProvider: info.mapped_provider,
+            });
+          }
+        }
+      } catch {}
+    };
+
+    checkFrontmost();
+    const interval = setInterval(checkFrontmost, 4000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Menu bar tray title mode
+  const [trayMode, setTrayMode] = React.useState<MenuBarDisplayMode>(() => {
+    if (typeof window === "undefined") return "icon_only";
+    try {
+      const stored = localStorage.getItem("kuota-menubar-mode") as MenuBarDisplayMode;
+      if (stored) return stored;
+    } catch {}
+    return "icon_only";
+  });
+
+  const handleSetTrayMode = async (mode: MenuBarDisplayMode) => {
+    setTrayMode(mode);
+    try {
+      localStorage.setItem("kuota-menubar-mode", mode);
+      const title = computeTrayTitle(snapshots, mode, frontmostInfo?.mappedProvider);
+      if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("update_tray_title", { title });
+      }
+    } catch {}
+  };
+
+  React.useEffect(() => {
+    const title = computeTrayTitle(snapshots, trayMode, frontmostInfo?.mappedProvider);
+    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+      import("@tauri-apps/api/core").then(({ invoke }) => {
+        invoke("update_tray_title", { title }).catch(() => {});
+      }).catch(() => {});
+    }
+  }, [snapshots, trayMode, frontmostInfo]);
 
   const handleCycleSize = async () => {
     const next = popoverSize === "standard" ? "tall" : popoverSize === "tall" ? "compact" : "standard";
@@ -305,22 +372,23 @@ export function MenuBarPopoverView({
   }, [events, selectedSnapshot?.provider]);
 
   return (
-    <div className="flex flex-col h-screen w-full select-none bg-zinc-950/95 text-zinc-100 font-sans antialiased border border-zinc-800/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl">
-      {/* 1. Header Bar: App branding + Quick Refresh */}
-      <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-zinc-800/60 bg-zinc-900/40 shrink-0">
+    <div className="flex flex-col h-screen w-full select-none bg-white/95 dark:bg-zinc-950/95 text-slate-900 dark:text-zinc-100 font-sans antialiased border border-slate-200 dark:border-zinc-800/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl transition-colors duration-200">
+      {/* 1. Header Bar: App branding + Theme Switch + Quick Refresh */}
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-slate-200 dark:border-zinc-800/60 bg-slate-100/70 dark:bg-zinc-900/40 shrink-0">
         <div className="flex items-center space-x-2">
-          <KuotaLogo className="w-4 h-4 text-emerald-400" />
-          <span className="text-xs font-bold tracking-wider text-zinc-100">KUOTA</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <KuotaLogo className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+          <span className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100">KUOTA</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             HUD
           </span>
         </div>
         <div className="flex items-center space-x-1">
+          <ThemeToggleButton />
           <button
             type="button"
             onClick={handleCycleSize}
             title={`Toggle popover size (${popoverSize === "standard" ? "Standard (720px) -> Tall (860px)" : popoverSize === "tall" ? "Tall (860px) -> Compact (580px)" : "Compact (580px) -> Standard (720px)"})`}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/70 transition-colors"
+            className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-200/60 dark:hover:bg-zinc-800/70 transition-colors"
           >
             {popoverSize === "tall" ? (
               <Minimize2 className="w-3.5 h-3.5" />
@@ -333,15 +401,15 @@ export function MenuBarPopoverView({
             onClick={() => onRefresh?.()}
             disabled={isRefreshing}
             title="Refresh quota telemetry (⌘R)"
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/70 transition-colors disabled:opacity-50"
+            className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-200/60 dark:hover:bg-zinc-800/70 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-emerald-400")} />
+            <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-emerald-500 dark:text-emerald-400")} />
           </button>
         </div>
       </div>
 
       {/* 2. Top Segmented Navigation Tabs (CodexBar style: [Overview] [Codex] [Claude] ...) */}
-      <div className="px-2.5 py-2 border-b border-zinc-800/60 bg-zinc-900/25 shrink-0">
+      <div className="px-2.5 py-2 border-b border-slate-200 dark:border-zinc-800/60 bg-slate-50/80 dark:bg-zinc-900/25 shrink-0">
         <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
           {/* Overview Tab Button */}
           <button
@@ -353,7 +421,7 @@ export function MenuBarPopoverView({
               "flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl transition-all duration-150 shrink-0 text-xs font-medium",
               activeTab === "overview"
                 ? "bg-blue-600/90 text-white shadow-md ring-1 ring-blue-400/40"
-                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50",
+                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200/50 dark:hover:bg-zinc-800/50",
             )}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
@@ -392,20 +460,20 @@ export function MenuBarPopoverView({
       </div>
 
       {/* 3. Search Bar (Supports filtering across many providers) */}
-      <div className="px-3.5 py-2 border-b border-zinc-800/50 bg-zinc-950/60 shrink-0">
+      <div className="px-3.5 py-2 border-b border-slate-200 dark:border-zinc-800/50 bg-slate-50/80 dark:bg-zinc-950/60 shrink-0">
         <div className="relative flex items-center w-full">
-          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-2.5 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search providers, models, tokens..."
-            className="w-full bg-zinc-900/80 border border-zinc-800/80 rounded-lg pl-8 pr-7 py-1 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500/60 transition-colors"
+            className="w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800/80 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-900 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500/60 transition-colors shadow-xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 text-zinc-500 hover:text-zinc-300 p-0.5"
+              className="absolute right-2 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 p-0.5"
             >
               <X className="w-3 h-3" />
             </button>
@@ -414,7 +482,7 @@ export function MenuBarPopoverView({
       </div>
 
       {/* 4. Main Dynamic Body Area */}
-      <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-3.5 divide-y divide-zinc-800/50">
+      <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-3.5 divide-y divide-slate-200 dark:divide-zinc-800/50">
         {/* VIEW A: Focused Provider View (1:1 Replica of CodexBar Details!) */}
         {activeTab !== "overview" && selectedSnapshot && meta ? (
           <div className="space-y-3">
@@ -772,9 +840,38 @@ export function MenuBarPopoverView({
         {/* VIEW B: Overview Grid / Filtered Providers List */}
         {(activeTab === "overview" || searchQuery) && (
           <div className="space-y-2 pt-1">
-            <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-400 px-0.5">
+            {/* Frontmost Application Intelligence (CodexBar style) */}
+            {frontmostInfo?.mappedProvider && (
+              <div
+                onClick={() => {
+                  setActiveTab(frontmostInfo.mappedProvider!);
+                  setSearchQuery("");
+                }}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/15 border border-blue-500/25 cursor-pointer transition-all duration-150 group"
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                  </span>
+                  <div className="text-xs truncate">
+                    <span className="text-slate-600 dark:text-zinc-400 font-medium">Foreground: </span>
+                    <strong className="text-slate-900 dark:text-white font-semibold">{frontmostInfo.appName}</strong>
+                    <span className="text-slate-500 dark:text-zinc-400 text-[11px] ml-1.5 font-normal">
+                      &rarr; {getProviderMeta(frontmostInfo.mappedProvider).name}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold flex items-center group-hover:translate-x-0.5 transition-transform shrink-0">
+                  <span>Focus</span>
+                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400 px-0.5">
               <span>ACTIVE SERVICES ({filteredSnapshots.length})</span>
-              <span className="text-[10px] text-zinc-500 font-normal">Click to focus</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">Click to focus</span>
             </div>
 
             {filteredSnapshots.length === 0 ? (
@@ -827,15 +924,15 @@ export function MenuBarPopoverView({
                         setActiveTab(snap.provider);
                         setSearchQuery("");
                       }}
-                      className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/60 hover:bg-zinc-800/70 border border-zinc-800/80 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-900/60 hover:bg-slate-100/90 dark:hover:bg-zinc-800/70 border border-slate-200 dark:border-zinc-800/80 cursor-pointer transition-colors shadow-2xs dark:shadow-none"
                     >
                       <div className="flex items-center space-x-2.5 min-w-0 pr-2">
                         <ProviderIcon provider={snap.provider} size={18} />
                         <div className="min-w-0">
-                          <div className="font-semibold text-xs text-zinc-200 truncate">
+                          <div className="font-semibold text-xs text-slate-800 dark:text-zinc-200 truncate">
                             {pMeta.name}
                           </div>
-                          <div className="text-[10px] text-zinc-400 truncate">
+                          <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">
                             {snap.planType || pMeta.defaultPlan}
                           </div>
                         </div>
@@ -893,38 +990,65 @@ export function MenuBarPopoverView({
       </div>
 
       {/* 5. Bottom Action Footer (CodexBar style with Mac Shortcuts!) */}
-      <div className="p-3 border-t border-zinc-800/80 bg-zinc-900/60 space-y-1.5 shrink-0 text-xs">
+      <div className="p-3 border-t border-slate-200 dark:border-zinc-800/80 bg-slate-50/90 dark:bg-zinc-900/60 space-y-2 shrink-0 text-xs">
+        {/* Menu Bar Display Mode Switcher */}
+        <div className="flex items-center justify-between pt-0.5 px-0.5">
+          <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">Tray Display:</span>
+          <div className="flex items-center space-x-0.5 bg-slate-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg text-[10px]">
+            {[
+              { id: "icon_only", label: "Icon" },
+              { id: "frontmost_app", label: "Active App" },
+              { id: "lowest_quota", label: "Lowest %" },
+              { id: "primary_percent", label: "Primary %" },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => handleSetTrayMode(m.id as MenuBarDisplayMode)}
+                className={cn(
+                  "px-2 py-0.5 rounded-md font-medium transition-all duration-150",
+                  trayMode === m.id
+                    ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 shadow-xs font-semibold"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200",
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onRefresh?.()}
-            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-zinc-800/70 hover:bg-zinc-800 hover:text-white text-zinc-300 font-medium transition-colors"
+            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs"
           >
             <div className="flex items-center space-x-1.5">
-              <RefreshCw className={cn("w-3 h-3 text-zinc-400", isRefreshing && "animate-spin")} />
+              <RefreshCw className={cn("w-3 h-3 text-slate-500 dark:text-zinc-400", isRefreshing && "animate-spin")} />
               <span>Refresh</span>
             </div>
-            <span className="text-[10px] text-zinc-500 font-mono">⌘ R</span>
+            <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">⌘ R</span>
           </button>
 
           <button
             onClick={handleOpenDashboard}
-            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-zinc-800/70 hover:bg-zinc-800 hover:text-white text-zinc-300 font-medium transition-colors"
+            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs"
           >
             <div className="flex items-center space-x-1.5">
-              <Settings className="w-3 h-3 text-zinc-400" />
+              <Settings className="w-3 h-3 text-slate-500 dark:text-zinc-400" />
               <span>Settings...</span>
             </div>
-            <span className="text-[10px] text-zinc-500 font-mono">⌘ ,</span>
+            <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">⌘ ,</span>
           </button>
         </div>
 
-        <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-zinc-500">
-          <span className="hover:text-zinc-300 cursor-pointer" onClick={handleOpenDashboard}>
-            About Kuota (v0.1.0)
+        <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-slate-500 dark:text-zinc-500">
+          <span className="hover:text-slate-800 dark:hover:text-zinc-300 cursor-pointer" onClick={handleOpenDashboard}>
+            About Kuota (v0.1.1)
           </span>
           <button
             onClick={handleQuit}
-            className="flex items-center space-x-1 hover:text-rose-400 transition-colors font-mono"
+            className="flex items-center space-x-1 hover:text-rose-500 transition-colors font-mono"
           >
             <span>Quit</span>
             <span>⌘ Q</span>

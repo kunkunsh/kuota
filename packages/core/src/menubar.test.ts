@@ -72,6 +72,13 @@ describe("computeTrayTitle", () => {
     expect(computeTrayTitle(mockSnapshots, "wallet_spend")).toBe("$24.07");
   });
 
+  it("handles frontmost_app mode by returning quota for active tool or empty if none", () => {
+    expect(computeTrayTitle(mockSnapshots, "frontmost_app", "claude")).toBe("55%");
+    expect(computeTrayTitle(mockSnapshots, "frontmost_app", "mimo")).toBe("8%");
+    expect(computeTrayTitle(mockSnapshots, "frontmost_app", "unknown-app")).toBe("");
+    expect(computeTrayTitle(mockSnapshots, "frontmost_app", null)).toBe("");
+  });
+
   it("handles provider_label by returning short provider name and percent", () => {
     expect(computeTrayTitle(mockSnapshots, "provider_label")).toBe("Claude 55%");
   });

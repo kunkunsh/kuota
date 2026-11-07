@@ -163,15 +163,19 @@ pub fn run() {
                 let _ = window.set_focus();
             }
 
-            // Automatic background snapshot collector every 15 minutes
+            // Automatic background snapshot collector every 15 minutes with native alerts
             std::thread::spawn(|| {
                 // Initial collection after 4 seconds
                 std::thread::sleep(Duration::from_secs(4));
-                let _ = commands::execute_cli_subcommand("collect", &["--once", "--json"]);
+                if let Ok(val) = commands::execute_cli_subcommand("collect", &["--once", "--json"]) {
+                    commands::check_and_send_quota_alerts(&val);
+                }
 
                 loop {
                     std::thread::sleep(Duration::from_secs(15 * 60));
-                    let _ = commands::execute_cli_subcommand("collect", &["--once", "--json"]);
+                    if let Ok(val) = commands::execute_cli_subcommand("collect", &["--once", "--json"]) {
+                        commands::check_and_send_quota_alerts(&val);
+                    }
                 }
             });
 
@@ -183,6 +187,7 @@ pub fn run() {
             commands::get_quota_history,
             commands::get_quota_forecast,
             commands::collect_quota_snapshot,
+            commands::get_frontmost_app,
             commands::get_app_info,
             commands::open_external_url,
             commands::update_tray_title,
