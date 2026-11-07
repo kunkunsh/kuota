@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Lock,
   AppWindow,
+  Bell,
 } from "lucide-react";
 import { ThemeSegmentedSelector, useTheme } from "../../lib/theme.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
@@ -30,6 +31,9 @@ export function SettingsView() {
   const [keychainSaved, setKeychainSaved] = React.useState<Record<string, boolean>>({});
   const [expandedGuide, setExpandedGuide] = React.useState<Record<string, boolean>>({});
   const [showMenuBar, setShowMenuBar] = React.useState<boolean>(true);
+  const [menuBarMode, setMenuBarMode] = React.useState<string>("primary_percent");
+  const [enableNotifications, setEnableNotifications] = React.useState<boolean>(true);
+  const [notificationThreshold, setNotificationThreshold] = React.useState<number>(15);
   const [statusNotice, setStatusNotice] = React.useState<string | null>(null);
 
   // Check if running in Tauri desktop environment
@@ -63,6 +67,15 @@ export function SettingsView() {
             const cfg = (await invoke("get_user_config")) as any;
             if (cfg && typeof cfg.showMenuBarIcon === "boolean") {
               setShowMenuBar(cfg.showMenuBarIcon);
+            }
+            if (cfg && typeof cfg.menuBarDisplayMode === "string") {
+              setMenuBarMode(cfg.menuBarDisplayMode);
+            }
+            if (cfg && typeof cfg.enableNotifications === "boolean") {
+              setEnableNotifications(cfg.enableNotifications);
+            }
+            if (cfg && typeof cfg.notificationThreshold === "number") {
+              setNotificationThreshold(cfg.notificationThreshold);
             }
           } catch {}
         } catch {
@@ -203,6 +216,62 @@ export function SettingsView() {
     setTimeout(() => setStatusNotice(null), 3000);
   };
 
+  const handleSelectMenuBarMode = async (mode: string) => {
+    setMenuBarMode(mode);
+    if (isDesktop) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        const existing = ((await invoke("get_user_config")) as any) || {};
+        await invoke("save_user_config", {
+          config: { ...existing, menuBarDisplayMode: mode },
+        });
+        if ((window as any).__KUOTA_REFRESH) {
+          (window as any).__KUOTA_REFRESH();
+        }
+        setStatusNotice("Status bar display mode updated");
+      } catch {}
+    } else {
+      try {
+        await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ menuBarDisplayMode: mode }),
+        });
+      } catch {}
+    }
+    setTimeout(() => setStatusNotice(null), 3000);
+  };
+
+  const handleToggleNotifications = async (enabled: boolean) => {
+    setEnableNotifications(enabled);
+    if (isDesktop) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        const existing = ((await invoke("get_user_config")) as any) || {};
+        await invoke("save_user_config", {
+          config: { ...existing, enableNotifications: enabled },
+        });
+        setStatusNotice(enabled ? "Native desktop notifications enabled" : "Notifications disabled");
+      } catch {}
+    }
+    setTimeout(() => setStatusNotice(null), 3000);
+  };
+
+  const handleChangeThreshold = async (val: number) => {
+    setNotificationThreshold(val);
+    if (isDesktop) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        const existing = ((await invoke("get_user_config")) as any) || {};
+        await invoke("save_user_config", {
+          config: { ...existing, notificationThreshold: val },
+        });
+        setStatusNotice(`Warning alert threshold set to ${val}%`);
+      } catch {}
+    }
+    setTimeout(() => setStatusNotice(null), 3000);
+  };
+
   const apiProviders = PROVIDER_CATALOG.filter((p) => p.envKeys.length > 0);
 
   return (
@@ -313,7 +382,7 @@ export function SettingsView() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-2">
+            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
               <div className="space-y-0.5">
                 <div className="font-medium text-zinc-200">Auto-Dismiss on Blur (Focus Loss)</div>
                 <div className="text-[11px] text-zinc-400">
@@ -323,6 +392,89 @@ export function SettingsView() {
               <Badge variant="outline" className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                 Active
               </Badge>
+            </div>
+
+            {/* Menu Bar Status Display Mode */}
+            <div className="py-2 border-b border-zinc-800 space-y-2">
+              <div className="space-y-0.5">
+                <div className="font-medium text-zinc-200">Status Bar Display Format</div>
+                <div className="text-[11px] text-zinc-400">
+                  Choose what telemetry appears directly next to the menu bar icon in the macOS status bar
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                {[
+                  { id: "primary_percent", label: "Primary %", preview: "55%" },
+                  { id: "lowest_quota", label: "Lowest Quota", preview: "⚠️ 8%" },
+                  { id: "wallet_spend", label: "Spend / Balance", preview: "$24.07" },
+                  { id: "provider_label", label: "Provider + %", preview: "Claude 55%" },
+                  { id: "icon_only", label: "Icon Only", preview: "—" },
+                ].map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => handleSelectMenuBarMode(mode.id)}
+                    className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                      menuBarMode === mode.id
+                        ? "bg-emerald-500/10 border-emerald-500/50 text-white"
+                        : "bg-zinc-900/60 border-zinc-800 hover:border-zinc-700 text-zinc-400"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-semibold text-xs text-zinc-200">{mode.label}</span>
+                      <span className="font-mono text-[10px] text-emerald-400">{mode.preview}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* macOS Native Notifications */}
+            <div className="py-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5 pr-4">
+                  <div className="font-medium text-zinc-200 flex items-center space-x-1.5">
+                    <Bell className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Low Quota Sound Alerts</span>
+                  </div>
+                  <div className="text-[11px] text-zinc-400">
+                    Send native macOS banner notifications with sound when remaining quota drops below threshold or resets.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleNotifications(!enableNotifications)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    enableNotifications ? "bg-emerald-500" : "bg-zinc-700"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      enableNotifications ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {enableNotifications && (
+                <div className="flex items-center space-x-2 pt-1 pl-1">
+                  <span className="text-[11px] text-zinc-400">Warning Threshold:</span>
+                  {[10, 15, 20, 25].map((thresh) => (
+                    <button
+                      key={thresh}
+                      type="button"
+                      onClick={() => handleChangeThreshold(thresh)}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-colors ${
+                        notificationThreshold === thresh
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                          : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                      }`}
+                    >
+                      &le; {thresh}%
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -3,7 +3,7 @@ import { delimiter, join } from "node:path";
 import { Command, Options } from "@effect/cli";
 import * as NodeContext from "@effect/platform-node/NodeContext";
 import { Effect, Option } from "effect";
-import type { ProviderId, QuotaSnapshot } from "@kuota/core";
+import { formatPromptString, type ProviderId, type QuotaSnapshot } from "@kuota/core";
 import { historyCommands, type CliRuntime } from "./history-commands.js";
 import {
   PROVIDER_METADATA,
@@ -157,6 +157,27 @@ export async function runCli(
 
   const tui = Command.make("tui", {}, () => Effect.promise(startTui));
 
+  const prompt = Command.make(
+    "prompt",
+    {
+      provider: Options.optional(Options.text("provider")),
+      format: Options.optional(Options.text("format")),
+    },
+    ({ provider, format }) =>
+      Effect.gen(function* () {
+        const selector = Option.getOrUndefined(provider);
+        const fmt = (Option.getOrUndefined(format) ?? "minimal") as "minimal" | "detailed" | "starship";
+        const ids: ProviderId[] = selector && isProviderId(selector)
+          ? [selector as ProviderId]
+          : PROVIDER_METADATA.map((item) => item.id);
+        const snapshots = yield* readAll(ids, providers);
+        const text = formatPromptString(snapshots, fmt, selector);
+        if (text) {
+          output.writeStdout(text);
+        }
+      }),
+  );
+
   const makeWebCommand = (name: string) =>
     Command.make(
       name,
@@ -196,6 +217,7 @@ export async function runCli(
   ).pipe(
     Command.withSubcommands([
       status,
+      prompt,
       providerList,
       doctor,
       tui,

@@ -6,3 +6,4 @@ export * from "./hash.js";
 export * from "./history/schema.js";
 export * from "./forecast/forecast.js";
 export * from "./catalog.js";
+export * from "./menubar.js";

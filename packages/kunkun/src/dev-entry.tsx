@@ -5,7 +5,15 @@ import { createRoot } from "react-dom/client";
 import { KuotaDashboard } from "./app.js";
 import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
 import { Loader } from "./components/kokonutui/loader.js";
-import type { QuotaSnapshot, QuotaForecastV1, QuotaHistoryEventV1 } from "@kuota/core";
+import {
+  computeTrayTitle,
+  detectQuotaAlertEvents,
+  getProviderMeta,
+  type MenuBarDisplayMode,
+  type QuotaSnapshot,
+  type QuotaForecastV1,
+  type QuotaHistoryEventV1,
+} from "@kuota/core";
 
 // High-fidelity fixture data matching 01-overview.png and 02-history-forecast.png
 const mockSnapshots: QuotaSnapshot[] = [
@@ -292,6 +300,7 @@ function DevApp() {
   const [isTray, setIsTray] = React.useState<boolean>(isTrayParam);
   const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const prevSnapshotsRef = React.useRef<QuotaSnapshot[]>([]);
 
   React.useEffect(() => {
     if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
@@ -321,20 +330,35 @@ function DevApp() {
           ) {
             try {
               const { invoke } = await import("@tauri-apps/api/core");
-              const active = data.find((s) => s.status === "ok");
-              let title = "Kuota";
-              if (active) {
-                if (active.windows[0]?.remainingPercent != null) {
-                  title = `${active.windows[0].remainingPercent.toFixed(0)}%`;
-                } else if (active.balance?.balances[0]?.totalBalance != null) {
-                  const b = active.balance.balances[0];
-                  title =
-                    b.currency === "CNY"
-                      ? `¥${b.totalBalance.toFixed(0)}`
-                      : `$${b.totalBalance.toFixed(2)}`;
+              const userCfg = ((await invoke("get_user_config")) as any) || {};
+              const displayMode = (userCfg.menuBarDisplayMode || "primary_percent") as MenuBarDisplayMode;
+              const title = computeTrayTitle(data, displayMode);
+              await invoke("update_tray_title", { title });
+
+              // Notifications check
+              if (userCfg.enableNotifications !== false && prevSnapshotsRef.current.length > 0) {
+                const threshold = userCfg.notificationThreshold || 15;
+                const alerts = detectQuotaAlertEvents(data, prevSnapshotsRef.current, threshold);
+                for (const alert of alerts) {
+                  const pMeta = getProviderMeta(alert.provider);
+                  if (alert.type === "low_quota") {
+                    await invoke("send_desktop_notification", {
+                      title: "Kuota · Low Quota Warning",
+                      subtitle: `${pMeta.name} is running low`,
+                      body: `Remaining quota is down to ${alert.remainingPercent}%. Time to pace or switch.`,
+                      sound: true,
+                    });
+                  } else if (alert.type === "quota_reset") {
+                    await invoke("send_desktop_notification", {
+                      title: "Kuota · Quota Restored",
+                      subtitle: `${pMeta.name} reset completed`,
+                      body: `Quota has been restored to ${alert.remainingPercent}%. Ready to build!`,
+                      sound: true,
+                    });
+                  }
                 }
               }
-              await invoke("update_tray_title", { title });
+              prevSnapshotsRef.current = data;
             } catch {}
           }
         } else if (snapshots.length === 0) {

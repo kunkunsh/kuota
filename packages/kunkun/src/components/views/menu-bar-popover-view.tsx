@@ -29,6 +29,8 @@ import {
   Flame,
   CheckCircle2,
   AlertTriangle,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 export interface MenuBarPopoverViewProps {
@@ -190,6 +192,36 @@ export function MenuBarPopoverView({
   const isExhaustedSelected =
     selectedSnapshot?.windows.some((w) => w.remainingPercent <= 0) ||
     selectedSnapshot?.errorCode === "QUOTA_EXHAUSTED";
+
+  // Smart Quota Fallback Advisor: find optimal active alternative provider when quota is exhausted
+  const fallbackAdvisor = React.useMemo(() => {
+    if (!selectedSnapshot || !isExhaustedSelected) return null;
+    const candidates = activeSnapshots.filter((s) => {
+      if (s.provider === selectedSnapshot.provider) return false;
+      const exhausted =
+        s.windows.some((w) => w.remainingPercent <= 0) || s.errorCode === "QUOTA_EXHAUSTED";
+      return !exhausted;
+    });
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => {
+      const aWin = a.windows[0]?.remainingPercent ?? 0;
+      const bWin = b.windows[0]?.remainingPercent ?? 0;
+      const aBal = a.balance?.balances[0]?.totalBalance ?? 0;
+      const bBal = b.balance?.balances[0]?.totalBalance ?? 0;
+      return (bWin + bBal * 10) - (aWin + aBal * 10);
+    });
+    const best = candidates[0];
+    const bestMeta = getProviderMeta(best.provider);
+    let desc = "";
+    if (best.windows.length > 0) {
+      desc = `${best.windows[0].remainingPercent.toFixed(0)}% remaining`;
+    } else if (best.balance && best.balance.balances.length > 0) {
+      desc = formatCurrencyAmount(best.balance.balances[0].totalBalance, best.balance.balances[0].currency);
+    } else {
+      desc = "Ready & funded";
+    }
+    return { provider: best.provider, meta: bestMeta, desc };
+  }, [selectedSnapshot, isExhaustedSelected, activeSnapshots]);
 
   // Mock / deterministic 7-day spend bars for the focused provider (CodexBar mini chart)
   const barChartData = React.useMemo(() => {
@@ -354,6 +386,31 @@ export function MenuBarPopoverView({
                 </div>
               </div>
             </div>
+
+            {/* Smart Fallback Advisor Banner when quota is depleted */}
+            {fallbackAdvisor && (
+              <div className="p-3 rounded-xl bg-gradient-to-r from-amber-500/15 to-orange-500/10 border border-amber-500/30 space-y-2">
+                <div className="flex items-center space-x-1.5 text-amber-400 font-semibold text-xs">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Smart Fallback Recommendation</span>
+                </div>
+                <div className="text-[11px] text-zinc-300 leading-relaxed">
+                  {meta.name} quota is exhausted. Switch to <strong className="text-white">{fallbackAdvisor.meta.name}</strong> ({fallbackAdvisor.desc}) to continue workflow without interruption.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(fallbackAdvisor.provider);
+                    setSearchQuery("");
+                  }}
+                  className="flex items-center justify-center space-x-1.5 w-full py-1.5 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-200 text-xs font-medium transition-colors"
+                >
+                  <ProviderIcon provider={fallbackAdvisor.provider} size={13} />
+                  <span>Switch to {fallbackAdvisor.meta.name}</span>
+                  <ArrowRight className="w-3 h-3 ml-0.5" />
+                </button>
+              </div>
+            )}
 
             {/* 2. Quota Windows & Pacing Bar (CodexBar Pacing & Reserve Bar) */}
             {sortedWindows.length > 0 ? (

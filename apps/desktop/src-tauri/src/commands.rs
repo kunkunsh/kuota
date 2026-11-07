@@ -389,3 +389,41 @@ pub fn set_menu_bar_visible(app: tauri::AppHandle, visible: bool) -> Result<(), 
 pub fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
+
+#[tauri::command]
+pub fn send_desktop_notification(
+    title: String,
+    subtitle: Option<String>,
+    body: String,
+    sound: Option<bool>,
+) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let sound_clause = if sound.unwrap_or(true) {
+            " sound name \"Purr\""
+        } else {
+            ""
+        };
+        let sub_clause = match subtitle {
+            Some(s) => format!(" subtitle \"{}\"", s.replace('"', "\\\"")),
+            None => "".to_string(),
+        };
+        let script = format!(
+            "display notification \"{}\" with title \"{}\"{}{}",
+            body.replace('"', "\\\""),
+            title.replace('"', "\\\""),
+            sub_clause,
+            sound_clause
+        );
+        let _ = Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .status();
+        return Ok(());
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (title, subtitle, body, sound);
+        Ok(())
+    }
+}
