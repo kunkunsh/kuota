@@ -1,3 +1,4 @@
+import "./style.css";
 import * as React from "react";
 // @ts-ignore
 import { createRoot } from "react-dom/client";

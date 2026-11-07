@@ -28,8 +28,10 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
     "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0"
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5"
   },
   "kunkun": {
     "identifier": "sh.kunkun.kuota",
