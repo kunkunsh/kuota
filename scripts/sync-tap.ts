@@ -2,21 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * Sync the local packaging/homebrew/Casks/kuota.rb cask to HuakunShen/homebrew-tap repository.
+ * Sync the local packaging/homebrew/Casks/kuota.rb cask to both
+ * kunkunsh/homebrew-tap and HuakunShen/homebrew-tap repositories.
  */
-async function main() {
-  const caskPath = join(import.meta.dir, "../packaging/homebrew/Casks/kuota.rb");
-  const content = readFileSync(caskPath, "utf-8");
-
-  if (content.includes("PENDING_RELEASE_SHA")) {
-    console.error(
-      "Cask still has PENDING_RELEASE_SHA. Render cask with real release artifacts first.",
-    );
-    process.exit(1);
-  }
-
+async function syncToRepo(repo: string, content: string) {
   const base64Content = Buffer.from(content).toString("base64");
-  const repo = "HuakunShen/homebrew-tap";
   const path = "Casks/kuota.rb";
 
   // Check if file exists to get sha
@@ -51,7 +41,6 @@ async function main() {
     },
   );
   const putExit = await putProc.exited;
-  const putOut = await new Response(putProc.stdout).text();
   const putErr = await new Response(putProc.stderr).text();
 
   if (putExit !== 0) {
@@ -60,6 +49,23 @@ async function main() {
   }
 
   console.log(`Successfully synced Casks/kuota.rb to ${repo}!`);
+}
+
+async function main() {
+  const caskPath = join(import.meta.dir, "../packaging/homebrew/Casks/kuota.rb");
+  const content = readFileSync(caskPath, "utf-8");
+
+  if (content.includes("PENDING_RELEASE_SHA")) {
+    console.error(
+      "Cask still has PENDING_RELEASE_SHA. Render cask with real release artifacts first.",
+    );
+    process.exit(1);
+  }
+
+  const targetRepos = ["kunkunsh/homebrew-tap", "HuakunShen/homebrew-tap"];
+  for (const repo of targetRepos) {
+    await syncToRepo(repo, content);
+  }
 }
 
 main().catch(console.error);

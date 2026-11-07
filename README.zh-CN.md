@@ -7,7 +7,7 @@
 **Truthful Multi-Provider AI Subscription & Quota Dashboard**
 
 [![Release](https://img.shields.io/github/v/release/kunkunsh/kuota?include_prereleases&logo=github&label=桌面端发布)](https://github.com/kunkunsh/kuota/releases)
-[![Homebrew Cask](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/HuakunShen/homebrew-tap)
+[![Homebrew Cask](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/kunkunsh/homebrew-tap)
 [![npm version](https://img.shields.io/npm/v/@kunkun.sh/kuota?logo=npm&label=npm)](https://www.npmjs.com/package/@kunkun.sh/kuota)
 [![CI](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -41,10 +41,13 @@ _Kuota 桌面端：实时余量统计、时间节奏（Pace）对比、多模型
 
 ### 1. Homebrew 安装（macOS 推荐）
 
-通过 [HuakunShen/homebrew-tap](https://github.com/HuakunShen/homebrew-tap) 一键安装 Kuota 桌面客户端：
+通过 [kunkunsh/homebrew-tap](https://github.com/kunkunsh/homebrew-tap) 一键安装 Kuota 桌面客户端：
 
 ```bash
-# 安装桌面端应用
+# 推荐从 kunkunsh 官方 Tap 安装
+brew install --cask kunkunsh/tap/kuota
+
+# 也支持从作者个人 Tap 安装
 brew install --cask HuakunShen/tap/kuota
 ```
 

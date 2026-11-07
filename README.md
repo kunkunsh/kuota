@@ -7,7 +7,7 @@
 **Truthful Multi-Provider AI Subscription & Quota Dashboard**
 
 [![Release](https://img.shields.io/github/v/release/kunkunsh/kuota?include_prereleases&logo=github&label=Desktop%20Release)](https://github.com/kunkunsh/kuota/releases)
-[![Homebrew Cask](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/HuakunShen/homebrew-tap)
+[![Homebrew Cask](https://img.shields.io/badge/homebrew-cask-orange?logo=homebrew)](https://github.com/kunkunsh/homebrew-tap)
 [![npm version](https://img.shields.io/npm/v/@kunkun.sh/kuota?logo=npm&label=npm)](https://www.npmjs.com/package/@kunkun.sh/kuota)
 [![CI](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kunkunsh/kuota/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -41,9 +41,11 @@ _Kuota Desktop App: Real-time quota balance, time budget pacing, and multi-provi
 
 ### 1. Homebrew (macOS Cask - Recommended)
 
-Install Kuota Desktop directly via [HuakunShen/homebrew-tap](https://github.com/HuakunShen/homebrew-tap):
+Install Kuota Desktop directly via [kunkunsh/homebrew-tap](https://github.com/kunkunsh/homebrew-tap):
 
 ```bash
+brew install --cask kunkunsh/tap/kuota
+# or
 brew install --cask HuakunShen/tap/kuota
 ```
 
