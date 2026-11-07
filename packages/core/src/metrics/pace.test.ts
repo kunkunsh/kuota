@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculatePace, type PaceInput } from "./pace.js";
+import { calculatePace, resolveIdealPace, type PaceInput } from "./pace.js";
 
 const start = new Date("2026-11-01T00:00:00.000Z");
 const end = new Date("2026-11-08T00:00:00.000Z");
@@ -70,5 +70,38 @@ describe("calculatePace", () => {
 
   it.each([-1, 101, NaN, Infinity, null])("rejects invalid usedPercent %s", (usedPercent) => {
     expect(calculatePace({ ...fixed, usedPercent })).toBeNull();
+  });
+});
+
+describe("resolveIdealPace", () => {
+  it("calculates ideal pace for weekly window with 3.5 days remaining (mid-cycle)", () => {
+    const now = new Date("2026-11-04T12:00:00.000Z");
+    const resetAt = new Date("2026-11-08T00:00:00.000Z").toISOString(); // exactly 3.5 days left out of 7 days
+    const result = resolveIdealPace(
+      { windowId: "weekly", resetAt, remainingPercent: 60 },
+      "claude",
+      now,
+    );
+    expect(result).not.toBeNull();
+    expect(result?.idealUsedPercent).toBe(50);
+    expect(result?.idealRemainingPercent).toBe(50);
+    expect(result?.paceStatus).toBe("ahead"); // remaining (60%) > ideal remaining (50%)
+  });
+
+  it("calculates ideal pace for monthly window with 15 days remaining", () => {
+    const now = new Date("2026-11-15T00:00:00.000Z");
+    const resetAt = new Date("2026-11-30T00:00:00.000Z").toISOString(); // 15 days left out of 30 days
+    const result = resolveIdealPace(
+      { windowId: "monthly.token_plan", resetAt, remainingPercent: 30 },
+      "mimo",
+      now,
+    );
+    expect(result).not.toBeNull();
+    expect(result?.idealRemainingPercent).toBe(50);
+    expect(result?.paceStatus).toBe("behind"); // remaining (30%) < ideal remaining (50%)
+  });
+
+  it("handles window with no reset timestamp cleanly", () => {
+    expect(resolveIdealPace({ windowId: "unlimited" })).toBeNull();
   });
 });

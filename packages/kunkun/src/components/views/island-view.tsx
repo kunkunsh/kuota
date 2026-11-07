@@ -4,6 +4,7 @@ import { AppleKey, AppleKeyCombo } from "../ui/apple-keyboard.js";
 import { ProviderIcon } from "../ui/provider-icon.js";
 import {
   calculatePace,
+  resolveIdealPace,
   windowProfile,
   getProviderMeta,
   formatCurrencyAmount,
@@ -175,21 +176,8 @@ export function IslandView({
 
                   if (!main) return null;
 
-                  const profile = windowProfile(s.provider, main.windowId, main.resetAt, now);
                   const reset = main.resetAt ? new Date(main.resetAt) : null;
-                  const start =
-                    reset && profile.durationMs !== null
-                      ? new Date(reset.getTime() - profile.durationMs)
-                      : null;
-
-                  const pace = calculatePace({
-                    now,
-                    startAt: start,
-                    resetAt: reset,
-                    usedPercent: main.usedPercent,
-                    semantics: profile.semantics,
-                    startSource: start ? "inferred" : "unknown",
-                  });
+                  const pace = resolveIdealPace(main, s.provider, now);
 
                   return (
                     <div
@@ -215,7 +203,7 @@ export function IslandView({
                       </div>
                       <PacedProgress
                         remainingPercent={main.remainingPercent}
-                        idealRemainingPercent={pace ? 100 - pace.idealUsedPercent : null}
+                        idealRemainingPercent={pace ? pace.idealRemainingPercent : null}
                         quality={pace?.quality}
                         heightClass="h-1.5"
                         barColor={

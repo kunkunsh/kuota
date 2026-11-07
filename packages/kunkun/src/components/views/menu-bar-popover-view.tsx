@@ -3,6 +3,7 @@ import {
   getProviderMeta,
   formatCurrencyAmount,
   isBalanceFirst,
+  resolveIdealPace,
   type QuotaSnapshot,
   type QuotaWindow,
   type QuotaForecastV1,
@@ -488,6 +489,7 @@ export function MenuBarPopoverView({
                   const label = formatWindowLabel(win.windowId);
                   const isExhausted = win.remainingPercent <= 0;
                   const remainingMs = win.resetAt ? new Date(win.resetAt).getTime() - Date.now() : null;
+                  const pace = resolveIdealPace(win, selectedSnapshot.provider, new Date());
 
                   return (
                     <div
@@ -505,7 +507,7 @@ export function MenuBarPopoverView({
                         )}
                       </div>
 
-                      {/* Multi-segment Paced Bar */}
+                      {/* Multi-segment Paced Bar with White Ideal Pace Marker */}
                       <div className="w-full h-2 rounded-full bg-zinc-800/90 overflow-hidden relative">
                         <div
                           className={cn(
@@ -518,13 +520,35 @@ export function MenuBarPopoverView({
                           )}
                           style={{ width: `${Math.min(100, Math.max(0, win.usedPercent))}%` }}
                         />
+                        {/* White Ideal Pace Bar (indicates expected usage speed vs time elapsed) */}
+                        {pace && (
+                          <div
+                            className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)] z-10"
+                            style={{ left: `${pace.idealUsedPercent}%` }}
+                            title={`Ideal usage at this point in cycle: ${pace.idealUsedPercent.toFixed(1)}%`}
+                          />
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5">
                         <span>
-                          {win.usedPercent < 50
-                            ? `${(50 - win.usedPercent).toFixed(0)}% in reserve · Safe to reset`
-                            : `${win.usedPercent.toFixed(0)}% used · On pace`}
+                          {pace ? (
+                            pace.paceStatus === "ahead" ? (
+                              <span className="text-emerald-400 font-medium">
+                                Ahead of pace · {(pace.idealUsedPercent - win.usedPercent).toFixed(0)}% in reserve
+                              </span>
+                            ) : pace.paceStatus === "behind" ? (
+                              <span className="text-amber-400 font-medium">
+                                Burning fast · {(win.usedPercent - pace.idealUsedPercent).toFixed(0)}% ahead of ideal pace
+                              </span>
+                            ) : (
+                              <span className="text-cyan-400 font-medium">On pace with reset schedule</span>
+                            )
+                          ) : win.usedPercent < 50 ? (
+                            `${(50 - win.usedPercent).toFixed(0)}% in reserve`
+                          ) : (
+                            `${win.usedPercent.toFixed(0)}% used`
+                          )}
                         </span>
                         <span className="text-zinc-500 font-mono">Used: {win.usedPercent.toFixed(0)}%</span>
                       </div>
@@ -733,11 +757,20 @@ export function MenuBarPopoverView({
 
                       <div className="flex items-center space-x-2 shrink-0">
                         {pWindows.length > 0 && !isExhausted && (
-                          <div className="w-12 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                          <div className="w-14 h-1.5 rounded-full bg-zinc-800 overflow-hidden relative">
                             <div
                               className="h-full bg-cyan-400 rounded-full"
                               style={{ width: `${Math.min(100, Math.max(0, pWindows[0].usedPercent))}%` }}
                             />
+                            {/* White Ideal Pace Marker */}
+                            {resolveIdealPace(pWindows[0], snap.provider, new Date()) && (
+                              <div
+                                className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_4px_rgba(255,255,255,0.95)] z-10"
+                                style={{
+                                  left: `${resolveIdealPace(pWindows[0], snap.provider, new Date())!.idealUsedPercent}%`,
+                                }}
+                              />
+                            )}
                           </div>
                         )}
                         <span className={cn("font-mono text-xs font-bold", rightColor)}>

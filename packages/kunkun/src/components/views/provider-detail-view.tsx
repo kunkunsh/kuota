@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { PacedProgress } from "../paced-progress.js";
 import {
   calculatePace,
+  resolveIdealPace,
   windowProfile,
   getProviderMeta,
   formatCurrencyAmount,
@@ -150,20 +151,7 @@ export function ProviderDetailView({
                     </TableHeader>
                     <TableBody className="divide-y divide-zinc-800/60">
                       {snapshot.windows.map((w) => {
-                        const profile = windowProfile(snapshot.provider, w.windowId, w.resetAt);
-                        const reset = w.resetAt ? new Date(w.resetAt) : null;
-                        const start =
-                          reset && profile.durationMs !== null
-                            ? new Date(reset.getTime() - profile.durationMs)
-                            : null;
-                        const pace = calculatePace({
-                          now: new Date(),
-                          startAt: start,
-                          resetAt: reset,
-                          usedPercent: w.usedPercent,
-                          semantics: profile.semantics,
-                          startSource: start ? "inferred" : "unknown",
-                        });
+                        const pace = resolveIdealPace(w, snapshot.provider, new Date());
 
                         return (
                           <TableRow key={w.windowId}>

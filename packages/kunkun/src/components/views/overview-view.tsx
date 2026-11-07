@@ -6,6 +6,7 @@ import { ProviderIcon } from "../ui/provider-icon.js";
 import { cn } from "../../lib/utils.js";
 import {
   calculatePace,
+  resolveIdealPace,
   windowProfile,
   getProviderMeta,
   formatCurrencyAmount,
@@ -694,7 +695,11 @@ export function OverviewView({
 
                     <PacedProgress
                       remainingPercent={remaining}
-                      idealRemainingPercent={null}
+                      idealRemainingPercent={
+                        sortedWindows[0]
+                          ? resolveIdealPace(sortedWindows[0], providerId, now)?.idealRemainingPercent ?? null
+                          : null
+                      }
                       label={`${meta.name} quota bar`}
                       barColor="bg-indigo-500"
                     />
@@ -762,7 +767,11 @@ export function OverviewView({
 
                     <PacedProgress
                       remainingPercent={primaryRemaining}
-                      idealRemainingPercent={null}
+                      idealRemainingPercent={
+                        primaryWindow
+                          ? resolveIdealPace(primaryWindow, providerId, now)?.idealRemainingPercent ?? null
+                          : null
+                      }
                       label={`${meta.name} primary pace bar`}
                       barColor={
                         providerId === "claude"
@@ -795,15 +804,15 @@ export function OverviewView({
                         </div>
                       </div>
 
-                      <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className={cn(
-                            "h-full transition-all duration-300 rounded-full",
-                            secondaryRemaining <= 20 ? "bg-amber-400" : "bg-sky-400",
-                          )}
-                          style={{ width: `${Math.min(100, Math.max(0, secondaryRemaining))}%` }}
-                        />
-                      </div>
+                      <PacedProgress
+                        remainingPercent={secondaryRemaining}
+                        idealRemainingPercent={
+                          resolveIdealPace(secondaryWindow, providerId, now)?.idealRemainingPercent ?? null
+                        }
+                        heightClass="h-1.5"
+                        showLegend={false}
+                        barColor={secondaryRemaining <= 20 ? "bg-amber-400" : "bg-sky-400"}
+                      />
                     </div>
                   )}
 
