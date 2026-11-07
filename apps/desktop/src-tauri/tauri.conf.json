@@ -5,7 +5,6 @@
   "identifier": "sh.kunkun.kuota.desktop",
   "build": {
     "beforeDevCommand": "bun --cwd ../.. dev",
-    "beforeBuildCommand": "bun --cwd ../../packages/kunkun build:web",
     "frontendDist": "../../../packages/kunkun/dist",
     "devUrl": "http://localhost:5173"
   },
