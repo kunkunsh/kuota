@@ -31,6 +31,8 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowRight,
+  Copy,
+  Check,
 } from "lucide-react";
 
 export interface MenuBarPopoverViewProps {
@@ -125,6 +127,18 @@ export function MenuBarPopoverView({
 
   // Search input state
   const [searchQuery, setSearchQuery] = React.useState<string>("");
+  const [copiedFallback, setCopiedFallback] = React.useState<boolean>(false);
+
+  const handleCopyFallback = (providerId: string) => {
+    let snippet = `export AI_PROVIDER=${providerId}`;
+    if (providerId === "antigravity") snippet = "agy";
+    else if (providerId === "codex") snippet = "codex";
+    else if (providerId === "claude") snippet = "claude";
+    else if (providerId === "deepseek") snippet = "export OPENAI_BASE_URL=https://api.deepseek.com/v1";
+    navigator.clipboard?.writeText(snippet);
+    setCopiedFallback(true);
+    setTimeout(() => setCopiedFallback(false), 2000);
+  };
 
   // Filtered providers based on search
   const filteredSnapshots = React.useMemo(() => {
@@ -397,18 +411,38 @@ export function MenuBarPopoverView({
                 <div className="text-[11px] text-zinc-300 leading-relaxed">
                   {meta.name} quota is exhausted. Switch to <strong className="text-white">{fallbackAdvisor.meta.name}</strong> ({fallbackAdvisor.desc}) to continue workflow without interruption.
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(fallbackAdvisor.provider);
-                    setSearchQuery("");
-                  }}
-                  className="flex items-center justify-center space-x-1.5 w-full py-1.5 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-200 text-xs font-medium transition-colors"
-                >
-                  <ProviderIcon provider={fallbackAdvisor.provider} size={13} />
-                  <span>Switch to {fallbackAdvisor.meta.name}</span>
-                  <ArrowRight className="w-3 h-3 ml-0.5" />
-                </button>
+                <div className="flex items-center space-x-2 pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(fallbackAdvisor.provider);
+                      setSearchQuery("");
+                    }}
+                    className="flex-1 flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-200 text-xs font-medium transition-colors"
+                  >
+                    <ProviderIcon provider={fallbackAdvisor.provider} size={13} />
+                    <span>Focus {fallbackAdvisor.meta.name}</span>
+                    <ArrowRight className="w-3 h-3 ml-0.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyFallback(fallbackAdvisor.provider)}
+                    title="Copy terminal fallback switch snippet"
+                    className="flex items-center justify-center space-x-1 py-1.5 px-2.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-amber-500/30 text-amber-300 text-xs font-medium transition-colors"
+                  >
+                    {copiedFallback ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-400" />
+                        <span className="text-[11px] text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-amber-300" />
+                        <span className="text-[11px]">Copy CLI</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
 

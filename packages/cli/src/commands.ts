@@ -162,9 +162,47 @@ export async function runCli(
     {
       provider: Options.optional(Options.text("provider")),
       format: Options.optional(Options.text("format")),
+      init: Options.optional(Options.text("init")),
     },
-    ({ provider, format }) =>
+    ({ provider, format, init }) =>
       Effect.gen(function* () {
+        const shell = Option.getOrUndefined(init);
+        if (shell) {
+          if (shell === "starship") {
+            output.writeStdout(
+              [
+                "# Add to ~/.config/starship.toml:",
+                "[custom.kuota]",
+                'command = "kuota prompt --format starship"',
+                'when = "command -v kuota >/dev/null 2>&1"',
+                'style = "bold cyan"',
+                'format = "[$output]($style) "',
+              ].join("\n"),
+            );
+            return;
+          }
+          if (shell === "zsh") {
+            output.writeStdout(
+              [
+                "# Add to ~/.zshrc:",
+                "RPROMPT='$(kuota prompt)'",
+              ].join("\n"),
+            );
+            return;
+          }
+          if (shell === "tmux") {
+            output.writeStdout(
+              [
+                "# Add to ~/.tmux.conf:",
+                "set -ag status-right ' #[fg=cyan]#(kuota prompt --format detailed)#[default]'",
+              ].join("\n"),
+            );
+            return;
+          }
+          output.writeStderr(`Unknown shell "${shell}". Supported: starship, zsh, tmux`);
+          return;
+        }
+
         const selector = Option.getOrUndefined(provider);
         const fmt = (Option.getOrUndefined(format) ?? "minimal") as "minimal" | "detailed" | "starship";
         const ids: ProviderId[] = selector && isProviderId(selector)
