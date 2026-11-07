@@ -10,69 +10,88 @@ export const openaiProvider = defineHttpProvider({
   defaultBaseUrl: "https://api.openai.com/v1",
   docUrl: "https://platform.openai.com/docs",
   fetchSnapshot: async ({ apiKey, baseUrl, fetch }) => {
-    // 1. Verify API Key validity against OpenAI v1 API
-    const modelsUrl = `${baseUrl.replace(/\/$/, "")}/models`;
-    const res = await fetch(modelsUrl, {
+    // 1. Verify API Key and retrieve user profile / organization
+    const meRes = await fetch(`${baseUrl.replace(/\/$/, "")}/me`, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         Accept: "application/json",
       },
     });
 
-    if (!res.ok) {
-      if (res.status === 401) {
-        return {
-          status: "unauthenticated",
-          errorCode: "INVALID_KEY",
-          source: "api.openai.com",
-          windows: [],
-        };
+    let userName: string | undefined;
+    let userEmail: string | undefined;
+    let orgTitle = "Personal";
+    let orgId: string | undefined;
+
+    if (meRes.ok) {
+      const meData = (await meRes.json().catch(() => ({}))) as any;
+      userName = meData?.name;
+      userEmail = meData?.email;
+      const defaultOrg = meData?.orgs?.data?.[0];
+      if (defaultOrg) {
+        orgTitle = defaultOrg.title || defaultOrg.name || "Personal";
+        orgId = defaultOrg.id;
       }
-      throw new Error(`OpenAI API error: HTTP ${res.status}`);
+    } else if (meRes.status === 401) {
+      return {
+        status: "unauthenticated",
+        errorCode: "INVALID_KEY",
+        source: "api.openai.com",
+        windows: [],
+      };
     }
 
-    const data = (await res.json()) as any;
-    const modelList = Array.isArray(data?.data) ? data.data : [];
+    // 2. Check if key has organization costs/usage reading scopes
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${apiKey}`,
+      Accept: "application/json",
+    };
+    if (orgId) {
+      headers["OpenAI-Organization"] = orgId;
+    }
 
-    // 2. Attempt reading usage if key has organization scopes
-    let usageAmount: number | undefined;
+    let hasUsageScope = false;
+    let currentSpend: number | undefined;
+
     try {
       const now = new Date();
       const startTime = Math.floor(new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000);
       const usageRes = await fetch(
         `https://api.openai.com/v1/organization/costs?start_time=${startTime}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            Accept: "application/json",
-          },
-        },
+        { headers },
       );
+
       if (usageRes.ok) {
-        const usageData = (await usageRes.json()) as any;
+        hasUsageScope = true;
+        const usageData = (await usageRes.json().catch(() => ({}))) as any;
         if (Array.isArray(usageData?.data) && usageData.data[0]?.results?.[0]?.amount?.value) {
-          usageAmount = usageData.data[0].results[0].amount.value;
+          currentSpend = usageData.data[0].results[0].amount.value;
         }
+      } else if (usageRes.status === 403) {
+        hasUsageScope = false;
       }
     } catch {
-      // restricted or project-scoped key
+      hasUsageScope = false;
     }
 
-    const balances: QuotaBalanceItem[] = [
-      {
-        currency: "USD",
-        totalBalance: 0,
-        usage: usageAmount ?? 0,
-      },
-    ];
+    // If key has usage read scope, return the balances.
+    // Otherwise, report honest active state without faking a $0.00 credit balance!
+    const balances: QuotaBalanceItem[] = hasUsageScope
+      ? [
+          {
+            currency: "USD",
+            totalBalance: 0,
+            usage: currentSpend,
+          },
+        ]
+      : [];
 
     return {
       status: "ok",
       source: "api.openai.com",
-      balance: {
-        balances,
-      },
+      balance: balances.length > 0 ? { balances } : null,
       windows: [],
+      errorCode: hasUsageScope ? null : "SCOPE_USAGE_READ_REQUIRED",
     };
   },
 });

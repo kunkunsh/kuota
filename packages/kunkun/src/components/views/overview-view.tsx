@@ -434,6 +434,66 @@ export function OverviewView({
             const hasBalance = Boolean(snapshot.balance && snapshot.balance.balances.length > 0);
             const isBalancePriority = isBalanceFirst(snapshot);
 
+            // Case 0: API Key Active (Requires Admin Scope to fetch billing)
+            if (
+              snapshot.errorCode === "SCOPE_USAGE_READ_REQUIRED" ||
+              (!hasBalance && sortedWindows.length === 0)
+            ) {
+              return (
+                <Card
+                  key={providerId}
+                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  onClick={() => onSelectProvider?.(providerId)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                          <ProviderIcon provider={providerId} size={18} />
+                        </div>
+                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                          {meta.name}
+                        </CardTitle>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                      >
+                        Project API Key
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                      Inference &amp; Chat Ready · Organization Scoped
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3.5 pt-1">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl font-bold text-zinc-100">
+                        Active Key
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-2 py-0.5 text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                      >
+                        Connected
+                      </Badge>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-400">
+                      <div className="flex items-center justify-between">
+                        <span>Key Type:</span>
+                        <span className="font-mono text-zinc-200">sk-proj-... (Project Key)</span>
+                      </div>
+                      <div className="text-[10.5px] text-zinc-400 leading-relaxed border-t border-zinc-800/60 pt-1.5">
+                        OpenAI restricts Project Keys from reading Billing by default. To display live credit and spend, grant <code className="text-zinc-200">api.usage.read</code> scope in OpenAI Console or use an Admin Key (<code className="text-zinc-200">sk-admin-...</code>).
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
+
             // Case 1: Pure Balance Provider (e.g. DeepSeek, OpenAI Platform)
             if (isBalancePriority && hasBalance && snapshot.balance) {
               const allBalances = snapshot.balance.balances;
