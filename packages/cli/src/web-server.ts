@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { Effect } from "effect";
 import { PROVIDER_METADATA, readAll, type QuotaProvider, builtInProviders, readConfigSync, writeConfig } from "@kuota/providers";
+import { collectSnapshots, queryHistory, queryForecasts } from "./history-service.js";
 import type { CliOutput } from "./commands.js";
 
 const MIME_TYPES: Record<string, string> = {
@@ -166,6 +167,71 @@ export async function startWebServer(
       return;
     }
 
+    if (pathname === "/api/history") {
+      try {
+        const from = url.searchParams.get("from") || undefined;
+        const to = url.searchParams.get("to") || undefined;
+        const provider = url.searchParams.get("provider") || undefined;
+        const windowId = url.searchParams.get("window") || undefined;
+
+        const result = await queryHistory({ from, to, provider, windowId });
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            schemaVersion: 1,
+            generatedAt: new Date().toISOString(),
+            events: result.events,
+            invalidLines: result.invalidLines,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/forecast") {
+      try {
+        const provider = url.searchParams.get("provider") || undefined;
+        const windowId = url.searchParams.get("window") || undefined;
+        const mode = (url.searchParams.get("mode") || "all-window") as any;
+
+        const result = await queryForecasts({ provider, windowId, mode });
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            schemaVersion: 1,
+            generatedAt: new Date().toISOString(),
+            forecasts: result.forecasts,
+            invalidLines: result.invalidLines,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+      return;
+    }
+
+    if (pathname === "/api/collect" && req.method === "POST") {
+      try {
+        const result = await collectSnapshots({ providers });
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            schemaVersion: 1,
+            generatedAt: new Date().toISOString(),
+            ...result,
+          }),
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+      return;
+    }
+
     // Static Web UI Hosting
     if (webDir) {
       let relativePath = pathname === "/" ? "/index.html" : pathname;
@@ -227,6 +293,20 @@ export async function startWebServer(
       if (shouldOpen) {
         openBrowser(serverUrl);
       }
+
+      // Initial background snapshot collection (delayed 3s after startup)
+      setTimeout(() => {
+        void collectSnapshots({ providers }).catch(() => {});
+      }, 3000);
+
+      // Periodic 15-minute background snapshot collection
+      const collectInterval = setInterval(() => {
+        void collectSnapshots({ providers }).catch(() => {});
+      }, 15 * 60 * 1000);
+
+      const clearCollectTimer = () => clearInterval(collectInterval);
+      process.on("SIGINT", clearCollectTimer);
+      process.on("SIGTERM", clearCollectTimer);
     });
 
     const shutdown = () => {

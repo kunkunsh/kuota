@@ -15,7 +15,7 @@ import {
   type QuotaHistoryEventV1,
 } from "@kuota/core";
 
-// High-fidelity fixture data matching 01-overview.png and 02-history-forecast.png
+// Offline fallback fixture data matching clean schema
 const mockSnapshots: QuotaSnapshot[] = [
   {
     provider: "claude",
@@ -34,12 +34,6 @@ const mockSnapshots: QuotaSnapshot[] = [
         usedPercent: 78,
         remainingPercent: 22,
         resetAt: new Date(Date.now() + 1.2 * 3_600_000).toISOString(),
-      },
-      {
-        windowId: "sonnet.family",
-        usedPercent: 32,
-        remainingPercent: 68,
-        resetAt: new Date(Date.now() + 3.5 * 86_400_000).toISOString(),
       },
     ],
     errorCode: null,
@@ -74,189 +68,67 @@ const mockSnapshots: QuotaSnapshot[] = [
     ],
     errorCode: null,
   },
-  {
-    provider: "opencodego",
-    status: "ok",
-    fetchedAt: new Date(Date.now() - 1 * 60_000).toISOString(),
-    source: "opencode-zen-api",
-    billingModel: "subscription",
-    windows: [
-      {
-        windowId: "weekly",
-        usedPercent: 43,
-        remainingPercent: 57,
-        resetAt: new Date(Date.now() + 4.2 * 86_400_000).toISOString(),
-      },
-      {
-        windowId: "monthly",
-        usedPercent: 60,
-        remainingPercent: 40,
-        resetAt: new Date(Date.now() + 18.5 * 86_400_000).toISOString(),
-      },
-    ],
-    errorCode: null,
-  },
-  {
-    provider: "deepseek",
-    status: "ok",
-    fetchedAt: new Date(Date.now() - 3 * 60_000).toISOString(),
-    source: "deepseek-user-balance",
-    billingModel: "balance",
-    windows: [],
-    balance: {
-      balances: [
-        {
-          currency: "USD",
-          totalBalance: 3.68,
-          grantedBalance: 0,
-          toppedUpBalance: 3.68,
-          usage: null,
-          limit: null,
-          burnRateDaily: null,
-          estimatedDaysLeft: null,
-        },
-      ],
-    },
-    errorCode: null,
-  },
-  {
-    provider: "openrouter",
-    status: "ok",
-    fetchedAt: new Date(Date.now() - 5 * 60_000).toISOString(),
-    source: "openrouter-api",
-    billingModel: "hybrid",
-    windows: [
-      {
-        windowId: "daily_free_limit",
-        usedPercent: 25,
-        remainingPercent: 75,
-        resetAt: new Date(Date.now() + 0.6 * 86_400_000).toISOString(),
-      },
-    ],
-    balance: {
-      balances: [
-        {
-          currency: "USD",
-          totalBalance: 20.0,
-          grantedBalance: 0,
-          toppedUpBalance: 20.0,
-          usage: 20.0,
-          limit: 40.0,
-          burnRateDaily: 1.25,
-          estimatedDaysLeft: 16,
-        },
-      ],
-    },
-    errorCode: null,
-  },
 ];
 
-const mockForecasts: QuotaForecastV1[] = [
-  {
-    schemaVersion: 1,
-    provider: "claude",
-    windowId: "weekly.all",
-    computedAt: new Date().toISOString(),
-    currentUsedPercent: 55,
-    idealUsedPercent: 50,
-    observedSpanHours: 84,
-    sampleCount: 72,
-    slopePercentPerHour: 0.65,
-    exhaustedAt: new Date(Date.now() + 2.8 * 86_400_000).toISOString(),
-    projectedUsedAtResetPercent: 108,
-    expectedTimeToLimitHours: 67,
-    mode: "all-window",
-    quality: "medium",
-    reasons: ["Moderate confidence (short window, 72 samples)"],
-  },
-  {
-    schemaVersion: 1,
-    provider: "codex",
-    windowId: "weekly.all",
-    computedAt: new Date().toISOString(),
-    currentUsedPercent: 39,
-    idealUsedPercent: 28,
-    observedSpanHours: 120,
-    sampleCount: 144,
-    slopePercentPerHour: 0.28,
-    exhaustedAt: null, // On pace, safe to reset
-    projectedUsedAtResetPercent: 62,
-    expectedTimeToLimitHours: null,
-    mode: "all-window",
-    quality: "high",
-    reasons: ["High confidence (consistent pacing over 5 days)"],
-  },
-];
+function computeSeriesFromEvents(
+  events: readonly QuotaHistoryEventV1[],
+): Record<string, number[]> {
+  const result: Record<string, number[]> = {};
+  for (const e of events) {
+    if (
+      e.kind === "quota_observed" &&
+      "windowId" in e &&
+      e.windowId &&
+      typeof e.usedPercent === "number"
+    ) {
+      const key = `${e.provider}/${e.windowId}`;
+      if (!result[key]) result[key] = [];
+      result[key].push(e.usedPercent);
+    }
+  }
+  return result;
+}
 
-const mockSeries: Record<string, number[]> = {
-  "claude/weekly.all": [10, 15, 22, 28, 35, 42, 48, 55],
-  "claude/primary.5h": [10, 25, 45, 60, 78],
-  "codex/weekly.all": [5, 12, 18, 25, 30, 34, 39],
-  "antigravity/gemini.quota": [10, 20, 30, 40, 50],
-};
+async function loadHistoryData(): Promise<{
+  events: QuotaHistoryEventV1[];
+  forecasts: QuotaForecastV1[];
+}> {
+  let events: QuotaHistoryEventV1[] = [];
+  let forecasts: QuotaForecastV1[] = [];
 
-const mockEvents: QuotaHistoryEventV1[] = [
-  {
-    schemaVersion: 1,
-    eventId: "e1f8a93b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
-    kind: "quota_observed",
-    observedAt: new Date(Date.now() - 4 * 60_000).toISOString(),
-    recordedAt: new Date(Date.now() - 4 * 60_000).toISOString(),
-    provider: "claude",
-    accountScope: null,
-    deviceId: "local-mac-station-01",
-    windowId: "weekly.all",
-    epochId: null,
-    semantics: "fixed",
-    startAt: null,
-    resetAt: new Date(Date.now() + 3.5 * 86_400_000).toISOString(),
-    usedPercent: 55,
-    remainingPercent: 45,
-    source: "claude-oauth-usage",
-    state: "ok",
-    errorCode: null,
-  },
-  {
-    schemaVersion: 1,
-    eventId: "d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1fa1b2c3d4e5f6a7b8c9d0e1f",
-    kind: "quota_observed",
-    observedAt: new Date(Date.now() - 24 * 3_600_000).toISOString(),
-    recordedAt: new Date(Date.now() - 24 * 3_600_000).toISOString(),
-    provider: "claude",
-    accountScope: null,
-    deviceId: "local-mac-station-01",
-    windowId: "weekly.all",
-    epochId: null,
-    semantics: "fixed",
-    startAt: null,
-    resetAt: new Date(Date.now() + 4.5 * 86_400_000).toISOString(),
-    usedPercent: 42,
-    remainingPercent: 58,
-    source: "claude-oauth-usage",
-    state: "ok",
-    errorCode: null,
-  },
-  {
-    schemaVersion: 1,
-    eventId: "c3d4e5f6a7b8c9d0e1fa1b2c3d4e5f6a7b8c9d0e1fd2e3f4a5b6c7d8e9f0a1b2c3",
-    kind: "quota_observed",
-    observedAt: new Date(Date.now() - 48 * 3_600_000).toISOString(),
-    recordedAt: new Date(Date.now() - 48 * 3_600_000).toISOString(),
-    provider: "codex",
-    accountScope: null,
-    deviceId: "local-mac-station-01",
-    windowId: "weekly.all",
-    epochId: null,
-    semantics: "fixed",
-    startAt: null,
-    resetAt: new Date(Date.now() + 6.1 * 86_400_000).toISOString(),
-    usedPercent: 28,
-    remainingPercent: 72,
-    source: "codex-app-server",
-    state: "ok",
-    errorCode: null,
-  },
-];
+  const isTauri =
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+
+  if (isTauri) {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const hRes = await invoke<any>("get_quota_history", {});
+      if (hRes && Array.isArray(hRes.events)) events = hRes.events;
+      const fRes = await invoke<any>("get_quota_forecast", {});
+      if (fRes && Array.isArray(fRes.forecasts)) forecasts = fRes.forecasts;
+      return { events, forecasts };
+    } catch (err) {
+      console.warn("Tauri history invoke failed, falling back to fetch", err);
+    }
+  }
+
+  try {
+    const hRes = await fetch("/api/history");
+    if (hRes.ok) {
+      const hJson = await hRes.json();
+      if (hJson && Array.isArray(hJson.events)) events = hJson.events;
+    }
+    const fRes = await fetch("/api/forecast");
+    if (fRes.ok) {
+      const fJson = await fRes.json();
+      if (fJson && Array.isArray(fJson.forecasts)) forecasts = fJson.forecasts;
+    }
+  } catch {
+    // offline fallback
+  }
+
+  return { events, forecasts };
+}
 
 async function loadQuotaStatus(forceFresh = false): Promise<QuotaSnapshot[] | null> {
   const isTauri =
@@ -299,6 +171,8 @@ function DevApp() {
   const isTrayParam = params.get("window") === "tray" || params.get("route") === "popover";
   const [isTray, setIsTray] = React.useState<boolean>(isTrayParam);
   const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
+  const [historyEvents, setHistoryEvents] = React.useState<QuotaHistoryEventV1[]>([]);
+  const [forecasts, setForecasts] = React.useState<QuotaForecastV1[]>([]);
   const [loading, setLoading] = React.useState(true);
   const prevSnapshotsRef = React.useRef<QuotaSnapshot[]>([]);
 
@@ -321,7 +195,16 @@ function DevApp() {
     async (forceFresh = false) => {
       try {
         setLoading(true);
-        const data = await loadQuotaStatus(forceFresh);
+        const [data, histData] = await Promise.all([
+          loadQuotaStatus(forceFresh),
+          loadHistoryData(),
+        ]);
+
+        if (histData) {
+          setHistoryEvents(histData.events);
+          setForecasts(histData.forecasts);
+        }
+
         if (data && data.length > 0) {
           setSnapshots(data);
           if (
@@ -407,9 +290,9 @@ function DevApp() {
       initialRoute={initialRoute}
       islandMode={islandMode}
       snapshots={snapshots}
-      forecasts={mockForecasts}
-      series={mockSeries}
-      events={mockEvents}
+      forecasts={forecasts}
+      series={computeSeriesFromEvents(historyEvents)}
+      events={historyEvents}
       isRefreshing={loading}
       onRefresh={() => fetchLiveStatus(true)}
     />

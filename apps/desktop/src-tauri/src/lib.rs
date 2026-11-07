@@ -163,11 +163,26 @@ pub fn run() {
                 let _ = window.set_focus();
             }
 
+            // Automatic background snapshot collector every 15 minutes
+            std::thread::spawn(|| {
+                // Initial collection after 4 seconds
+                std::thread::sleep(Duration::from_secs(4));
+                let _ = commands::execute_cli_subcommand("collect", &["--once", "--json"]);
+
+                loop {
+                    std::thread::sleep(Duration::from_secs(15 * 60));
+                    let _ = commands::execute_cli_subcommand("collect", &["--once", "--json"]);
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_quota_status,
             commands::refresh_quota,
+            commands::get_quota_history,
+            commands::get_quota_forecast,
+            commands::collect_quota_snapshot,
             commands::get_app_info,
             commands::open_external_url,
             commands::update_tray_title,

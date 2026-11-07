@@ -92,49 +92,92 @@ export function historyCommands(
 
   const collect = Command.make(
     "collect",
-    { once: Options.boolean("once"), provider, json },
-    ({ once, provider: p, json: asJson }) =>
+    {
+      once: Options.boolean("once"),
+      daemon: Options.boolean("daemon"),
+      interval: Options.withDefault(Options.integer("interval"), 15),
+      provider,
+      json,
+    },
+    ({ once, daemon, interval, provider: p, json: asJson }) =>
       Effect.gen(function* () {
-        if (!once) return fail(asJson, "ONCE_REQUIRED");
+        if (!once && !daemon) return fail(asJson, "ONCE_REQUIRED");
         const selected = provSelector(p, asJson);
         if (selected === "bad") return;
         const ids = selected ? [selected] : PROVIDER_METADATA.map((m) => m.id);
-        const snapshots: readonly QuotaSnapshot[] = yield* readAll(ids, providers);
-        const store = journal();
-        const deviceId = runtime.deviceId ?? (yield* Effect.promise(() => loadDeviceId(directory)));
-        const recordedAt = now().toISOString();
-        const collected: {
-          provider: string;
-          status: string;
-          written: number;
-          duplicates: number;
-        }[] = [];
-        const errors: { code: string }[] = [];
-        for (const snapshot of snapshots) {
-          // accountScope stays null: no provider proves an account identity without reading secrets.
-          const events = historyEventsFromSnapshot(snapshot, {
-            deviceId,
-            accountScope: null,
-            recordedAt,
-          });
-          try {
-            const result = yield* Effect.promise(() => store.append(events));
-            collected.push({ provider: snapshot.provider, status: snapshot.status, ...result });
-          } catch {
-            errors.push({ code: "JOURNAL_WRITE_FAILED" });
+
+        const runBatch = async () => {
+          const snapshots: readonly QuotaSnapshot[] = await Effect.runPromise(readAll(ids, providers));
+          const store = journal();
+          const deviceId = runtime.deviceId ?? (await loadDeviceId(directory));
+          const recordedAt = now().toISOString();
+          const collected: {
+            provider: string;
+            status: string;
+            written: number;
+            duplicates: number;
+          }[] = [];
+          const errors: { code: string }[] = [];
+          for (const snapshot of snapshots) {
+            const events = historyEventsFromSnapshot(snapshot, {
+              deviceId,
+              accountScope: null,
+              recordedAt,
+            });
+            try {
+              const result = await store.append(events);
+              collected.push({ provider: snapshot.provider, status: snapshot.status, ...result });
+            } catch {
+              errors.push({ code: "JOURNAL_WRITE_FAILED" });
+            }
           }
-        }
-        yield* Effect.promise(() => store.applyRetention(now())).pipe(
-          Effect.catchAllDefect(() => Effect.void),
-        );
-        if (errors.length > 0) setExit(1);
-        emit(asJson, { collected, errors }, () =>
-          collected
+          try {
+            await store.applyRetention(now());
+          } catch {
+            // ignore
+          }
+          return { collected, errors };
+        };
+
+        const firstResult = yield* Effect.promise(runBatch);
+        if (firstResult.errors.length > 0) setExit(1);
+        emit(asJson, firstResult, () =>
+          firstResult.collected
             .map(
               (c) => `${c.provider}: ${c.status}, ${c.written} written, ${c.duplicates} duplicate`,
             )
             .join("\n"),
         );
+
+        if (daemon) {
+          if (!asJson) {
+            output.writeStdout(`[kuota daemon] Scheduled periodic snapshot every ${interval} minutes. Press Ctrl+C to stop.`);
+          }
+          yield* Effect.promise(
+            () =>
+              new Promise<void>((resolve) => {
+                const timer = setInterval(async () => {
+                  try {
+                    const res = await runBatch();
+                    if (!asJson) {
+                      output.writeStdout(
+                        `[${new Date().toLocaleTimeString()}] Collected snapshots: ${res.collected.map((c) => `${c.provider}(${c.written})`).join(", ")}`,
+                      );
+                    }
+                  } catch {
+                    // non-fatal in daemon
+                  }
+                }, Math.max(1, interval) * 60_000);
+
+                const stop = () => {
+                  clearInterval(timer);
+                  resolve();
+                };
+                process.on("SIGINT", stop);
+                process.on("SIGTERM", stop);
+              }),
+          );
+        }
       }),
   );
 

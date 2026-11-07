@@ -224,10 +224,7 @@ function KuotaDashboardInner({
   historyEvents,
   events,
   forecasts = [],
-  series = {
-    "claude/weekly.all": [20, 32, 40, 48, 55],
-    "codex/secondary": [45, 52, 60, 64, 68],
-  },
+  series = {},
   now = new Date(),
   onRefresh,
   isRefreshing,

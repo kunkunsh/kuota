@@ -105,19 +105,19 @@ fn inject_keyring_env(cmd: &mut Command) {
     }
 }
 
-fn execute_probe() -> Result<Value, String> {
+pub fn execute_cli_subcommand(subcmd: &str, extra_args: &[&str]) -> Result<Value, String> {
     let augmented_path = get_augmented_path();
     let repo_root = find_repo_root();
 
-    // Candidate 1: bun packages/cli/src/main.ts status --json
+    // Candidate 1: bun packages/cli/src/main.ts <subcmd> <args>
     if let Some(ref root) = repo_root {
         let bun_path = find_binary("bun").unwrap_or_else(|| PathBuf::from("bun"));
         let cli_script = root.join("packages").join("cli").join("src").join("main.ts");
         if cli_script.exists() {
             let mut cmd = Command::new(&bun_path);
             cmd.arg(&cli_script)
-                .arg("status")
-                .arg("--json")
+                .arg(subcmd)
+                .args(extra_args)
                 .env("PATH", &augmented_path)
                 .current_dir(root);
             inject_keyring_env(&mut cmd);
@@ -133,14 +133,14 @@ fn execute_probe() -> Result<Value, String> {
             }
         }
 
-        // Candidate 2: node packages/cli/dist/main.mjs status --json
+        // Candidate 2: node packages/cli/dist/main.mjs <subcmd> <args>
         let node_path = find_binary("node").unwrap_or_else(|| PathBuf::from("node"));
         let dist_script = root.join("packages").join("cli").join("dist").join("main.mjs");
         if dist_script.exists() {
             let mut cmd = Command::new(&node_path);
             cmd.arg(&dist_script)
-                .arg("status")
-                .arg("--json")
+                .arg(subcmd)
+                .args(extra_args)
                 .env("PATH", &augmented_path)
                 .current_dir(root);
             inject_keyring_env(&mut cmd);
@@ -160,8 +160,8 @@ fn execute_probe() -> Result<Value, String> {
     // Candidate 3: global kuota command
     let kuota_path = find_binary("kuota").unwrap_or_else(|| PathBuf::from("kuota"));
     let mut cmd = Command::new(&kuota_path);
-    cmd.arg("status")
-        .arg("--json")
+    cmd.arg(subcmd)
+        .args(extra_args)
         .env("PATH", &augmented_path);
     inject_keyring_env(&mut cmd);
     let output = cmd.output();
@@ -182,6 +182,10 @@ fn execute_probe() -> Result<Value, String> {
         "providers": [],
         "errors": [{"code": "NO_CLI_AVAILABLE"}]
     }))
+}
+
+fn execute_probe() -> Result<Value, String> {
+    execute_cli_subcommand("status", &["--json"])
 }
 
 pub async fn get_quota_status_impl(
@@ -426,4 +430,60 @@ pub fn send_desktop_notification(
         let _ = (title, subtitle, body, sound);
         Ok(())
     }
+}
+
+#[tauri::command]
+pub async fn get_quota_history(
+    from: Option<String>,
+    to: Option<String>,
+    provider: Option<String>,
+    window: Option<String>,
+) -> Result<Value, String> {
+    let mut args = vec!["--json".to_string()];
+    if let Some(f) = from {
+        args.push("--from".to_string());
+        args.push(f);
+    }
+    if let Some(t) = to {
+        args.push("--to".to_string());
+        args.push(t);
+    }
+    if let Some(p) = provider {
+        args.push("--provider".to_string());
+        args.push(p);
+    }
+    if let Some(w) = window {
+        args.push("--window".to_string());
+        args.push(w);
+    }
+    let str_args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+    execute_cli_subcommand("history", &str_args)
+}
+
+#[tauri::command]
+pub async fn get_quota_forecast(
+    provider: Option<String>,
+    window: Option<String>,
+    mode: Option<String>,
+) -> Result<Value, String> {
+    let mut args = vec!["--json".to_string()];
+    if let Some(p) = provider {
+        args.push("--provider".to_string());
+        args.push(p);
+    }
+    if let Some(w) = window {
+        args.push("--window".to_string());
+        args.push(w);
+    }
+    if let Some(m) = mode {
+        args.push("--mode".to_string());
+        args.push(m);
+    }
+    let str_args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+    execute_cli_subcommand("forecast", &str_args)
+}
+
+#[tauri::command]
+pub async fn collect_quota_snapshot() -> Result<Value, String> {
+    execute_cli_subcommand("collect", &["--once", "--json"])
 }

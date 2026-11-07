@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../../lib/utils.js";
+import type { QuotaHistoryEventV1 } from "@kuota/core";
 
 export interface ActivityTerrainDataPoint {
   col: number; // e.g. 0 to 25 (26 columns / weeks)
@@ -13,44 +14,63 @@ export interface ActivityTerrainProps extends React.HTMLAttributes<HTMLDivElemen
   title?: string;
   subtitle?: string;
   data?: readonly ActivityTerrainDataPoint[];
+  events?: readonly QuotaHistoryEventV1[];
   cols?: number;
   rows?: number;
   className?: string;
 }
 
-// Generate realistic deterministic activity dataset if none provided
-function generateDefaultData(cols = 26, rows = 4): ActivityTerrainDataPoint[] {
+export function buildTerrainFromEvents(
+  events: readonly QuotaHistoryEventV1[],
+  cols = 26,
+  rows = 4,
+): { points: ActivityTerrainDataPoint[]; totalContributions: number } {
   const points: ActivityTerrainDataPoint[] = [];
+  const now = Date.now();
+  const weekMs = 7 * 86_400_000;
+  const startMs = now - (cols - 1) * weekMs;
+
+  const bins: number[][] = Array.from({ length: cols }, () => Array(rows).fill(0));
+  let total = 0;
+
+  for (const e of events) {
+    const t = new Date(e.observedAt).getTime();
+    if (isNaN(t) || t < startMs || t > now) continue;
+    const col = Math.min(cols - 1, Math.max(0, Math.floor((t - startMs) / weekMs)));
+    const hour = new Date(e.observedAt).getUTCHours();
+    const row = Math.min(rows - 1, Math.floor(hour / 6));
+    bins[col][row]++;
+    total++;
+  }
+
+  let maxCount = 1;
   for (let c = 0; c < cols; c++) {
     for (let r = 0; r < rows; r++) {
-      // Create organic terrain peaks and valleys
-      const dist1 = Math.hypot(c - 7, r - 1.5);
-      const dist2 = Math.hypot(c - 20, r - 2);
-      const dist3 = Math.hypot(c - 14, r - 3);
-      let v = 0;
-      if (dist1 < 3.5) v += Math.cos((dist1 / 3.5) * Math.PI * 0.5) * 85;
-      if (dist2 < 4.0) v += Math.cos((dist2 / 4.0) * Math.PI * 0.5) * 65;
-      if (dist3 < 2.5) v += Math.cos((dist3 / 2.5) * Math.PI * 0.5) * 45;
-      // Some background baseline activity
-      const noise = ((c * 17 + r * 31) % 19) / 19;
-      if (noise > 0.4) v += noise * 22;
-      const finalVal = Math.min(100, Math.round(v));
+      if (bins[c][r] > maxCount) maxCount = bins[c][r];
+    }
+  }
+
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const cnt = bins[c][r];
+      const val = cnt === 0 ? 0 : Math.min(100, Math.max(18, Math.round((cnt / maxCount) * 100)));
       points.push({
         col: c,
         row: r,
-        value: finalVal,
-        label: `W${c + 1} · ${r === 0 ? "Night" : r === 1 ? "Morning" : r === 2 ? "Afternoon" : "Evening"}`,
-        count: Math.round(finalVal * 0.8),
+        value: val,
+        count: cnt,
+        label: `Week ${c + 1} · ${r === 0 ? "Night (00-06 UTC)" : r === 1 ? "Morning (06-12 UTC)" : r === 2 ? "Afternoon (12-18 UTC)" : "Evening (18-24 UTC)"}`,
       });
     }
   }
-  return points;
+  return { points, totalContributions: total };
 }
 
 export function ActivityTerrain({
   title = "Activity",
-  subtitle = "402 contributions in the last 26 weeks",
+  subtitle,
   data,
+  events,
   cols = 26,
   rows = 4,
   className,
@@ -59,7 +79,39 @@ export function ActivityTerrain({
   const [mode, setMode] = React.useState<"flat" | "terrain">("terrain");
   const [hovered, setHovered] = React.useState<ActivityTerrainDataPoint | null>(null);
 
-  const points = React.useMemo(() => data ?? generateDefaultData(cols, rows), [data, cols, rows]);
+  const { terrainPoints, dynamicSubtitle } = React.useMemo(() => {
+    if (data) {
+      return { terrainPoints: data, dynamicSubtitle: subtitle ?? "Real activity samples" };
+    }
+    if (events) {
+      const { points, totalContributions } = buildTerrainFromEvents(events, cols, rows);
+      return {
+        terrainPoints: points,
+        dynamicSubtitle:
+          subtitle ??
+          `${totalContributions} telemetry observation${totalContributions === 1 ? "" : "s"} recorded across 26 weeks`,
+      };
+    }
+    // Empty initial terrain
+    const emptyPoints: ActivityTerrainDataPoint[] = [];
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        emptyPoints.push({
+          col: c,
+          row: r,
+          value: 0,
+          count: 0,
+          label: `Week ${c + 1}`,
+        });
+      }
+    }
+    return {
+      terrainPoints: emptyPoints,
+      dynamicSubtitle: subtitle ?? "Awaiting telemetry samples",
+    };
+  }, [data, events, cols, rows, subtitle]);
+
+  const points = terrainPoints;
 
   // Geometry parameters for 3D isometric projection
   const tileWidth = 24;
@@ -126,7 +178,7 @@ export function ActivityTerrain({
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <h3 className="text-base font-bold text-zinc-100">{title}</h3>
-          <p className="text-xs text-zinc-400 font-normal">{subtitle}</p>
+          <p className="text-xs text-zinc-400 font-normal">{dynamicSubtitle}</p>
         </div>
 
         {/* Kokonut Flat / Terrain Switcher */}
