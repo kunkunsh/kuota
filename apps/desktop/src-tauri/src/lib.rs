@@ -158,6 +158,9 @@ pub fn run() {
                         let _ = win_clone.hide();
                     }
                 });
+
+                let _ = window.show();
+                let _ = window.set_focus();
             }
 
             Ok(())
@@ -177,6 +180,15 @@ pub fn run() {
             commands::set_menu_bar_visible,
             commands::exit_app,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running Kuota desktop application");
+        .build(tauri::generate_context!())
+        .expect("error while building Kuota desktop application")
+        .run(|app, event| match event {
+            tauri::RunEvent::Reopen { .. } => {
+                if let Some(win) = app.get_webview_window("main") {
+                    let _ = win.show();
+                    let _ = win.set_focus();
+                }
+            }
+            _ => {}
+        });
 }
