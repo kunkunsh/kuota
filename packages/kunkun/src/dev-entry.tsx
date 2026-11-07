@@ -3,6 +3,7 @@ import * as React from "react";
 // @ts-ignore
 import { createRoot } from "react-dom/client";
 import { KuotaDashboard } from "./app.js";
+import { Loader } from "./components/kokonutui/loader.js";
 import type { QuotaSnapshot, QuotaForecastV1, QuotaHistoryEventV1 } from "@kuota/core";
 
 // High-fidelity fixture data matching 01-overview.png and 02-history-forecast.png
@@ -182,6 +183,7 @@ async function loadQuotaStatus(forceFresh = false): Promise<QuotaSnapshot[] | nu
       const { invoke } = await import("@tauri-apps/api/core");
       const command = forceFresh ? "refresh_quota" : "get_quota_status";
       const json = await invoke<any>(command, { fresh: forceFresh });
+      console.log(`[Tauri ${command}] result:`, json);
       if (json && Array.isArray(json.providers) && json.providers.length > 0) {
         return json.providers;
       }
@@ -240,11 +242,12 @@ function DevApp() {
 
   if (loading && snapshots.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen w-full bg-[#09090b] text-zinc-400">
-        <div className="flex flex-col items-center space-y-3">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-medium">Connecting to local AI quota providers...</span>
-        </div>
+      <div className="flex items-center justify-center h-screen w-full bg-[#09090b] text-zinc-100">
+        <Loader
+          size="md"
+          title="Connecting to local AI quota providers..."
+          subtitle="Querying live telemetry from Antigravity, Claude Code, and Codex"
+        />
       </div>
     );
   }
@@ -257,6 +260,7 @@ function DevApp() {
       forecasts={mockForecasts}
       series={mockSeries}
       events={mockEvents}
+      isRefreshing={loading}
       onRefresh={() => fetchLiveStatus(true)}
     />
   );

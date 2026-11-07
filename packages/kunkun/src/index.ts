@@ -1,5 +1,6 @@
 export * from "./app.js";
 export * from "./components/ui/kuota-logo.js";
+export * from "./components/kokonutui/loader.js";
 export * from "./lib/theme.js";
 export * from "./components/paced-progress.js";
 export * from "./components/ui/card.js";

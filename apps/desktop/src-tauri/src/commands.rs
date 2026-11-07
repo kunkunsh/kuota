@@ -19,35 +19,67 @@ impl AppState {
 
 const CACHE_TTL: Duration = Duration::from_secs(15);
 
+fn get_augmented_path() -> String {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let current_path = std::env::var("PATH").unwrap_or_default();
+    format!("{}/.bun/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:{}/.cargo/bin:{}/.local/bin:{}", home, home, home, current_path)
+}
+
 fn find_repo_root() -> Option<PathBuf> {
-    let mut current = std::env::current_dir().ok()?;
-    for _ in 0..6 {
-        if current.join("packages").join("cli").exists() {
-            return Some(current);
-        }
-        if let Some(parent) = current.parent() {
-            current = parent.to_path_buf();
-        } else {
-            break;
+    // 1. Try current working directory
+    if let Ok(current) = std::env::current_dir() {
+        let mut cur = current;
+        for _ in 0..6 {
+            if cur.join("packages").join("cli").exists() {
+                return Some(cur);
+            }
+            if let Some(parent) = cur.parent() {
+                cur = parent.to_path_buf();
+            } else {
+                break;
+            }
         }
     }
+
+    // 2. Try current executable parent tree (e.g. apps/desktop/src-tauri/target/release/...)
+    if let Ok(exe_path) = std::env::current_exe() {
+        let mut cur = exe_path;
+        for _ in 0..10 {
+            if cur.join("packages").join("cli").exists() {
+                return Some(cur);
+            }
+            if let Some(parent) = cur.parent() {
+                cur = parent.to_path_buf();
+            } else {
+                break;
+            }
+        }
+    }
+
+    // 3. Try standard developer repository path
+    if let Ok(home) = std::env::var("HOME") {
+        let dev_path = PathBuf::from(&home).join("Dev").join("kuota");
+        if dev_path.join("packages").join("cli").exists() {
+            return Some(dev_path);
+        }
+    }
+
     None
 }
 
 fn find_binary(name: &str) -> Option<PathBuf> {
-    if let Some(paths) = std::env::var_os("PATH") {
-        for path in std::env::split_paths(&paths) {
-            let candidate = path.join(name);
-            if candidate.is_file() {
-                return Some(candidate);
-            }
+    let augmented = get_augmented_path();
+    for path in std::env::split_paths(&augmented) {
+        let candidate = path.join(name);
+        if candidate.is_file() {
+            return Some(candidate);
         }
     }
     None
 }
 
 fn execute_probe() -> Result<Value, String> {
-    // 1. Try finding repo root for bun / node execution
+    let augmented_path = get_augmented_path();
     let repo_root = find_repo_root();
 
     // Candidate 1: bun packages/cli/src/main.ts status --json
@@ -59,6 +91,7 @@ fn execute_probe() -> Result<Value, String> {
                 .arg(&cli_script)
                 .arg("status")
                 .arg("--json")
+                .env("PATH", &augmented_path)
                 .current_dir(root)
                 .output();
 
@@ -80,6 +113,7 @@ fn execute_probe() -> Result<Value, String> {
                 .arg(&dist_script)
                 .arg("status")
                 .arg("--json")
+                .env("PATH", &augmented_path)
                 .current_dir(root)
                 .output();
 
@@ -95,9 +129,11 @@ fn execute_probe() -> Result<Value, String> {
     }
 
     // Candidate 3: global kuota command
-    let output = Command::new("kuota")
+    let kuota_path = find_binary("kuota").unwrap_or_else(|| PathBuf::from("kuota"));
+    let output = Command::new(&kuota_path)
         .arg("status")
         .arg("--json")
+        .env("PATH", &augmented_path)
         .output();
 
     if let Ok(out) = output {
