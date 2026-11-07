@@ -15,6 +15,7 @@ import {
   HelpCircle,
   CheckCircle2,
   Lock,
+  AppWindow,
 } from "lucide-react";
 import { ThemeSegmentedSelector, useTheme } from "../../lib/theme.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
@@ -28,6 +29,7 @@ export function SettingsView() {
   const [endpointValues, setEndpointValues] = React.useState<Record<string, string>>({});
   const [keychainSaved, setKeychainSaved] = React.useState<Record<string, boolean>>({});
   const [expandedGuide, setExpandedGuide] = React.useState<Record<string, boolean>>({});
+  const [showMenuBar, setShowMenuBar] = React.useState<boolean>(true);
   const [statusNotice, setStatusNotice] = React.useState<string | null>(null);
 
   // Check if running in Tauri desktop environment
@@ -56,6 +58,13 @@ export function SettingsView() {
           }
           setKeychainSaved(saved);
           setKeyValues(vals);
+
+          try {
+            const cfg = (await invoke("get_user_config")) as any;
+            if (cfg && typeof cfg.showMenuBarIcon === "boolean") {
+              setShowMenuBar(cfg.showMenuBarIcon);
+            }
+          } catch {}
         } catch {
           // ignore
         }
@@ -76,6 +85,9 @@ export function SettingsView() {
             }
             if (data.endpoints) {
               setEndpointValues(data.endpoints);
+            }
+            if (typeof data.showMenuBarIcon === "boolean") {
+              setShowMenuBar(data.showMenuBarIcon);
             }
             setKeychainSaved(saved);
             setKeyValues(vals);
@@ -164,6 +176,33 @@ export function SettingsView() {
     setTimeout(() => setStatusNotice(null), 3000);
   };
 
+  const handleToggleMenuBar = async (enabled: boolean) => {
+    setShowMenuBar(enabled);
+    if (isDesktop) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("set_menu_bar_visible", { visible: enabled });
+        const existing = ((await invoke("get_user_config")) as any) || {};
+        await invoke("save_user_config", {
+          config: { ...existing, showMenuBarIcon: enabled },
+        });
+        setStatusNotice(enabled ? "Menu bar icon visible in status bar" : "Menu bar icon hidden");
+      } catch (err) {
+        setStatusNotice(`Failed to update tray: ${String(err)}`);
+      }
+    } else {
+      try {
+        await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ showMenuBarIcon: enabled }),
+        });
+        setStatusNotice(enabled ? "Menu bar icon enabled" : "Menu bar icon disabled");
+      } catch {}
+    }
+    setTimeout(() => setStatusNotice(null), 3000);
+  };
+
   const apiProviders = PROVIDER_CATALOG.filter((p) => p.envKeys.length > 0);
 
   return (
@@ -235,6 +274,54 @@ export function SettingsView() {
 
               <Badge variant="outline" className="text-[10px] self-start sm:self-center">
                 SVG Master
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* macOS Menu Bar App & Popover Configuration */}
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
+              <AppWindow className="w-4 h-4 text-emerald-400" />
+              <span>Menu Bar App &amp; Transient Popover</span>
+            </CardTitle>
+            <CardDescription>
+              Toggle the status bar icon and configure the transient HUD popover behavior
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+              <div className="space-y-0.5 pr-4">
+                <div className="font-medium text-zinc-200">Show Menu Bar Icon</div>
+                <div className="text-[11px] text-zinc-400">
+                  Display Kuota in the macOS menu bar with live quota stats. Click to toggle HUD popover.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleToggleMenuBar(!showMenuBar)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  showMenuBar ? "bg-emerald-500" : "bg-zinc-700"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                    showMenuBar ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <div className="space-y-0.5">
+                <div className="font-medium text-zinc-200">Auto-Dismiss on Blur (Focus Loss)</div>
+                <div className="text-[11px] text-zinc-400">
+                  Like native system monitors (Stats, iStat Menus), the popover closes immediately when clicking outside.
+                </div>
+              </div>
+              <Badge variant="outline" className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                Active
               </Badge>
             </div>
           </CardContent>

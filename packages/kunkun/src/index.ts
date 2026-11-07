@@ -23,3 +23,4 @@ export * from "./components/views/data-sync-view.js";
 export * from "./components/views/alerts-view.js";
 export * from "./components/views/settings-view.js";
 export * from "./components/views/island-view.js";
+export * from "./components/views/menu-bar-popover-view.js";

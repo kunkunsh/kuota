@@ -3,6 +3,7 @@ import * as React from "react";
 // @ts-ignore
 import { createRoot } from "react-dom/client";
 import { KuotaDashboard } from "./app.js";
+import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
 import { Loader } from "./components/kokonutui/loader.js";
 import type { QuotaSnapshot, QuotaForecastV1, QuotaHistoryEventV1 } from "@kuota/core";
 
@@ -287,8 +288,25 @@ function DevApp() {
   const params = new URLSearchParams(window.location.search);
   const initialRoute = (params.get("route") || "overview") as any;
   const islandMode = (params.get("mode") || "launcher") as any;
+  const isTrayParam = params.get("window") === "tray" || params.get("route") === "popover";
+  const [isTray, setIsTray] = React.useState<boolean>(isTrayParam);
   const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
   const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+      import("@tauri-apps/api/webviewWindow")
+        .then(({ getCurrentWebviewWindow }) => {
+          try {
+            const win = getCurrentWebviewWindow();
+            if (win && win.label === "tray") {
+              setIsTray(true);
+            }
+          } catch {}
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const fetchLiveStatus = React.useCallback(
     async (forceFresh = false) => {
@@ -347,6 +365,16 @@ function DevApp() {
           subtitle="Querying live telemetry from Antigravity, Claude Code, and Codex"
         />
       </div>
+    );
+  }
+
+  if (isTray) {
+    return (
+      <MenuBarPopoverView
+        snapshots={snapshots}
+        isRefreshing={loading}
+        onRefresh={() => fetchLiveStatus(true)}
+      />
     );
   }
 

@@ -3,7 +3,7 @@ use std::process::Command;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use serde_json::Value;
-use tauri::State;
+use tauri::{Manager, State};
 
 pub struct AppState {
     pub cached_status: Mutex<Option<(Instant, Value)>>,
@@ -331,4 +331,29 @@ pub fn delete_keychain_password(provider: String) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     let _ = entry.delete_credential();
     Ok(())
+}
+
+#[tauri::command]
+pub fn open_dashboard_window(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.show();
+        let _ = win.set_focus();
+    }
+    if let Some(tray_win) = app.get_webview_window("tray") {
+        let _ = tray_win.hide();
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn set_menu_bar_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        let _ = tray.set_visible(visible);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub fn exit_app(app: tauri::AppHandle) {
+    app.exit(0);
 }

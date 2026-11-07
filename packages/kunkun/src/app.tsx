@@ -24,6 +24,7 @@ import { DataSyncView } from "./components/views/data-sync-view.js";
 import { AlertsView } from "./components/views/alerts-view.js";
 import { SettingsView } from "./components/views/settings-view.js";
 import { IslandView } from "./components/views/island-view.js";
+import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
 import { KuotaLogo } from "./components/ui/kuota-logo.js";
 import { Loader } from "./components/kokonutui/loader.js";
 import { ThemeProvider, ThemeToggleButton, useTheme } from "./lib/theme.js";
@@ -40,7 +41,8 @@ export type DashboardRoute =
   | "data"
   | "alerts"
   | "settings"
-  | "island";
+  | "island"
+  | "popover";
 
 export interface KuotaDashboardProps {
   initialRoute?: DashboardRoute;
@@ -295,6 +297,17 @@ function KuotaDashboardInner({
       // Ignore in non-Tauri / test environments
     }
   }, []);
+
+  if (route === "popover") {
+    return (
+      <MenuBarPopoverView
+        snapshots={snapshots}
+        isRefreshing={activeRefreshing}
+        onRefresh={handleRefresh}
+        onOpenDashboard={() => setRoute("overview")}
+      />
+    );
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#09090b] text-zinc-100 font-sans antialiased overflow-hidden">

@@ -11,6 +11,18 @@
   "app": {
     "windows": [
       {
+        "label": "tray",
+        "title": "Kuota Menu Bar",
+        "width": 360,
+        "height": 580,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "transparent": true,
+        "visible": false
+      },
+      {
         "label": "main",
         "title": "Kuota · AI Quota & Usage",
         "width": 1280,
