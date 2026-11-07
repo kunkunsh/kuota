@@ -23,6 +23,8 @@ import { DataSyncView } from "./components/views/data-sync-view.js";
 import { AlertsView } from "./components/views/alerts-view.js";
 import { SettingsView } from "./components/views/settings-view.js";
 import { IslandView } from "./components/views/island-view.js";
+import { KuotaLogo } from "./components/ui/kuota-logo.js";
+import { ThemeProvider, ThemeToggleButton, useTheme } from "./lib/theme.js";
 import type { QuotaForecastV1, QuotaHistoryEventV1, QuotaSnapshot } from "@kuota/core";
 
 export type DashboardRoute =
@@ -50,45 +52,45 @@ export interface KuotaDashboardProps {
   onRefresh?: () => void;
 }
 
-const DEFAULT_SNAPSHOTS: readonly QuotaSnapshot[] = [
+const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
   {
-    provider: "codex",
+    provider: "claude",
     status: "ok",
-    fetchedAt: "2026-11-06T00:00:00.000Z",
-    source: "codex-app-server",
+    fetchedAt: new Date().toISOString(),
+    source: "claude-oauth-usage",
     windows: [
       {
-        windowId: "primary",
-        usedPercent: 42,
-        remainingPercent: 58,
-        resetAt: "2026-11-06T05:00:00.000Z",
+        windowId: "weekly.all",
+        usedPercent: 55,
+        remainingPercent: 45,
+        resetAt: new Date(Date.now() + 3.5 * 86_400_000).toISOString(),
       },
       {
-        windowId: "secondary",
-        usedPercent: 68,
-        remainingPercent: 32,
-        resetAt: "2026-11-12T00:00:00.000Z",
+        windowId: "primary.5h",
+        usedPercent: 78,
+        remainingPercent: 22,
+        resetAt: new Date(Date.now() + 1.2 * 3_600_000).toISOString(),
       },
     ],
     errorCode: null,
   },
   {
-    provider: "claude",
+    provider: "codex",
     status: "ok",
-    fetchedAt: "2026-11-06T00:00:00.000Z",
-    source: "claude-oauth-usage",
+    fetchedAt: new Date().toISOString(),
+    source: "codex-app-server",
     windows: [
       {
-        windowId: "session.5h",
-        usedPercent: 25,
-        remainingPercent: 75,
-        resetAt: "2026-11-06T04:30:00.000Z",
+        windowId: "weekly.all",
+        usedPercent: 39,
+        remainingPercent: 61,
+        resetAt: new Date(Date.now() + 5.1 * 86_400_000).toISOString(),
       },
       {
-        windowId: "weekly.all",
-        usedPercent: 55,
-        remainingPercent: 45,
-        resetAt: "2026-11-10T00:00:00.000Z",
+        windowId: "secondary",
+        usedPercent: 68,
+        remainingPercent: 32,
+        resetAt: new Date(Date.now() + 3.8 * 86_400_000).toISOString(),
       },
     ],
     errorCode: null,
@@ -96,21 +98,27 @@ const DEFAULT_SNAPSHOTS: readonly QuotaSnapshot[] = [
   {
     provider: "antigravity",
     status: "ok",
-    fetchedAt: "2026-11-06T00:00:00.000Z",
-    source: "agy-cli-print",
+    fetchedAt: new Date().toISOString(),
+    source: "antigravity-storage",
     windows: [
       {
-        windowId: "gemini.weekly",
-        usedPercent: 30,
-        remainingPercent: 70,
-        resetAt: "2026-11-11T00:00:00.000Z",
+        windowId: "gemini-pro",
+        usedPercent: 12,
+        remainingPercent: 88,
+        resetAt: new Date(Date.now() + 6.2 * 86_400_000).toISOString(),
+      },
+      {
+        windowId: "claude-3-7-sonnet",
+        usedPercent: 44,
+        remainingPercent: 56,
+        resetAt: new Date(Date.now() + 4.1 * 86_400_000).toISOString(),
       },
     ],
     errorCode: null,
   },
 ];
 
-export function KuotaDashboard({
+function KuotaDashboardInner({
   initialRoute = "overview",
   islandMode = "launcher",
   snapshots = DEFAULT_SNAPSHOTS,
@@ -127,6 +135,7 @@ export function KuotaDashboard({
   const resolvedEvents = events ?? historyEvents ?? [];
   const [route, setRoute] = React.useState<DashboardRoute>(initialRoute);
   const [selectedProvider, setSelectedProvider] = React.useState<string>("codex");
+  const { resolvedTheme } = useTheme();
 
   const navItems: {
     id: DashboardRoute;
@@ -190,9 +199,13 @@ export function KuotaDashboard({
               isDesktop ? "pl-[78px]" : ""
             }`}
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-500 font-bold text-zinc-950 text-[10px] shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-              K
-            </span>
+            {/* Kuota SVG Vector Mark — Adaptive dark/light, unboxed glyph without container background */}
+            <KuotaLogo
+              size={20}
+              withBackground={false}
+              theme={resolvedTheme}
+              className="shrink-0 transition-transform duration-200 hover:scale-105"
+            />
             <div className="flex flex-col" data-tauri-drag-region>
               <span
                 data-tauri-drag-region
@@ -235,8 +248,14 @@ export function KuotaDashboard({
         </div>
 
         <div className="p-3 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex justify-between items-center">
-          <span>v0.1.0 · Local-First</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="All adapters healthy" />
+          <div className="flex items-center space-x-1.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-emerald-500"
+              title="All adapters healthy"
+            />
+            <span>v0.1.0 · Local-First</span>
+          </div>
+          <ThemeToggleButton />
         </div>
       </aside>
 
@@ -250,10 +269,7 @@ export function KuotaDashboard({
           className="h-11 shrink-0 border-b border-zinc-800 bg-[#0c0c0e] flex items-center justify-between px-4 select-none cursor-default"
         >
           <div data-tauri-drag-region className="flex items-center space-x-2 flex-1 h-full">
-            <span
-              data-tauri-drag-region
-              className="text-xs font-semibold text-zinc-200 capitalize"
-            >
+            <span data-tauri-drag-region className="text-xs font-semibold text-zinc-200 capitalize">
               {route === "detail"
                 ? "Provider Detail"
                 : route === "island"
@@ -264,7 +280,7 @@ export function KuotaDashboard({
               •
             </span>
             <span data-tauri-drag-region className="text-[11px] text-zinc-400">
-              Live Quota Telemetry & Pacing
+              Live Quota Telemetry &amp; Pacing
             </span>
           </div>
 
@@ -330,5 +346,13 @@ export function KuotaDashboard({
         </main>
       </div>
     </div>
+  );
+}
+
+export function KuotaDashboard(props: KuotaDashboardProps) {
+  return (
+    <ThemeProvider>
+      <KuotaDashboardInner {...props} />
+    </ThemeProvider>
   );
 }

@@ -1,4 +1,6 @@
 export * from "./app.js";
+export * from "./components/ui/kuota-logo.js";
+export * from "./lib/theme.js";
 export * from "./components/paced-progress.js";
 export * from "./components/ui/card.js";
 export * from "./components/ui/badge.js";

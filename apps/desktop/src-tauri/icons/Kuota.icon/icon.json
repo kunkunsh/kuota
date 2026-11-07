@@ -1,0 +1,71 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "solid": "srgb:0.76471,0.79216,0.77647,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "solid": "srgb:0.08235,0.09412,0.11373,1.00000"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": false,
+          "image-name": "Pace-Tick.svg",
+          "name": "Ideal pace tick"
+        },
+        {
+          "glass": false,
+          "image-name": "Quota-Arc.svg",
+          "name": "Quota arc"
+        },
+        {
+          "glass": false,
+          "image-name": "Letter-K-Dark.svg",
+          "name": "K dark",
+          "hidden-specializations": [
+            {
+              "value": true
+            },
+            {
+              "appearance": "dark",
+              "value": false
+            }
+          ]
+        },
+        {
+          "glass": false,
+          "image-name": "Letter-K-Light.svg",
+          "name": "K light",
+          "hidden-specializations": [
+            {
+              "value": false
+            },
+            {
+              "appearance": "dark",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0
+      },
+      "specular": false
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}
