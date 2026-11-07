@@ -4,10 +4,29 @@ import { Badge } from "../ui/badge.js";
 import { Button } from "../ui/button.js";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table.js";
 import { ProviderIcon } from "../ui/provider-icon.js";
-import { PROVIDER_CATALOG } from "@kuota/core";
-import { Plus, RefreshCw, Key, CheckCircle2 } from "lucide-react";
+import { PROVIDER_CATALOG, type QuotaSnapshot } from "@kuota/core";
+import {
+  Plus,
+  RefreshCw,
+  Key,
+  CheckCircle2,
+  AlertCircle,
+  ShieldCheck,
+  Radio,
+  ExternalLink,
+} from "lucide-react";
 
-export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
+export interface ConnectionsViewProps {
+  snapshots?: readonly QuotaSnapshot[];
+  onRefresh?: () => void;
+  onNavigate?: (route: string) => void;
+}
+
+export function ConnectionsView({
+  snapshots = [],
+  onRefresh,
+  onNavigate,
+}: ConnectionsViewProps) {
   const [customModalOpen, setCustomModalOpen] = React.useState(false);
   const [customName, setCustomName] = React.useState("");
   const [customEndpoint, setCustomEndpoint] = React.useState("");
@@ -16,6 +35,16 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
   const [customList, setCustomList] = React.useState<
     { name: string; endpoint: string; billingModel: string }[]
   >([]);
+
+  // Calculate live connection counts
+  const activeCount = React.useMemo(() => {
+    return PROVIDER_CATALOG.filter((p) => {
+      const snap = snapshots.find((s) => s.provider === p.id);
+      return snap?.status === "ok";
+    }).length;
+  }, [snapshots]);
+
+  const unconfiguredCount = PROVIDER_CATALOG.length - activeCount;
 
   const handleAddCustom = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,13 +65,17 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
 
   return (
     <div className="flex flex-col space-y-6">
+      {/* 1. Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col space-y-1">
-          <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
-            Provider Connections &amp; Telemetry
+          <h2 className="text-lg font-semibold tracking-tight text-zinc-100 flex items-center space-x-2">
+            <span>Provider Connections &amp; Telemetry</span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-mono font-normal bg-zinc-800 text-zinc-300">
+              Live Probing
+            </span>
           </h2>
           <p className="text-xs text-zinc-400">
-            Health and authentication status across local CLI probes and remote API endpoints.
+            Real-time authentication and probe status verified against local CLI sessions and OS Keychain credentials.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -60,6 +93,47 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
             Probe All Adapters
           </Button>
         </div>
+      </div>
+
+      {/* 2. Top Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <Card className="bg-[#111113] border-zinc-800/80">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-medium text-zinc-400">Active &amp; Connected</div>
+              <div className="text-2xl font-bold font-mono text-emerald-400">{activeCount}</div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#111113] border-zinc-800/80">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-medium text-zinc-400">Awaiting Credentials</div>
+              <div className="text-2xl font-bold font-mono text-zinc-300">{unconfiguredCount}</div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-zinc-400">
+              <Key className="w-5 h-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#111113] border-zinc-800/80">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-medium text-zinc-400">Supported Adapters</div>
+              <div className="text-2xl font-bold font-mono text-blue-400">
+                {PROVIDER_CATALOG.length + customList.length}
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <Radio className="w-5 h-5" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Modal / Form for Custom Provider */}
@@ -157,20 +231,22 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
         </Card>
       )}
 
-      {/* Dynamic Catalog Table */}
+      {/* Dynamic Catalog Table with Honest Live Status */}
       <Card className="bg-[#111113] border-zinc-800">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sm font-semibold">
-              Configured Adapters ({PROVIDER_CATALOG.length + customList.length})
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
+              <span>Supported AI Providers ({PROVIDER_CATALOG.length + customList.length})</span>
+              <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                {activeCount} Active
+              </span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Zero auto-login policy: adapters strictly read existing authenticated sessions or user
-              environment keys.
+              Zero auto-login policy: Kuota strictly reads existing authenticated CLI sessions or explicit OS Keychain keys.
             </CardDescription>
           </div>
           <Badge variant="outline" className="text-[10px] text-zinc-400 bg-zinc-900">
-            Adapter Architecture v2
+            Iconify Logos
           </Badge>
         </CardHeader>
         <CardContent>
@@ -181,88 +257,119 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
                   <TableHead className="text-zinc-400 font-medium">Provider</TableHead>
                   <TableHead className="text-zinc-400 font-medium">Category</TableHead>
                   <TableHead className="text-zinc-400 font-medium">Billing Model</TableHead>
-                  <TableHead className="text-zinc-400 font-medium">Acquisition Method</TableHead>
+                  <TableHead className="text-zinc-400 font-medium">Telemetry Source</TableHead>
                   <TableHead className="text-zinc-400 font-medium">Auth / Env Key</TableHead>
-                  <TableHead className="text-zinc-400 font-medium text-right">Status</TableHead>
+                  <TableHead className="text-zinc-400 font-medium text-right">Connection Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-zinc-800/60">
-                {PROVIDER_CATALOG.map((a) => (
-                  <TableRow key={a.id} className="hover:bg-zinc-900/30 transition-colors">
-                    <TableCell className="font-semibold text-zinc-100 whitespace-nowrap">
-                      <div className="flex items-center space-x-2.5">
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                          <ProviderIcon provider={a.id} size={16} />
-                        </div>
-                        <div>
-                          <div>{a.name}</div>
-                          <div className="text-[10px] font-normal text-zinc-500">
-                            {a.defaultPlan}
+                {PROVIDER_CATALOG.map((a) => {
+                  const snap = snapshots.find((s) => s.provider === a.id);
+                  const isConnected = snap?.status === "ok";
+                  const isPartial = snap?.status === "partial";
+                  const isBinaryMissing = snap?.errorCode === "BINARY_NOT_FOUND";
+
+                  return (
+                    <TableRow key={a.id} className="hover:bg-zinc-900/30 transition-colors">
+                      <TableCell className="font-semibold text-zinc-100 whitespace-nowrap">
+                        <div className="flex items-center space-x-2.5">
+                          <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                            <ProviderIcon provider={a.id} size={18} />
+                          </div>
+                          <div>
+                            <div>{a.name}</div>
+                            <div className="text-[10px] font-normal text-zinc-500">
+                              {a.defaultPlan}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-zinc-400 whitespace-nowrap">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] border-zinc-800 bg-zinc-900/60"
-                      >
-                        {a.category === "coding_agent"
-                          ? "Coding Agent"
-                          : a.category === "aggregator"
-                            ? "Aggregator"
-                            : "LLM API"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs text-zinc-300 whitespace-nowrap">
-                      <Badge
-                        variant="secondary"
-                        className={`text-[10px] ${
-                          a.billingModel === "subscription"
-                            ? "bg-blue-950/40 text-blue-400 border border-blue-800/40"
+                      </TableCell>
+                      <TableCell className="text-xs text-zinc-400 whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-zinc-800 bg-zinc-900/60"
+                        >
+                          {a.category === "coding_agent"
+                            ? "Coding Agent"
+                            : a.category === "aggregator"
+                              ? "Aggregator"
+                              : "LLM API"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-zinc-300 whitespace-nowrap">
+                        <Badge
+                          variant="secondary"
+                          className={`text-[10px] ${
+                            a.billingModel === "subscription"
+                              ? "bg-blue-950/40 text-blue-400 border border-blue-800/40"
+                              : a.billingModel === "hybrid"
+                                ? "bg-purple-950/40 text-purple-400 border border-purple-800/40"
+                                : "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
+                          }`}
+                        >
+                          {a.billingModel === "subscription"
+                            ? "Subscription"
                             : a.billingModel === "hybrid"
-                              ? "bg-purple-950/40 text-purple-400 border border-purple-800/40"
-                              : "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
-                        }`}
-                      >
-                        {a.billingModel === "subscription"
-                          ? "Subscription"
-                          : a.billingModel === "hybrid"
-                            ? "Hybrid Credit"
-                            : "Prepaid Wallet"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-mono text-zinc-400 whitespace-nowrap">
-                      {a.source}
-                    </TableCell>
-                    <TableCell className="text-xs font-mono text-zinc-400 whitespace-nowrap">
-                      {a.envKeys.length > 0 ? (
-                        <div className="flex items-center space-x-1">
-                          <Key className="w-3 h-3 text-zinc-500" />
-                          <span>{a.envKeys[0]}</span>
-                        </div>
-                      ) : (
-                        <span className="text-zinc-500">Local CLI Session</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right whitespace-nowrap">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] text-emerald-400 border-emerald-800/40 bg-emerald-950/30"
-                      >
-                        <CheckCircle2 className="w-2.5 h-2.5 mr-1 inline" />
-                        Integrated
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                              ? "Hybrid Credit"
+                              : "Prepaid Wallet"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs font-mono text-zinc-400 whitespace-nowrap">
+                        {snap?.source || a.source}
+                      </TableCell>
+                      <TableCell className="text-xs font-mono text-zinc-400 whitespace-nowrap">
+                        {a.envKeys.length > 0 ? (
+                          <div className="flex items-center space-x-1">
+                            <Key className="w-3 h-3 text-zinc-500" />
+                            <span>{a.envKeys[0]}</span>
+                          </div>
+                        ) : (
+                          <span className="text-zinc-500">Local CLI Session</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        {isConnected ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <CheckCircle2 className="w-3 h-3 mr-1 inline" />
+                            Connected
+                          </span>
+                        ) : isPartial ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <AlertCircle className="w-3 h-3 mr-1 inline" />
+                            Partial Quota
+                          </span>
+                        ) : isBinaryMissing ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-900 text-zinc-400 border border-zinc-800">
+                            CLI Missing
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-end space-x-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-normal bg-zinc-900/80 text-zinc-500 border border-zinc-800">
+                              Not Configured
+                            </span>
+                            {a.envKeys.length > 0 && onNavigate && (
+                              <button
+                                type="button"
+                                onClick={() => onNavigate("settings")}
+                                className="text-[11px] text-blue-400 hover:text-blue-300 font-medium hover:underline inline-flex items-center"
+                              >
+                                <span>Add Key</span>
+                                <span className="ml-0.5">&rarr;</span>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
 
                 {/* Custom Providers */}
                 {customList.map((c, i) => (
                   <TableRow key={`custom-${i}`} className="hover:bg-zinc-900/30">
                     <TableCell className="font-semibold text-zinc-100">
                       <div className="flex items-center space-x-2">
-                        <ProviderIcon provider="custom" size={16} />
+                        <ProviderIcon provider="custom" size={18} />
                         <span>{c.name}</span>
                       </div>
                     </TableCell>
@@ -277,9 +384,10 @@ export function ConnectionsView({ onRefresh }: { onRefresh?: () => void }) {
                     </TableCell>
                     <TableCell className="text-xs font-mono text-zinc-400">Custom Key</TableCell>
                     <TableCell className="text-right">
-                      <Badge variant="outline" className="text-[10px] text-emerald-400">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <CheckCircle2 className="w-3 h-3 mr-1 inline" />
                         Connected
-                      </Badge>
+                      </span>
                     </TableCell>
                   </TableRow>
                 ))}

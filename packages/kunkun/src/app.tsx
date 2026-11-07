@@ -479,7 +479,13 @@ function KuotaDashboardInner({
             />
           )}
 
-          {route === "connections" && <ConnectionsView onRefresh={onRefresh} />}
+          {route === "connections" && (
+            <ConnectionsView
+              snapshots={snapshots}
+              onRefresh={onRefresh}
+              onNavigate={setRoute}
+            />
+          )}
 
           {route === "usage" && <UsageView />}
 
