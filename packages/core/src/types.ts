@@ -12,6 +12,7 @@ export const BUILTIN_PROVIDERS = [
   "glm",
   "minimax",
   "grok",
+  "openai",
 ] as const;
 
 export type BuiltinProviderId = (typeof BUILTIN_PROVIDERS)[number];

@@ -10,6 +10,8 @@ import {
   redactSnapshot,
 } from "@kuota/core";
 
+import { readConfigSync, readKeychainPasswordSync } from "./config.js";
+
 export interface ProviderContext {
   apiKey?: string;
   baseUrl?: string;
@@ -85,11 +87,26 @@ export function defineHttpProvider(options: DefineHttpProviderOptions): Provider
               }
             }
           }
+          if (!apiKey) {
+            const keychainKey = readKeychainPasswordSync(options.id);
+            if (keychainKey && keychainKey.length > 0) {
+              apiKey = keychainKey;
+            }
+          }
+          if (!apiKey) {
+            const localConfig = readConfigSync();
+            const configKey = localConfig.keys[options.id];
+            if (configKey && typeof configKey === "string" && configKey.trim().length > 0) {
+              apiKey = configKey.trim();
+            }
+          }
 
           // 2. Resolve Base URL
+          const localConfig = readConfigSync();
           const baseUrl =
             ctx?.baseUrl ||
             env[`${options.id.toUpperCase()}_BASE_URL`] ||
+            localConfig.endpoints?.[options.id] ||
             options.defaultBaseUrl ||
             "";
 

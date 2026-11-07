@@ -4,7 +4,7 @@ import { join, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { Effect } from "effect";
-import { PROVIDER_METADATA, readAll, type QuotaProvider, builtInProviders } from "@kuota/providers";
+import { PROVIDER_METADATA, readAll, type QuotaProvider, builtInProviders, readConfigSync, writeConfig } from "@kuota/providers";
 import type { CliOutput } from "./commands.js";
 
 const MIME_TYPES: Record<string, string> = {
@@ -106,6 +106,35 @@ export async function startWebServer(
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ status: "ok", timestamp: new Date().toISOString() }));
       return;
+    }
+
+    if (pathname === "/api/config") {
+      if (req.method === "GET") {
+        const config = readConfigSync();
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(config));
+        return;
+      }
+
+      if (req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const parsed = JSON.parse(body || "{}");
+            const updated = await writeConfig(parsed);
+            cachedEnvelope = null; // Invalidate cached telemetry
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true, config: updated }));
+          } catch (err) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: String(err) }));
+          }
+        });
+        return;
+      }
     }
 
     if (pathname === "/api/status") {

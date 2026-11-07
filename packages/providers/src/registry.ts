@@ -16,6 +16,7 @@ import { kimiProvider } from "./kimi/index.js";
 import { glmProvider } from "./glm/index.js";
 import { minimaxProvider } from "./minimax/index.js";
 import { grokProvider } from "./grok/index.js";
+import { openaiProvider } from "./openai/index.js";
 import type { ProviderCategory } from "./adapter.js";
 
 export interface QuotaProvider {
@@ -134,6 +135,15 @@ export const PROVIDER_METADATA: readonly ProviderMetadata[] = [
     category: "llm_api",
     envKeys: ["XAI_API_KEY", "GROK_API_KEY"],
   },
+  {
+    id: "openai",
+    label: "OpenAI Platform",
+    implemented: true,
+    source: "api.openai.com",
+    billingModel: "balance",
+    category: "llm_api",
+    envKeys: ["OPENAI_API_KEY"],
+  },
 ];
 
 const dynamicProviders: QuotaProvider[] = [];
@@ -181,6 +191,7 @@ export function builtInProviders(): QuotaProvider[] {
     { id: "glm", label: "Zhipu GLM", billingModel: "balance", read: glmProvider.read },
     { id: "minimax", label: "MiniMax", billingModel: "balance", read: minimaxProvider.read },
     { id: "grok", label: "xAI Grok", billingModel: "balance", read: grokProvider.read },
+    { id: "openai", label: "OpenAI Platform", billingModel: "balance", read: openaiProvider.read },
     ...dynamicProviders,
   ];
 }

@@ -12,4 +12,6 @@ export * from "./kimi/index.js";
 export * from "./glm/index.js";
 export * from "./minimax/index.js";
 export * from "./grok/index.js";
+export * from "./openai/index.js";
 export * from "./custom/index.js";
+export * from "./config.js";

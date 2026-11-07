@@ -10,10 +10,21 @@ import {
   getProviderMeta,
   formatCurrencyAmount,
   isBalanceFirst,
+  PROVIDER_CATALOG,
   type QuotaSnapshot,
   type QuotaForecastV1,
+  type QuotaWindow,
 } from "@kuota/core";
-import { AlertTriangle, Layers, Clock, ArrowRight, Wallet } from "lucide-react";
+import {
+  AlertTriangle,
+  Layers,
+  Clock,
+  ArrowRight,
+  SlidersHorizontal,
+  Check,
+  X,
+  ExternalLink,
+} from "lucide-react";
 
 export interface OverviewViewProps {
   snapshots: readonly QuotaSnapshot[];
@@ -57,6 +68,32 @@ function formatResetDate(date: Date): string {
   return `${m} ${d} ${hh}:${mm}`;
 }
 
+// Window priority sorting: Monthly > Weekly > Session/Daily > others
+function sortWindowsForDisplay(windows: readonly QuotaWindow[]): QuotaWindow[] {
+  return [...windows].sort((a, b) => {
+    const getScore = (w: QuotaWindow) => {
+      const id = w.windowId.toLowerCase();
+      if (id.includes("month")) return 10;
+      if (id.includes("week")) return 8;
+      if (id.includes("session") || id.includes("5h") || id.includes("rolling")) return 6;
+      if (id.includes("day") || id.includes("daily")) return 4;
+      return 1;
+    };
+    return getScore(b) - getScore(a);
+  });
+}
+
+function formatWindowLabel(windowId: string): string {
+  const lower = windowId.toLowerCase();
+  if (lower.includes("token_plan") || lower.includes("token-plan")) return "Monthly Token Plan";
+  if (lower.includes("month")) return "Monthly Limit";
+  if (lower.includes("week")) return "Weekly Quota";
+  if (lower.includes("session") || lower.includes("rolling")) return "Session Window (5h)";
+  if (lower.includes("5h")) return "5-Hour Session";
+  if (lower.includes("daily") || lower.includes("day")) return "Daily Quota";
+  return windowId;
+}
+
 export function OverviewView({
   snapshots,
   forecasts = [],
@@ -67,28 +104,130 @@ export function OverviewView({
 }: OverviewViewProps) {
   let filter: "all" | "subscription" | "balance" = "all";
   let setFilter: (f: "all" | "subscription" | "balance") => void = () => {};
+  let visibility: Record<string, boolean> = {};
+  let setVisibility: React.Dispatch<React.SetStateAction<Record<string, boolean>>> = () => {};
+  let showCustomizeModal = false;
+  let setShowCustomizeModal: (open: boolean) => void = () => {};
+
   try {
     const [f, sf] = React.useState<"all" | "subscription" | "balance">("all");
     filter = f;
     setFilter = sf;
+
+    const [vis, setVis] = React.useState<Record<string, boolean>>(() => {
+      try {
+        const stored = localStorage.getItem("kuota_provider_visibility");
+        if (stored) return JSON.parse(stored);
+      } catch {
+        // ignore
+      }
+      return {};
+    });
+    visibility = vis;
+    setVisibility = setVis;
+
+    const [modal, setModal] = React.useState(false);
+    showCustomizeModal = modal;
+    setShowCustomizeModal = setModal;
   } catch {
     filter = "all";
   }
 
-  // Aggregate real stats directly from snapshots
-  const trackedCount = snapshots.length;
-  const totalWindows = snapshots.reduce((acc, s) => acc + s.windows.length, 0);
-  const totalWallets = snapshots.reduce((acc, s) => acc + (s.balance?.balances.length ? 1 : 0), 0);
+  // Load backend visibility configuration if available
+  try {
+    React.useEffect(() => {
+      async function loadConfig() {
+        try {
+          if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+            const { invoke } = await import("@tauri-apps/api/core");
+            const cfg = (await invoke("get_user_config")) as { visibility?: Record<string, boolean> };
+            if (cfg && cfg.visibility && Object.keys(cfg.visibility).length > 0) {
+              setVisibility((prev) => ({ ...cfg.visibility, ...prev }));
+            }
+          } else {
+            const res = await fetch("/api/config");
+            if (res.ok) {
+              const data = await res.json();
+              if (data.visibility && Object.keys(data.visibility).length > 0) {
+                setVisibility((prev) => ({ ...data.visibility, ...prev }));
+              }
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+      void loadConfig();
+    }, []);
+  } catch {
+    // ignore in non-dispatcher test execution
+  }
+
+  const handleToggleVisibility = (providerId: string) => {
+    setVisibility((prev) => {
+      const next = { ...prev, [providerId]: !prev[providerId] };
+      try {
+        localStorage.setItem("kuota_provider_visibility", JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      // Persist to backend / config.json asynchronously
+      void (async () => {
+        try {
+          if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+            const { invoke } = await import("@tauri-apps/api/core");
+            await invoke("save_user_config", { config: { version: 1, visibility: next } });
+          } else {
+            await fetch("/api/config", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ visibility: next }),
+            });
+          }
+        } catch {
+          // ignore
+        }
+      })();
+      return next;
+    });
+  };
+
+  // Helper: check if a provider is configured and has active telemetry
+  const isProviderConfigured = (s: QuotaSnapshot): boolean => {
+    if (s.status === "ok") return true;
+    if (s.windows && s.windows.length > 0) return true;
+    if (s.balance && s.balance.balances && s.balance.balances.length > 0) return true;
+    return false;
+  };
+
+  // Determine visibility: explicit preference overrides; default = only show configured
+  const shouldDisplayProvider = (s: QuotaSnapshot): boolean => {
+    if (visibility[s.provider] !== undefined) {
+      return visibility[s.provider];
+    }
+    return isProviderConfigured(s);
+  };
+
+  // Visible snapshots in overview
+  const displayedSnapshots = snapshots.filter(shouldDisplayProvider);
+
+  // Aggregate stats directly from displayed snapshots
+  const trackedCount = displayedSnapshots.length;
+  const totalWindows = displayedSnapshots.reduce((acc, s) => acc + s.windows.length, 0);
+  const totalWallets = displayedSnapshots.reduce(
+    (acc, s) => acc + (s.balance?.balances.length ? 1 : 0),
+    0,
+  );
 
   // Collect real window reset countdowns
-  const allResets = snapshots
+  const allResets = displayedSnapshots
     .flatMap((s) => s.windows)
     .map((w) => (w.resetAt ? new Date(w.resetAt).getTime() - now.getTime() : null))
     .filter((ms): ms is number => ms !== null && ms > 0);
   const nearestResetMs = allResets.length > 0 ? Math.min(...allResets) : null;
 
   // Real at-risk count
-  const atRiskCount = snapshots.reduce((acc, s) => {
+  const atRiskCount = displayedSnapshots.reduce((acc, s) => {
     let count = 0;
     count += s.windows.filter((w) => {
       if (w.remainingPercent !== null && w.remainingPercent <= 20) return true;
@@ -108,7 +247,7 @@ export function OverviewView({
   }, 0);
 
   // Filtered snapshots according to tab
-  const filteredSnapshots = snapshots.filter((s) => {
+  const filteredSnapshots = displayedSnapshots.filter((s) => {
     if (filter === "all") return true;
     if (filter === "subscription") {
       return s.billingModel === "subscription" || (s.windows.length > 0 && !isBalanceFirst(s));
@@ -120,7 +259,7 @@ export function OverviewView({
   });
 
   // Dynamic real upcoming resets sorted chronologically
-  const upcomingResets = snapshots
+  const upcomingResets = displayedSnapshots
     .flatMap((s) =>
       s.windows.map((w) => {
         const resetDate = w.resetAt ? new Date(w.resetAt) : null;
@@ -170,7 +309,7 @@ export function OverviewView({
               )}
               onClick={() => setFilter("all")}
             >
-              All ({snapshots.length})
+              All ({displayedSnapshots.length})
             </button>
             <button
               type="button"
@@ -198,14 +337,24 @@ export function OverviewView({
             </button>
           </div>
 
+          {/* Customize View Button */}
+          <button
+            type="button"
+            onClick={() => setShowCustomizeModal(true)}
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs transition-colors"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Customize</span>
+          </button>
+
           <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-medium">{trackedCount} Active</span>
+            <span className="text-[11px] font-medium">{trackedCount} Shown</span>
           </div>
         </div>
       </div>
 
-      {/* (1) 4 Top KPI Cards with 100% Real Metrics */}
+      {/* (1) 4 Top KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
@@ -248,7 +397,7 @@ export function OverviewView({
               </div>
             </div>
             <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <Wallet className="w-4 h-4" />
+              <Layers className="w-4 h-4" />
             </div>
           </CardContent>
         </Card>
@@ -256,7 +405,7 @@ export function OverviewView({
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Next cycle reset</div>
+              <div className="text-[11px] font-medium text-zinc-400">Nearest reset</div>
               <div className="text-2xl font-bold text-zinc-100 mt-1">
                 {formatRemainingDuration(nearestResetMs)}
               </div>
@@ -268,123 +417,224 @@ export function OverviewView({
         </Card>
       </div>
 
-      {/* (2) Main Provider Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filteredSnapshots.map((snapshot) => {
-          const providerId = snapshot.provider;
-          const meta = getProviderMeta(providerId);
-          const hasBalance = Boolean(snapshot.balance && snapshot.balance.balances.length > 0);
-          const isBalanceOnly = hasBalance && snapshot.windows.length === 0;
+      {/* (2) Provider Cards Grid */}
+      {filteredSnapshots.length === 0 ? (
+        <div className="p-8 text-center rounded-xl bg-zinc-900/30 border border-zinc-800/60">
+          <p className="text-sm text-zinc-400">No active providers matching the current filter.</p>
+          <p className="text-xs text-zinc-500 mt-1">
+            Click <strong>Customize</strong> above to toggle providers or configure credentials in Settings.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredSnapshots.map((snapshot) => {
+            const providerId = snapshot.provider;
+            const meta = getProviderMeta(providerId);
+            const sortedWindows = sortWindowsForDisplay(snapshot.windows);
+            const hasBalance = Boolean(snapshot.balance && snapshot.balance.balances.length > 0);
+            const isBalancePriority = isBalanceFirst(snapshot);
 
-          // Case 1: Balance-Only or Balance-First Provider
-          if (isBalanceOnly && snapshot.balance) {
-            const primaryBalance = snapshot.balance.balances[0];
-            const secondaryBalance = snapshot.balance.balances[1];
-            const isLow =
-              primaryBalance &&
-              primaryBalance.totalBalance <= (primaryBalance.currency === "CNY" ? 7 : 1);
+            // Case 1: Pure Balance Provider (e.g. DeepSeek, OpenAI Platform)
+            if (isBalancePriority && hasBalance && snapshot.balance) {
+              const allBalances = snapshot.balance.balances;
+              // Sort with positive balance first so funded currency is prominent
+              const sortedBalances = [...allBalances].sort((a, b) => {
+                if (a.totalBalance > 0 && b.totalBalance <= 0) return -1;
+                if (b.totalBalance > 0 && a.totalBalance <= 0) return 1;
+                return Math.abs(b.totalBalance) - Math.abs(a.totalBalance);
+              });
+              const primaryBalance = sortedBalances[0];
+              const secondaryBalance = sortedBalances.length > 1 ? sortedBalances[1] : null;
 
-            return (
-              <Card
-                key={providerId}
-                className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
-                onClick={() => onSelectProvider?.(providerId)}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center space-x-2.5 min-w-0">
-                      <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
-                        <ProviderIcon provider={providerId} size={18} />
+              // Check if account has any positive funded amount
+              const hasFunded = sortedBalances.some((b) => {
+                const threshold = b.currency === "CNY" ? 7 : 1;
+                return b.totalBalance > threshold;
+              });
+              const isLow = !hasFunded;
+
+              return (
+                <Card
+                  key={providerId}
+                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  onClick={() => onSelectProvider?.(providerId)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                          <ProviderIcon provider={providerId} size={18} />
+                        </div>
+                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                          {meta.name}
+                        </CardTitle>
                       </div>
-                      <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
-                        {meta.name}
-                      </CardTitle>
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                      >
+                        Prepaid Wallet
+                      </Badge>
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
-                    >
-                      Prepaid Wallet
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-xs text-zinc-400 truncate mt-1">
-                    {meta.category === "llm_api"
-                      ? "LLM API Key"
-                      : meta.category === "aggregator"
-                        ? "API Aggregator"
-                        : "Cloud Engine"}{" "}
-                    · Pay-as-you-go balance
-                  </CardDescription>
-                </CardHeader>
+                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                      {meta.category === "llm_api"
+                        ? "LLM API Key"
+                        : meta.category === "aggregator"
+                          ? "API Aggregator"
+                          : "Cloud Engine"}{" "}
+                      · Pay-as-you-go balance
+                    </CardDescription>
+                  </CardHeader>
 
-                <CardContent className="space-y-4 pt-1">
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <span className="text-3xl font-extrabold text-zinc-100">
-                        {formatCurrencyAmount(
-                          primaryBalance?.totalBalance,
-                          primaryBalance?.currency,
-                        )}
-                      </span>{" "}
-                      <span className="text-xs font-semibold text-zinc-400 uppercase">
-                        {primaryBalance?.currency ?? "USD"}
-                      </span>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[10px] px-2 py-0.5",
-                        isLow
-                          ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                          : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
-                      )}
-                    >
-                      {isLow ? "Low Balance" : "Funded"}
-                    </Badge>
-                  </div>
-
-                  {/* Cash vs Granted breakdown */}
-                  <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1">
-                    <div className="flex items-center justify-between text-zinc-400">
-                      <span>Topped-up Cash:</span>
-                      <span className="font-mono text-zinc-200">
-                        {formatCurrencyAmount(
-                          primaryBalance?.toppedUpBalance,
-                          primaryBalance?.currency,
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-zinc-400">
-                      <span>Granted Credits:</span>
-                      <span className="font-mono text-zinc-200">
-                        {formatCurrencyAmount(
-                          primaryBalance?.grantedBalance,
-                          primaryBalance?.currency,
-                        )}
-                      </span>
-                    </div>
-                    {secondaryBalance && (
-                      <div className="flex items-center justify-between text-zinc-400 border-t border-zinc-800/60 pt-1 mt-1">
-                        <span>Secondary ({secondaryBalance.currency}):</span>
-                        <span className="font-mono text-zinc-200">
+                  <CardContent className="space-y-4 pt-1">
+                    <div className="flex items-baseline justify-between flex-wrap gap-2">
+                      <div className="flex items-baseline space-x-1.5 flex-wrap">
+                        <span className="text-3xl font-extrabold text-zinc-100 font-mono">
                           {formatCurrencyAmount(
-                            secondaryBalance.totalBalance,
-                            secondaryBalance.currency,
+                            primaryBalance?.totalBalance,
+                            primaryBalance?.currency,
+                          )}
+                        </span>{" "}
+                        <span className="text-xs font-semibold text-zinc-400 uppercase">
+                          {primaryBalance?.currency ?? "USD"}
+                        </span>
+                        {secondaryBalance && (
+                          <div className="flex items-baseline space-x-1 ml-1 text-zinc-300">
+                            <span className="text-zinc-500 font-medium text-sm">+</span>
+                            <span
+                              className={cn(
+                                "text-xl font-bold font-mono",
+                                secondaryBalance.totalBalance < 0
+                                  ? "text-zinc-400"
+                                  : "text-zinc-200",
+                              )}
+                            >
+                              {formatCurrencyAmount(
+                                secondaryBalance.totalBalance,
+                                secondaryBalance.currency,
+                              )}
+                            </span>
+                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                              {secondaryBalance.currency}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px] px-2 py-0.5",
+                          isLow
+                            ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                            : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+                        )}
+                      >
+                        {isLow ? "Low Balance" : "Funded"}
+                      </Badge>
+                    </div>
+
+                    {/* Breakdown of each currency wallet */}
+                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1.5">
+                      {sortedBalances.map((b) => (
+                        <div key={b.currency} className="flex items-center justify-between text-zinc-400">
+                          <span className="font-medium text-zinc-300">
+                            {b.currency === "USD" ? "USD Account:" : "CNY (人民币):"}
+                          </span>
+                          <div className="flex items-center space-x-2 font-mono">
+                            <span className={cn(b.totalBalance < 0 ? "text-amber-400" : "text-zinc-100 font-semibold")}>
+                              {formatCurrencyAmount(b.totalBalance, b.currency)} {b.currency}
+                            </span>
+                            {b.toppedUpBalance !== undefined && (
+                              <span className="text-[10px] text-zinc-500">
+                                (Cash: {formatCurrencyAmount(b.toppedUpBalance, b.currency)})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            // Case 2: Hybrid Provider (Balance + Quota, like OpenRouter or MiMo)
+            if (hasBalance && sortedWindows.length > 0 && snapshot.balance) {
+              const primaryBalance = snapshot.balance.balances[0];
+              const primaryWindow = sortedWindows[0];
+              const remaining = primaryWindow?.remainingPercent ?? 0;
+
+              return (
+                <Card
+                  key={providerId}
+                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  onClick={() => onSelectProvider?.(providerId)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                          <ProviderIcon provider={providerId} size={18} />
+                        </div>
+                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                          {meta.name}
+                        </CardTitle>
+                      </div>
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                      >
+                        Hybrid Credit
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                      Balance:{" "}
+                      {formatCurrencyAmount(primaryBalance?.totalBalance, primaryBalance?.currency)}{" "}
+                      {primaryBalance?.currency ?? "USD"}
+                      {primaryWindow ? ` · ${primaryWindow.windowId}` : ""}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4 pt-1">
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <span className="text-3xl font-extrabold text-zinc-100">
+                          {formatCurrencyAmount(
+                            primaryBalance?.totalBalance,
+                            primaryBalance?.currency,
                           )}
                         </span>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          }
+                      <span className="text-xs text-zinc-400">
+                        {remaining.toFixed(0)}% quota left
+                      </span>
+                    </div>
 
-          // Case 2: Hybrid Provider (like OpenRouter or MiMo)
-          if (hasBalance && snapshot.windows.length > 0 && snapshot.balance) {
-            const primaryBalance = snapshot.balance.balances[0];
-            const primaryWindow = snapshot.windows[0];
-            const remaining = primaryWindow?.remainingPercent ?? 0;
+                    <PacedProgress
+                      remainingPercent={remaining}
+                      idealRemainingPercent={null}
+                      label={`${meta.name} quota bar`}
+                      barColor="bg-indigo-500"
+                    />
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            // Case 3: Subscription Quota Provider (OpenCode Go, Claude, Codex, Antigravity)
+            // Multi-Row Support: Render Primary Row (Monthly/Weekly) + Secondary Row (Session/5h)
+            const primaryWindow = sortedWindows[0];
+            const secondaryWindow = sortedWindows.length > 1 ? sortedWindows[1] : null;
+            const thirdWindow = sortedWindows.length > 2 ? sortedWindows[2] : null;
+
+            const primaryReset = primaryWindow?.resetAt ? new Date(primaryWindow.resetAt) : null;
+            const primaryRemaining = primaryWindow?.remainingPercent ?? 0;
+            const primaryUsed = primaryWindow?.usedPercent ?? 0;
+
+            const secondaryReset = secondaryWindow?.resetAt
+              ? new Date(secondaryWindow.resetAt)
+              : null;
+            const secondaryRemaining = secondaryWindow?.remainingPercent ?? 0;
 
             return (
               <Card
@@ -406,128 +656,92 @@ export function OverviewView({
                       variant="secondary"
                       className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                     >
-                      Hybrid Credit
+                      {meta.defaultPlan}
                     </Badge>
                   </div>
                   <CardDescription className="text-xs text-zinc-400 truncate mt-1">
-                    Balance:{" "}
-                    {formatCurrencyAmount(primaryBalance?.totalBalance, primaryBalance?.currency)}{" "}
-                    {primaryBalance?.currency ?? "USD"}{primaryWindow ? ` · ${primaryWindow.windowId}` : ""}
+                    {primaryWindow ? formatWindowLabel(primaryWindow.windowId) : "Standard Quota"} · Resets in{" "}
+                    {primaryReset
+                      ? formatRemainingDuration(primaryReset.getTime() - now.getTime())
+                      : "unknown"}
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-4 pt-1">
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <span className="text-3xl font-extrabold text-zinc-100">
-                        {formatCurrencyAmount(
-                          primaryBalance?.totalBalance,
-                          primaryBalance?.currency,
-                        )}
+                <CardContent className="space-y-3 pt-1">
+                  {/* Row 1: Primary Quota Progress */}
+                  <div>
+                    <div className="flex items-baseline justify-between mb-1.5">
+                      <span className="text-2xl font-extrabold text-zinc-100">
+                        {primaryRemaining.toFixed(0)}%{" "}
+                        <span className="text-xs font-normal text-zinc-400">left</span>
                       </span>
+                      <span className="text-xs text-zinc-400">{primaryUsed.toFixed(0)}% used</span>
                     </div>
-                    <span className="text-xs text-zinc-400">
-                      {remaining.toFixed(0)}% quota left
-                    </span>
+
+                    <PacedProgress
+                      remainingPercent={primaryRemaining}
+                      idealRemainingPercent={null}
+                      label={`${meta.name} primary pace bar`}
+                      barColor={
+                        providerId === "claude"
+                          ? "bg-[#da7756]"
+                          : providerId === "codex"
+                            ? "bg-[#5c82ff]"
+                            : providerId === "opencodego"
+                              ? "bg-emerald-400"
+                              : "bg-emerald-500"
+                      }
+                    />
                   </div>
 
-                  {/* Utilization Progress Bar */}
-                  <PacedProgress
-                    remainingPercent={remaining}
-                    idealRemainingPercent={null}
-                    label={`${meta.name} quota bar`}
-                    barColor="bg-indigo-500"
-                  />
+                  {/* Row 2: Secondary Quota Progress (e.g. Weekly quota or 5h Session) */}
+                  {secondaryWindow && (
+                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-zinc-300 font-medium">
+                          {formatWindowLabel(secondaryWindow.windowId)}
+                        </span>
+                        <div className="flex items-center space-x-1.5 text-zinc-400 font-mono">
+                          <span className="font-semibold text-zinc-200">
+                            {secondaryRemaining.toFixed(0)}% left
+                          </span>
+                          {secondaryReset && (
+                            <span className="text-zinc-500 text-[10px]">
+                              ({formatRemainingDuration(secondaryReset.getTime() - now.getTime())})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full transition-all duration-300 rounded-full",
+                            secondaryRemaining <= 20 ? "bg-amber-400" : "bg-sky-400",
+                          )}
+                          style={{ width: `${Math.min(100, Math.max(0, secondaryRemaining))}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Row 3: Auxiliary badge if 3 windows exist */}
+                  {thirdWindow && (
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-0.5">
+                      <span className="truncate">{formatWindowLabel(thirdWindow.windowId)}:</span>
+                      <span className="font-mono text-zinc-400">
+                        {thirdWindow.remainingPercent !== null
+                          ? `${thirdWindow.remainingPercent.toFixed(0)}% remaining`
+                          : "active"}
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
-          }
-
-          // Case 3: Subscription Quota Provider
-          const primaryWindow = snapshot.windows[0];
-          const profile = primaryWindow
-            ? windowProfile(snapshot.provider, primaryWindow.windowId, primaryWindow.resetAt, now)
-            : null;
-          const reset = primaryWindow?.resetAt ? new Date(primaryWindow.resetAt) : null;
-          const start =
-            reset && profile?.durationMs !== null && profile?.durationMs !== undefined
-              ? new Date(reset.getTime() - profile.durationMs)
-              : null;
-
-          const pace =
-            primaryWindow && profile
-              ? calculatePace({
-                  now,
-                  startAt: start,
-                  resetAt: reset,
-                  usedPercent: primaryWindow.usedPercent,
-                  semantics: profile.semantics,
-                  startSource: start ? "inferred" : "unknown",
-                })
-              : null;
-
-          const remaining = primaryWindow?.remainingPercent ?? 0;
-          const used = primaryWindow?.usedPercent ?? 0;
-
-          return (
-            <Card
-              key={providerId}
-              className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
-              onClick={() => onSelectProvider?.(providerId)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center space-x-2.5 min-w-0">
-                    <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
-                      <ProviderIcon provider={providerId} size={18} />
-                    </div>
-                    <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
-                      {meta.name}
-                    </CardTitle>
-                  </div>
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
-                  >
-                    {meta.defaultPlan}
-                  </Badge>
-                </div>
-                <CardDescription className="text-xs text-zinc-400 truncate mt-1">
-                  {primaryWindow?.windowId ?? "primary"} · Resets in{" "}
-                  {reset ? formatRemainingDuration(reset.getTime() - now.getTime()) : "unknown"}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4 pt-1">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-3xl font-extrabold text-zinc-100">
-                    {remaining.toFixed(0)}%{" "}
-                    <span className="text-sm font-normal text-zinc-400">left</span>
-                  </span>
-                  <span className="text-xs text-zinc-400">{used.toFixed(0)}% used</span>
-                </div>
-
-                {/* Paced progress bar representing remaining quota */}
-                <PacedProgress
-                  remainingPercent={remaining}
-                  idealRemainingPercent={pace ? 100 - pace.idealUsedPercent : null}
-                  quality={pace?.quality}
-                  label={`${meta.name} pace bar`}
-                  barColor={
-                    providerId === "claude"
-                      ? "bg-[#da7756]"
-                      : providerId === "codex"
-                        ? "bg-[#5c82ff]"
-                        : providerId === "opencodego"
-                          ? "bg-emerald-400"
-                          : "bg-emerald-500"
-                  }
-                />
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* (3) Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
@@ -551,7 +765,7 @@ export function OverviewView({
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2.5">
-              {snapshots.map((s) => {
+              {displayedSnapshots.map((s) => {
                 const meta = getProviderMeta(s.provider);
                 const hasBalance = Boolean(s.balance && s.balance.balances.length > 0);
 
@@ -572,7 +786,6 @@ export function OverviewView({
                       </span>
                     </div>
 
-                    {/* Window details */}
                     {s.windows.length > 0 && (
                       <div className="space-y-1.5">
                         {s.windows.map((w) => (
@@ -581,7 +794,7 @@ export function OverviewView({
                             className="flex items-center justify-between text-[11px]"
                           >
                             <span className="text-zinc-400 font-mono truncate max-w-[160px]">
-                              {w.windowId}
+                              {formatWindowLabel(w.windowId)}
                             </span>
                             <div className="flex items-center space-x-2 shrink-0">
                               <span
@@ -648,58 +861,51 @@ export function OverviewView({
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-zinc-800 text-zinc-400 font-medium pb-2 text-[11px]">
-                      <th className="py-2 pr-3 whitespace-nowrap font-medium">Provider</th>
-                      <th className="py-2 pr-3 whitespace-nowrap font-medium">Scope</th>
-                      <th className="py-2 pr-3 whitespace-nowrap font-medium">Resets in</th>
-                      <th className="py-2 pr-3 whitespace-nowrap font-medium">Reset at</th>
-                      <th className="py-2 text-right whitespace-nowrap font-medium">Current use</th>
+                      <th className="pb-2">Provider</th>
+                      <th className="pb-2">Window Scope</th>
+                      <th className="pb-2">Remaining</th>
+                      <th className="pb-2">Reset In</th>
+                      <th className="pb-2">Exact Timestamp</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
-                    {upcomingResets.map((row, i) => {
-                      const meta = getProviderMeta(row.provider);
+                  <tbody className="divide-y divide-zinc-800/50">
+                    {upcomingResets.map((reset, idx) => {
+                      const meta = getProviderMeta(reset.provider);
+                      const isAtRisk =
+                        reset.remainingPercent !== null && reset.remainingPercent <= 20;
+
                       return (
                         <tr
-                          key={`${row.provider}-${row.scope}-${i}`}
-                          className="hover:bg-zinc-900/30 transition-colors"
+                          key={`${reset.provider}-${reset.scope}-${idx}`}
+                          className="hover:bg-zinc-900/40 transition-colors"
                         >
-                          <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap flex items-center space-x-1.5">
-                            <ProviderIcon provider={row.provider} size={14} />
-                            <span>{meta.shortName}</span>
+                          <td className="py-2.5 flex items-center space-x-2 font-medium text-zinc-200">
+                            <ProviderIcon provider={reset.provider} size={15} />
+                            <span>{meta.name}</span>
                           </td>
-                          <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap font-mono text-[11px]">
-                            {row.scope}
+                          <td className="py-2.5 text-zinc-400 font-mono text-[11px]">
+                            {formatWindowLabel(reset.scope)}
                           </td>
-                          <td className="py-2.5 pr-3 whitespace-nowrap font-medium">
-                            <span
+                          <td className="py-2.5">
+                            <Badge
+                              variant="outline"
                               className={cn(
-                                (row.resetMs ?? 0) < 6 * 3_600_000
-                                  ? "text-amber-400 font-semibold"
-                                  : "text-zinc-200",
+                                "text-[10px] px-2 py-0.5 font-mono",
+                                isAtRisk
+                                  ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                                  : "text-zinc-300 border-zinc-700 bg-zinc-900",
                               )}
                             >
-                              {formatRemainingDuration(row.resetMs)}
-                            </span>
+                              {reset.remainingPercent !== null
+                                ? `${reset.remainingPercent.toFixed(0)}%`
+                                : "N/A"}
+                            </Badge>
                           </td>
-                          <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">
-                            {row.resetDate ? formatResetDate(row.resetDate) : "--"}
+                          <td className="py-2.5 text-zinc-300 font-medium font-mono text-[11px]">
+                            {formatRemainingDuration(reset.resetMs)}
                           </td>
-                          <td className="py-2.5 text-right font-medium whitespace-nowrap">
-                            {row.usedPercent !== null ? (
-                              <span
-                                className={cn(
-                                  row.usedPercent >= 80
-                                    ? "text-red-400"
-                                    : row.usedPercent >= 50
-                                      ? "text-amber-400"
-                                      : "text-emerald-400",
-                                )}
-                              >
-                                {row.usedPercent.toFixed(0)}%
-                              </span>
-                            ) : (
-                              <span className="text-zinc-500">--</span>
-                            )}
+                          <td className="py-2.5 text-zinc-400 font-mono text-[11px]">
+                            {reset.resetDate ? formatResetDate(reset.resetDate) : "—"}
                           </td>
                         </tr>
                       );
@@ -711,6 +917,96 @@ export function OverviewView({
           </CardContent>
         </Card>
       </div>
+
+      {/* Customize Providers Modal */}
+      {showCustomizeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#111113] border border-zinc-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div>
+                <h3 className="text-base font-semibold text-zinc-100 flex items-center space-x-2">
+                  <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+                  <span>Customize Visible Cards</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Choose which AI providers to display on your dashboard overview.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCustomizeModal(false)}
+                className="p-1 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="max-h-[380px] overflow-y-auto space-y-2 pr-1">
+              {PROVIDER_CATALOG.map((p) => {
+                const snapshot = snapshots.find((s) => s.provider === p.id);
+                const isConfigured = snapshot ? isProviderConfigured(snapshot) : false;
+                const isVisible =
+                  visibility[p.id] !== undefined ? visibility[p.id] : isConfigured;
+
+                return (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700/80 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-1.5 rounded-md bg-zinc-950 border border-zinc-800">
+                        <ProviderIcon provider={p.id} size={16} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-zinc-200 flex items-center space-x-1.5">
+                          <span>{p.name}</span>
+                          {isConfigured && (
+                            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 capitalize">
+                          {p.category.replace("_", " ")} · {p.defaultPlan}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleVisibility(p.id)}
+                      className={cn(
+                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                        isVisible ? "bg-emerald-500" : "bg-zinc-700",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                          isVisible ? "translate-x-4" : "translate-x-0",
+                        )}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+              <span className="text-[11px] text-zinc-500">
+                Preferences are persisted automatically to your config.
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowCustomizeModal(false)}
+                className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -78,6 +78,33 @@ fn find_binary(name: &str) -> Option<PathBuf> {
     None
 }
 
+fn inject_keyring_env(cmd: &mut Command) {
+    const PROVIDERS: &[(&str, &str)] = &[
+        ("moonshot", "MOONSHOT_API_KEY"),
+        ("deepseek", "DEEPSEEK_API_KEY"),
+        ("openrouter", "OPENROUTER_API_KEY"),
+        ("glm", "ZHIPU_API_KEY"),
+        ("mimo", "MIMO_API_KEY"),
+        ("opencodego", "OPENCODE_ZEN_API_KEY"),
+        ("claude", "ANTHROPIC_API_KEY"),
+        ("codex", "OPENAI_API_KEY"),
+        ("gemini", "GEMINI_API_KEY"),
+        ("minimax", "MINIMAX_API_KEY"),
+        ("grok", "GROK_API_KEY"),
+        ("openai", "OPENAI_API_KEY"),
+    ];
+
+    for (prov, env_var) in PROVIDERS {
+        if let Ok(entry) = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", prov)) {
+            if let Ok(sec) = entry.get_password() {
+                if !sec.is_empty() {
+                    cmd.env(env_var, sec);
+                }
+            }
+        }
+    }
+}
+
 fn execute_probe() -> Result<Value, String> {
     let augmented_path = get_augmented_path();
     let repo_root = find_repo_root();
@@ -87,13 +114,14 @@ fn execute_probe() -> Result<Value, String> {
         let bun_path = find_binary("bun").unwrap_or_else(|| PathBuf::from("bun"));
         let cli_script = root.join("packages").join("cli").join("src").join("main.ts");
         if cli_script.exists() {
-            let output = Command::new(&bun_path)
-                .arg(&cli_script)
+            let mut cmd = Command::new(&bun_path);
+            cmd.arg(&cli_script)
                 .arg("status")
                 .arg("--json")
                 .env("PATH", &augmented_path)
-                .current_dir(root)
-                .output();
+                .current_dir(root);
+            inject_keyring_env(&mut cmd);
+            let output = cmd.output();
 
             if let Ok(out) = output {
                 if out.status.success() {
@@ -109,13 +137,14 @@ fn execute_probe() -> Result<Value, String> {
         let node_path = find_binary("node").unwrap_or_else(|| PathBuf::from("node"));
         let dist_script = root.join("packages").join("cli").join("dist").join("main.mjs");
         if dist_script.exists() {
-            let output = Command::new(&node_path)
-                .arg(&dist_script)
+            let mut cmd = Command::new(&node_path);
+            cmd.arg(&dist_script)
                 .arg("status")
                 .arg("--json")
                 .env("PATH", &augmented_path)
-                .current_dir(root)
-                .output();
+                .current_dir(root);
+            inject_keyring_env(&mut cmd);
+            let output = cmd.output();
 
             if let Ok(out) = output {
                 if out.status.success() {
@@ -130,11 +159,12 @@ fn execute_probe() -> Result<Value, String> {
 
     // Candidate 3: global kuota command
     let kuota_path = find_binary("kuota").unwrap_or_else(|| PathBuf::from("kuota"));
-    let output = Command::new(&kuota_path)
-        .arg("status")
+    let mut cmd = Command::new(&kuota_path);
+    cmd.arg("status")
         .arg("--json")
-        .env("PATH", &augmented_path)
-        .output();
+        .env("PATH", &augmented_path);
+    inject_keyring_env(&mut cmd);
+    let output = cmd.output();
 
     if let Ok(out) = output {
         if out.status.success() {
@@ -210,6 +240,49 @@ pub fn get_app_info() -> Value {
     })
 }
 
+fn get_config_path() -> Option<PathBuf> {
+    let home = std::env::var("HOME").ok()?;
+    Some(PathBuf::from(home).join(".kuota").join("config.json"))
+}
+
+#[tauri::command]
+pub fn get_user_config() -> Value {
+    if let Some(path) = get_config_path() {
+        if let Ok(contents) = std::fs::read_to_string(path) {
+            if let Ok(val) = serde_json::from_str::<Value>(&contents) {
+                return val;
+            }
+        }
+    }
+    serde_json::json!({
+        "version": 1,
+        "keys": {},
+        "visibility": {}
+    })
+}
+
+#[tauri::command]
+pub fn save_user_config(config: Value) -> Result<(), String> {
+    if let Some(path) = get_config_path() {
+        if let Some(parent) = path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let formatted = serde_json::to_string_pretty(&config).map_err(|e| e.to_string())?;
+        std::fs::write(path, formatted).map_err(|e| e.to_string())?;
+        Ok(())
+    } else {
+        Err("Cannot resolve HOME directory".into())
+    }
+}
+
+#[tauri::command]
+pub fn update_tray_title(app: tauri::AppHandle, title: Option<String>) -> Result<(), String> {
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        let _ = tray.set_title(title);
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub fn open_external_url(url: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
@@ -236,4 +309,26 @@ pub fn open_external_url(url: String) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
         Ok(())
     }
+}
+
+#[tauri::command]
+pub fn get_keychain_password(provider: String) -> Option<String> {
+    let entry = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", provider)).ok()?;
+    entry.get_password().ok()
+}
+
+#[tauri::command]
+pub fn set_keychain_password(provider: String, secret: String) -> Result<(), String> {
+    let entry = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", provider))
+        .map_err(|e| e.to_string())?;
+    entry.set_password(&secret).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn delete_keychain_password(provider: String) -> Result<(), String> {
+    let entry = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", provider))
+        .map_err(|e| e.to_string())?;
+    let _ = entry.delete_credential();
+    Ok(())
 }

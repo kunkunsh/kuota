@@ -297,6 +297,28 @@ function DevApp() {
         const data = await loadQuotaStatus(forceFresh);
         if (data && data.length > 0) {
           setSnapshots(data);
+          if (
+            typeof window !== "undefined" &&
+            ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+          ) {
+            try {
+              const { invoke } = await import("@tauri-apps/api/core");
+              const active = data.find((s) => s.status === "ok");
+              let title = "Kuota";
+              if (active) {
+                if (active.windows[0]?.remainingPercent != null) {
+                  title = `${active.windows[0].remainingPercent.toFixed(0)}%`;
+                } else if (active.balance?.balances[0]?.totalBalance != null) {
+                  const b = active.balance.balances[0];
+                  title =
+                    b.currency === "CNY"
+                      ? `¥${b.totalBalance.toFixed(0)}`
+                      : `$${b.totalBalance.toFixed(2)}`;
+                }
+              }
+              await invoke("update_tray_title", { title });
+            } catch {}
+          }
         } else if (snapshots.length === 0) {
           setSnapshots(mockSnapshots);
         }
@@ -312,6 +334,7 @@ function DevApp() {
   );
 
   React.useEffect(() => {
+    (window as any).__KUOTA_REFRESH = () => fetchLiveStatus(true);
     void fetchLiveStatus(false);
   }, [fetchLiveStatus]);
 
