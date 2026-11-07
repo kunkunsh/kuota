@@ -306,7 +306,7 @@ export function IslandView({
                   <span className="text-sm font-bold text-zinc-100">57% left</span>
                 </div>
               </div>
-              <div className="text-[10px] text-zinc-400">Zen Plan · 40% monthly</div>
+              <div className="text-[10px] text-zinc-400">Go Plan · 40% monthly</div>
             </div>
 
             {/* Quadrant 4: DeepSeek / OpenRouter Balances */}

@@ -279,6 +279,8 @@ function DevApp() {
     return (
       <MenuBarPopoverView
         snapshots={snapshots}
+        forecasts={forecasts}
+        events={historyEvents}
         isRefreshing={loading}
         onRefresh={() => fetchLiveStatus(true)}
       />

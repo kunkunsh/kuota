@@ -128,8 +128,9 @@ const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
     provider: "opencodego",
     status: "ok",
     fetchedAt: new Date().toISOString(),
-    source: "opencode-zen-api",
+    source: "opencode-go-api",
     billingModel: "subscription",
+    planType: "Go Plan",
     windows: [
       {
         windowId: "rolling",
@@ -299,6 +300,8 @@ function KuotaDashboardInner({
     return (
       <MenuBarPopoverView
         snapshots={snapshots}
+        forecasts={forecasts}
+        events={events}
         isRefreshing={activeRefreshing}
         onRefresh={handleRefresh}
         onOpenDashboard={() => setRoute("overview")}

@@ -182,11 +182,54 @@ async function resolveToken(options: ClaudeOptions): Promise<string | null> {
   return null;
 }
 
+async function tryReadLocalPlanUsage(): Promise<QuotaSnapshot | null> {
+  if (process.platform !== "darwin") return null;
+  const path = join(homedir(), "Library", "Application Support", "Claude", "plan-usage-history.json");
+  try {
+    const raw = JSON.parse(await readFile(path, "utf8"));
+    if (Array.isArray(raw?.samples) && raw.samples.length > 0) {
+      for (let i = raw.samples.length - 1; i >= 0; i--) {
+        const s = raw.samples[i];
+        const u = record(s?.u);
+        if (u && (validPercent(u.fh) || validPercent(u.sd))) {
+          const windows: QuotaSnapshot["windows"][number][] = [];
+          if (validPercent(u.fh)) {
+            windows.push(normalizeWindow({ windowId: "session.5h", usedPercent: u.fh }));
+          }
+          if (validPercent(u.sd)) {
+            windows.push(normalizeWindow({ windowId: "weekly.all", usedPercent: u.sd }));
+          }
+          if (windows.length > 0) {
+            return {
+              provider: "claude",
+              status: "ok",
+              fetchedAt: s.t ? new Date(s.t).toISOString() : new Date().toISOString(),
+              source: "claude-local-storage",
+              billingModel: "subscription",
+              windows,
+              errorCode: null,
+            };
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignore missing or malformed local history
+  }
+  return null;
+}
+
 /** No Keychain UI access, credential refresh, browser sign-in or CLI session side effects. */
 export function readClaude(options: ClaudeOptions = {}): Effect.Effect<QuotaSnapshot> {
   return Effect.promise(async () => {
     const token = await resolveToken(options);
-    if (!token) return makeUnavailableSnapshot("claude", "AUTH_REQUIRED", "unauthenticated");
+    if (!token) {
+      if (!options.credentialsFile && !options.token) {
+        const local = await tryReadLocalPlanUsage();
+        if (local) return local;
+      }
+      return makeUnavailableSnapshot("claude", "AUTH_REQUIRED", "unauthenticated");
+    }
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 12000);

@@ -33,7 +33,7 @@ describe("parseCodexRateLimits", () => {
         resetAt: new Date(1794500000 * 1000).toISOString(),
       },
     ]);
-    expect(JSON.stringify(snapshot)).not.toContain("planType");
+    expect(snapshot.planType).toBe("pro");
   });
 
   it("marks malformed percentage partial and unknown, not 0 remaining", () => {

@@ -85,6 +85,7 @@ fn inject_keyring_env(cmd: &mut Command) {
         ("openrouter", "OPENROUTER_API_KEY"),
         ("glm", "ZHIPU_API_KEY"),
         ("mimo", "MIMO_API_KEY"),
+        ("opencodego", "OPENCODE_API_KEY"),
         ("opencodego", "OPENCODE_ZEN_API_KEY"),
         ("claude", "ANTHROPIC_API_KEY"),
         ("codex", "OPENAI_API_KEY"),

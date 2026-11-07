@@ -70,6 +70,24 @@ export const QuotaSnapshotSchema = Schema.Struct({
   billingModel: Schema.optional(BillingModelSchema),
   windows: Schema.Array(QuotaWindowSchema),
   balance: Schema.optional(Schema.NullOr(QuotaBalanceSchema)),
+  planType: Schema.optional(Schema.NullOr(Schema.String)),
+  credits: Schema.optional(
+    Schema.NullOr(
+      Schema.Struct({
+        hasCredits: Schema.Boolean,
+        balance: Schema.Number,
+        unlimited: Schema.optional(Schema.Boolean),
+      }),
+    ),
+  ),
+  resetCredits: Schema.optional(
+    Schema.NullOr(
+      Schema.Struct({
+        availableCount: Schema.Number,
+        resetsAt: Schema.optional(Schema.NullOr(Schema.String)),
+      }),
+    ),
+  ),
   errorCode: Schema.NullOr(Schema.String),
 });
 export type QuotaSnapshot = Schema.Schema.Type<typeof QuotaSnapshotSchema>;

@@ -7,6 +7,7 @@ import {
   type QuotaSnapshot,
   type QuotaWindow,
   type QuotaForecastV1,
+  type QuotaHistoryEventV1,
 } from "@kuota/core";
 import { ProviderIcon } from "../ui/provider-icon.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
@@ -24,6 +25,7 @@ import {
   ExternalLink,
   ChevronRight,
   TrendingUp,
+  Coins,
   LayoutGrid,
   Zap,
   ShieldCheck,
@@ -41,6 +43,7 @@ import {
 export interface MenuBarPopoverViewProps {
   snapshots: readonly QuotaSnapshot[];
   forecasts?: readonly QuotaForecastV1[];
+  events?: readonly QuotaHistoryEventV1[];
   isRefreshing?: boolean;
   onRefresh?: () => void;
   onOpenDashboard?: () => void;
@@ -108,6 +111,7 @@ function formatWindowLabel(windowId: string): string {
 export function MenuBarPopoverView({
   snapshots,
   forecasts = [],
+  events = [],
   isRefreshing = false,
   onRefresh,
   onOpenDashboard,
@@ -258,45 +262,47 @@ export function MenuBarPopoverView({
     return { provider: best.provider, meta: bestMeta, desc };
   }, [selectedSnapshot, isExhaustedSelected, activeSnapshots]);
 
-  // Mock / deterministic 7-day spend bars for the focused provider (CodexBar mini chart)
+  // Real 7-day usage telemetry calculated from real events (CodexBar mini chart)
   const barChartData = React.useMemo(() => {
-    const isCodex = selectedSnapshot?.provider === "codex";
-    const isOpenAI = selectedSnapshot?.provider === "openai";
-    const isClaude = selectedSnapshot?.provider === "claude";
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const now = new Date();
+    const result: { day: string; value: number; height: number; peak?: boolean; label?: string }[] = [];
 
-    if (isOpenAI) {
-      return [
-        { day: "Sun", value: 0.12, height: 10 },
-        { day: "Mon", value: 22.96, height: 95, peak: true, label: "$23" },
-        { day: "Tue", value: 1.08, height: 25 },
-        { day: "Wed", value: 0.03, height: 8 },
-        { day: "Thu", value: 0.45, height: 16 },
-        { day: "Fri", value: 0.82, height: 20 },
-        { day: "Sat", value: 0.15, height: 12 },
-      ];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86_400_000);
+      const dayName = days[d.getDay()];
+      const datePrefix = d.toISOString().slice(0, 10);
+
+      const dayEvents = events.filter(
+        (e) => e.provider === selectedSnapshot?.provider && e.observedAt?.startsWith(datePrefix),
+      );
+
+      let maxUsage = 0;
+      for (const ev of dayEvents) {
+        if (ev.usedPercent != null && ev.usedPercent > maxUsage) {
+          maxUsage = ev.usedPercent;
+        }
+      }
+
+      result.push({
+        day: dayName,
+        value: maxUsage,
+        height: 0,
+      });
     }
-    if (isCodex) {
-      return [
-        { day: "Sun", value: 4.2, height: 18 },
-        { day: "Mon", value: 41.5, height: 100, peak: true, label: "$41" },
-        { day: "Tue", value: 16.8, height: 45 },
-        { day: "Wed", value: 12.4, height: 32 },
-        { day: "Thu", value: 18.2, height: 48 },
-        { day: "Fri", value: 9.6, height: 26 },
-        { day: "Sat", value: 16.78, height: 44 },
-      ];
-    }
-    // Generic high-density activity bars
-    return [
-      { day: "Sun", value: 5, height: 20 },
-      { day: "Mon", value: 28, height: 75, peak: true, label: "28M" },
-      { day: "Tue", value: 14, height: 40 },
-      { day: "Wed", value: 19, height: 50 },
-      { day: "Thu", value: 22, height: 60 },
-      { day: "Fri", value: 11, height: 30 },
-      { day: "Sat", value: 15, height: 42 },
-    ];
-  }, [selectedSnapshot?.provider]);
+
+    const maxVal = Math.max(...result.map((r) => r.value), 0);
+    return result.map((r) => {
+      const isPeak = maxVal > 0 && r.value === maxVal;
+      const height = maxVal > 0 ? Math.max(8, Math.round((r.value / maxVal) * 92)) : 6;
+      return {
+        ...r,
+        height,
+        peak: isPeak,
+        label: maxVal > 0 && r.value > 0 ? `${r.value.toFixed(0)}%` : undefined,
+      };
+    });
+  }, [events, selectedSnapshot?.provider]);
 
   return (
     <div className="flex flex-col h-screen w-full select-none bg-zinc-950/95 text-zinc-100 font-sans antialiased border border-zinc-800/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl">
@@ -557,55 +563,100 @@ export function MenuBarPopoverView({
             ) : null}
 
             {/* 3. Limit Reset Credits Banner (CodexBar style) */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-xs">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="font-medium text-zinc-200">Limit Reset Credits</span>
+            {selectedSnapshot.resetCredits ? (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-xs">
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                  <span className="font-medium text-zinc-200">Limit Reset Credits</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-zinc-100">
+                    {selectedSnapshot.resetCredits.availableCount} available
+                  </span>
+                  {selectedSnapshot.resetCredits.resetsAt && (
+                    <span className="text-zinc-500 font-mono text-[11px]">
+                      ⏱ {formatRemainingDuration(new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now())}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold text-zinc-100">1 available</span>
-                <span className="text-zinc-500 font-mono text-[11px]">⏱ 24d 2h</span>
+            ) : null}
+
+            {/* 3b. Credits Remaining Banner */}
+            {selectedSnapshot.credits?.hasCredits ? (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 text-xs">
+                <div className="flex items-center space-x-2">
+                  <Coins className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="font-medium text-zinc-200">Credits Remaining</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold text-emerald-400 font-mono">
+                    {selectedSnapshot.credits.unlimited
+                      ? "Unlimited"
+                      : `${selectedSnapshot.credits.balance.toLocaleString()} credits`}
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : null}
 
             {/* 4. 6-Box Mini KPI Grid with Peak Daily Bar Chart (CodexBar replica!) */}
             <div className="p-3 rounded-xl bg-zinc-900/70 border border-zinc-800/80 space-y-3">
               <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs">
                 <div>
-                  <div className="text-[11px] text-zinc-400">Today</div>
+                  <div className="text-[11px] text-zinc-400">Primary Quota</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
-                    {selectedSnapshot.balance?.balances[0]?.usage
-                      ? `$${(selectedSnapshot.balance.balances[0].usage * 0.12).toFixed(2)}`
-                      : "$16.78"}
+                    {selectedSnapshot.windows[0]
+                      ? `${selectedSnapshot.windows[0].remainingPercent.toFixed(0)}% left`
+                      : selectedSnapshot.credits?.hasCredits
+                        ? `${selectedSnapshot.credits.balance.toLocaleString()} cr`
+                        : "—"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-zinc-400">Est. Current window</div>
+                  <div className="text-[11px] text-zinc-400">Primary Reset</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
-                    ≥ {selectedSnapshot.balance?.balances[0]?.usage
-                      ? `$${selectedSnapshot.balance.balances[0].usage.toFixed(2)}`
-                      : "$86.10"}
+                    {selectedSnapshot.windows[0]?.resetAt
+                      ? formatRemainingDuration(new Date(selectedSnapshot.windows[0].resetAt).getTime() - Date.now())
+                      : "Rolling"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-zinc-400">Latest tokens</div>
-                  <div className="text-sm font-bold text-zinc-100 font-mono">72M</div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-zinc-400">Est. Current window tokens</div>
-                  <div className="text-sm font-bold text-zinc-100 font-mono">≥ 1.1B</div>
-                </div>
-                <div>
-                  <div className="text-[11px] text-zinc-400">30d Spend</div>
+                  <div className="text-[11px] text-zinc-400">Secondary Quota</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
-                    {selectedSnapshot.balance?.balances[0]?.usage
-                      ? `$${selectedSnapshot.balance.balances[0].usage.toFixed(2)}`
-                      : "$86.10"}
+                    {selectedSnapshot.windows[1]
+                      ? `${selectedSnapshot.windows[1].remainingPercent.toFixed(0)}% left`
+                      : selectedSnapshot.resetCredits
+                        ? `${selectedSnapshot.resetCredits.availableCount} reset cr`
+                        : "—"}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-zinc-400">30d tokens</div>
-                  <div className="text-sm font-bold text-zinc-100 font-mono">1.1B</div>
+                  <div className="text-[11px] text-zinc-400">Secondary Reset</div>
+                  <div className="text-sm font-bold text-zinc-100 font-mono">
+                    {selectedSnapshot.windows[1]?.resetAt
+                      ? formatRemainingDuration(new Date(selectedSnapshot.windows[1].resetAt).getTime() - Date.now())
+                      : selectedSnapshot.resetCredits?.resetsAt
+                        ? formatRemainingDuration(new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now())
+                        : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-zinc-400">Account Tier</div>
+                  <div className="text-sm font-bold text-zinc-100 font-mono">
+                    {selectedSnapshot.planType
+                      ? selectedSnapshot.planType.toUpperCase()
+                      : meta.defaultPlan || "Subscription"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-zinc-400">Balance / Usage</div>
+                  <div className="text-sm font-bold text-zinc-100 font-mono">
+                    {selectedSnapshot.balance?.balances[0]?.totalBalance != null
+                      ? formatCurrencyAmount(selectedSnapshot.balance.balances[0].totalBalance, selectedSnapshot.balance.balances[0].currency)
+                      : selectedSnapshot.windows[0]
+                        ? `${selectedSnapshot.windows[0].usedPercent.toFixed(0)}% used`
+                        : "—"}
+                  </div>
                 </div>
               </div>
 
@@ -748,7 +799,7 @@ export function MenuBarPopoverView({
                             {pMeta.name}
                           </div>
                           <div className="text-[10px] text-zinc-400 truncate">
-                            {pMeta.defaultPlan}
+                            {snap.planType || pMeta.defaultPlan}
                           </div>
                         </div>
                       </div>

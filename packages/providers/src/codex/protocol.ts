@@ -43,10 +43,49 @@ export function parseCodexRateLimits(raw: unknown, fetchedAt = new Date()): Quot
   }
 
   const blocked = response?.ordinaryUsageAllowed === false;
+
+  const rawCredits = asRecord(limits.credits);
+  let credits: QuotaSnapshot["credits"] = null;
+  if (rawCredits && rawCredits.hasCredits) {
+    const bal =
+      typeof rawCredits.balance === "number"
+        ? rawCredits.balance
+        : typeof rawCredits.balance === "string"
+          ? parseFloat(rawCredits.balance)
+          : 0;
+    credits = {
+      hasCredits: true,
+      balance: Number.isFinite(bal) ? bal : 0,
+      unlimited: Boolean(rawCredits.unlimited),
+    };
+  }
+
+  const rawResetCredits = asRecord(response?.rateLimitResetCredits);
+  let resetCredits: QuotaSnapshot["resetCredits"] = null;
+  if (rawResetCredits && typeof rawResetCredits.availableCount === "number") {
+    let nextResetAt: string | null = null;
+    if (Array.isArray(rawResetCredits.credits) && rawResetCredits.credits.length > 0) {
+      const first = asRecord(rawResetCredits.credits[0]);
+      if (typeof first?.resetsAt === "number" && Number.isFinite(first.resetsAt)) {
+        nextResetAt = new Date(first.resetsAt * 1000).toISOString();
+      }
+    }
+    resetCredits = {
+      availableCount: rawResetCredits.availableCount,
+      resetsAt: nextResetAt,
+    };
+  }
+
+  const planType = typeof limits.planType === "string" ? limits.planType : null;
+
   return {
     ...common,
+    billingModel: "subscription",
     status: windows.length === 0 ? "unavailable" : malformed || blocked ? "partial" : "ok",
     windows,
+    planType,
+    credits,
+    resetCredits,
     errorCode:
       windows.length === 0
         ? "NO_WINDOWS"
