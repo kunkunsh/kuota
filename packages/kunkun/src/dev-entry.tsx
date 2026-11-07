@@ -5,6 +5,8 @@ import { createRoot } from "react-dom/client";
 import { KuotaDashboard } from "./app.js";
 import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
 import { Loader } from "./components/kokonutui/loader.js";
+import { ThemeProvider } from "./lib/theme.js";
+import { I18nProvider } from "./lib/i18n.js";
 import {
   computeTrayTitle,
   detectQuotaAlertEvents,
@@ -303,5 +305,11 @@ function DevApp() {
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  createRoot(rootElement).render(<DevApp />);
+  createRoot(rootElement).render(
+    <ThemeProvider>
+      <I18nProvider>
+        <DevApp />
+      </I18nProvider>
+    </ThemeProvider>,
+  );
 }

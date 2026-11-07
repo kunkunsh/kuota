@@ -200,6 +200,8 @@ pub fn run() {
             commands::set_menu_bar_visible,
             commands::exit_app,
             commands::send_desktop_notification,
+            commands::check_for_updates,
+            commands::install_update,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Kuota desktop application")

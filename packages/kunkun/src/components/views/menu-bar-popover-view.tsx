@@ -14,6 +14,8 @@ import {
 import { ProviderIcon } from "../ui/provider-icon.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
 import { ThemeToggleButton } from "../../lib/theme.js";
+import { useI18n, LanguageToggleButton } from "../../lib/i18n.js";
+import { checkForUpdates, installUpdate, CURRENT_APP_VERSION, type UpdateResult } from "../../lib/updater.js";
 import { cn } from "../../lib/utils.js";
 import {
   Settings,
@@ -120,6 +122,52 @@ export function MenuBarPopoverView({
   onOpenDashboard,
   onQuit,
 }: MenuBarPopoverViewProps) {
+  const { t, lang } = useI18n();
+
+  const [updateCheck, setUpdateCheck] = React.useState<{
+    checking: boolean;
+    result: UpdateResult | null;
+    installing: boolean;
+    message?: string;
+  }>({
+    checking: false,
+    result: null,
+    installing: false,
+  });
+
+  const handleCheckUpdates = async () => {
+    setUpdateCheck((prev) => ({ ...prev, checking: true, message: undefined }));
+    try {
+      const res = await checkForUpdates();
+      setUpdateCheck({ checking: false, result: res, installing: false });
+      if (!res.available && !res.error) {
+        setTimeout(() => {
+          setUpdateCheck((prev) => ({ ...prev, result: null }));
+        }, 3500);
+      }
+    } catch (err) {
+      setUpdateCheck({
+        checking: false,
+        result: { currentVersion: CURRENT_APP_VERSION, available: false, error: String(err) },
+        installing: false,
+      });
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    setUpdateCheck((prev) => ({ ...prev, installing: true }));
+    try {
+      const res = await installUpdate();
+      setUpdateCheck((prev) => ({
+        ...prev,
+        installing: false,
+        message: res.message || "Installed!",
+      }));
+    } catch (err) {
+      setUpdateCheck((prev) => ({ ...prev, installing: false, message: String(err) }));
+    }
+  };
+
   // Only show active/configured providers
   const activeSnapshots = React.useMemo(() => {
     return snapshots.filter((s) => {
@@ -379,10 +427,11 @@ export function MenuBarPopoverView({
           <KuotaLogo className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
           <span className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100">KUOTA</span>
           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            HUD
+            {t("header.hud")}
           </span>
         </div>
         <div className="flex items-center space-x-1">
+          <LanguageToggleButton />
           <ThemeToggleButton />
           <button
             type="button"
@@ -425,7 +474,7 @@ export function MenuBarPopoverView({
             )}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
-            <span>Overview</span>
+            <span>{t("nav.overview")}</span>
           </button>
 
           {/* Provider Specific Tabs */}
@@ -467,7 +516,7 @@ export function MenuBarPopoverView({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search providers, models, tokens..."
+            placeholder={t("header.search_placeholder")}
             className="w-full bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800/80 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-900 dark:text-zinc-200 placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-blue-500/60 transition-colors shadow-xs"
           />
           {searchQuery && (
@@ -605,12 +654,12 @@ export function MenuBarPopoverView({
                                   : "text-zinc-100",
                             )}
                           >
-                            {remPercent.toFixed(0)}% left
+                            {remPercent.toFixed(0)}% {t("pacing.left")}
                           </span>
                         </div>
                         {win.resetAt && (
                           <span className="text-xs text-zinc-400 font-medium font-mono">
-                            Resets in {remainingMs != null ? formatRemainingDuration(remainingMs) : formatResetDate(win.resetAt)}
+                            {t("pacing.resets_in")} {remainingMs != null ? formatRemainingDuration(remainingMs) : formatResetDate(win.resetAt)}
                           </span>
                         )}
                       </div>
@@ -637,22 +686,22 @@ export function MenuBarPopoverView({
                           {paceDelta !== null ? (
                             isConserving ? (
                               <span className="text-emerald-400 font-medium">
-                                On pace · +{paceDelta.toFixed(0)}% in reserve
+                                {t("pacing.on_pace")} · +{paceDelta.toFixed(0)}% {t("pacing.in_reserve")}
                               </span>
                             ) : isOverspent ? (
                               <span className={cn("font-medium", selectedSnapshot.provider === "claude" ? "text-orange-400" : "text-amber-400")}>
-                                Overspent · {Math.abs(paceDelta).toFixed(0)}% behind target pace
+                                {t("pacing.overspent")} · {Math.abs(paceDelta).toFixed(0)}% {t("pacing.behind_target")}
                               </span>
                             ) : (
-                              <span className="text-cyan-400 font-medium">On track with reset schedule</span>
+                              <span className="text-cyan-400 font-medium">{t("pacing.on_pace")}</span>
                             )
                           ) : remPercent > 50 ? (
-                            `${(remPercent - 50).toFixed(0)}% in reserve`
+                            `${(remPercent - 50).toFixed(0)}% ${t("pacing.in_reserve")}`
                           ) : (
-                            `${remPercent.toFixed(0)}% left`
+                            `${remPercent.toFixed(0)}% ${t("pacing.left")}`
                           )}
                         </span>
-                        <span className="text-zinc-500 font-mono">Used: {win.usedPercent.toFixed(0)}%</span>
+                        <span className="text-zinc-500 font-mono">{t("pacing.used")}: {win.usedPercent.toFixed(0)}%</span>
                       </div>
                     </div>
                   );
@@ -855,10 +904,10 @@ export function MenuBarPopoverView({
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                   </span>
                   <div className="text-xs truncate">
-                    <span className="text-slate-600 dark:text-zinc-400 font-medium">Foreground: </span>
+                    <span className="text-slate-600 dark:text-zinc-400 font-medium">{t("header.foreground")}: </span>
                     <strong className="text-slate-900 dark:text-white font-semibold">{frontmostInfo.appName}</strong>
                     <span className="text-slate-500 dark:text-zinc-400 text-[11px] ml-1.5 font-normal">
-                      &rarr; {getProviderMeta(frontmostInfo.mappedProvider).name}
+                      &rarr; {t("header.mapped_to")} {getProviderMeta(frontmostInfo.mappedProvider).name}
                     </span>
                   </div>
                 </div>
@@ -897,7 +946,7 @@ export function MenuBarPopoverView({
                     const pPace = resolveIdealPace(pWindows[0], snap.provider, new Date());
                     const pRem = pWindows[0].remainingPercent;
                     const pOverspent = pPace && pRem < pPace.idealRemainingPercent - 4;
-                    displayRight = `${pRem.toFixed(0)}% left`;
+                    displayRight = `${pRem.toFixed(0)}% ${t("pacing.left")}`;
                     rightColor = pOverspent
                       ? (snap.provider === "claude" ? "text-orange-400" : "text-amber-400")
                       : pRem < 20
@@ -993,20 +1042,20 @@ export function MenuBarPopoverView({
       <div className="p-3 border-t border-slate-200 dark:border-zinc-800/80 bg-slate-50/90 dark:bg-zinc-900/60 space-y-2 shrink-0 text-xs">
         {/* Menu Bar Display Mode Switcher */}
         <div className="flex items-center justify-between pt-0.5 px-0.5">
-          <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">Tray Display:</span>
+          <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">{t("tray.display_mode")}:</span>
           <div className="flex items-center space-x-0.5 bg-slate-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg text-[10px]">
             {[
-              { id: "icon_only", label: "Icon" },
-              { id: "frontmost_app", label: "Active App" },
-              { id: "lowest_quota", label: "Lowest %" },
-              { id: "primary_percent", label: "Primary %" },
+              { id: "icon_only", label: t("tray.icon_only") },
+              { id: "frontmost_app", label: t("tray.active_app") },
+              { id: "lowest_quota", label: t("tray.lowest_quota") },
+              { id: "primary_percent", label: t("tray.primary_percent") },
             ].map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => handleSetTrayMode(m.id as MenuBarDisplayMode)}
                 className={cn(
-                  "px-2 py-0.5 rounded-md font-medium transition-all duration-150",
+                  "px-2 py-0.5 rounded-md font-medium transition-all duration-150 cursor-pointer",
                   trayMode === m.id
                     ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 shadow-xs font-semibold"
                     : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200",
@@ -1018,39 +1067,78 @@ export function MenuBarPopoverView({
           </div>
         </div>
 
+        {/* Update Available notification banner */}
+        {updateCheck.result?.available && (
+          <div className="p-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-indigo-600/10 border border-blue-500/40 flex items-center justify-between text-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center space-x-1.5 text-blue-500 dark:text-blue-400 font-semibold text-[11px]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>v{updateCheck.result.targetVersion} {t("update.available")}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleInstallUpdate}
+              disabled={updateCheck.installing}
+              className="px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium text-[10px] shadow-xs cursor-pointer disabled:opacity-50"
+            >
+              {updateCheck.installing ? t("update.installing") : t("update.install")}
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => onRefresh?.()}
-            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs"
+            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs cursor-pointer"
           >
             <div className="flex items-center space-x-1.5">
               <RefreshCw className={cn("w-3 h-3 text-slate-500 dark:text-zinc-400", isRefreshing && "animate-spin")} />
-              <span>Refresh</span>
+              <span>{t("nav.refresh")}</span>
             </div>
             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">⌘ R</span>
           </button>
 
           <button
             onClick={handleOpenDashboard}
-            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs"
+            className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs cursor-pointer"
           >
             <div className="flex items-center space-x-1.5">
               <Settings className="w-3 h-3 text-slate-500 dark:text-zinc-400" />
-              <span>Settings...</span>
+              <span>{t("nav.settings")}...</span>
             </div>
             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">⌘ ,</span>
           </button>
         </div>
 
         <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-slate-500 dark:text-zinc-500">
-          <span className="hover:text-slate-800 dark:hover:text-zinc-300 cursor-pointer" onClick={handleOpenDashboard}>
-            About Kuota (v0.1.1)
-          </span>
+          <div className="flex items-center space-x-1.5">
+            <span className="hover:text-slate-800 dark:hover:text-zinc-300 cursor-pointer" onClick={handleOpenDashboard}>
+              About Kuota (v0.1.1)
+            </span>
+            <span>·</span>
+            <button
+              type="button"
+              disabled={updateCheck.checking || updateCheck.installing}
+              onClick={handleCheckUpdates}
+              className="hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center space-x-1 cursor-pointer disabled:opacity-50"
+              title="Manual check for Kuota updates"
+            >
+              <RefreshCw className={cn("w-2.5 h-2.5", updateCheck.checking && "animate-spin text-blue-500")} />
+              <span className="text-[10px] font-medium">
+                {updateCheck.checking
+                  ? t("update.checking")
+                  : updateCheck.result?.available
+                    ? `v${updateCheck.result.targetVersion}!`
+                    : updateCheck.result && !updateCheck.result.error
+                      ? `✓ ${t("update.up_to_date")}`
+                      : t("update.check")}
+              </span>
+            </button>
+          </div>
           <button
             onClick={handleQuit}
-            className="flex items-center space-x-1 hover:text-rose-500 transition-colors font-mono"
+            className="flex items-center space-x-1 hover:text-rose-500 transition-colors font-mono cursor-pointer"
           >
-            <span>Quit</span>
+            <span>{t("nav.quit")}</span>
             <span>⌘ Q</span>
           </button>
         </div>

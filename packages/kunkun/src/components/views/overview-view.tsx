@@ -26,6 +26,7 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+import { useI18n } from "../../lib/i18n.js";
 
 export interface OverviewViewProps {
   snapshots: readonly QuotaSnapshot[];
@@ -103,6 +104,7 @@ export function OverviewView({
   onSelectProvider,
   onViewHistory,
 }: OverviewViewProps) {
+  const { t } = useI18n();
   let filter: "all" | "subscription" | "balance" = "all";
   let setFilter: (f: "all" | "subscription" | "balance") => void = () => {};
   let visibility: Record<string, boolean> = {};

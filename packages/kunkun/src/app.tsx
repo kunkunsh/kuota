@@ -28,6 +28,7 @@ import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js"
 import { KuotaLogo } from "./components/ui/kuota-logo.js";
 import { Loader } from "./components/kokonutui/loader.js";
 import { ThemeProvider, ThemeToggleButton, useTheme } from "./lib/theme.js";
+import { I18nProvider, LanguageToggleButton, useI18n } from "./lib/i18n.js";
 import type { QuotaForecastV1, QuotaHistoryEventV1, QuotaSnapshot } from "@kuota/core";
 
 export type DashboardRoute =
@@ -235,6 +236,7 @@ function KuotaDashboardInner({
   const [selectedProvider, setSelectedProvider] = React.useState<string>("codex");
   const [internalRefreshing, setInternalRefreshing] = React.useState(false);
   const { resolvedTheme } = useTheme();
+  const { t } = useI18n();
 
   const activeRefreshing = isRefreshing ?? internalRefreshing;
 
@@ -364,7 +366,7 @@ function KuotaDashboardInner({
                       isActive ? "text-emerald-500 dark:text-emerald-400" : "text-slate-500 dark:text-zinc-400"
                     }`}
                   />
-                  <span>{item.label}</span>
+                  <span>{t("nav." + item.id, item.label)}</span>
                 </button>
               );
             })}
@@ -377,9 +379,12 @@ function KuotaDashboardInner({
               className="w-1.5 h-1.5 rounded-full bg-emerald-500"
               title="All adapters healthy"
             />
-            <span>v0.1.1 · Local-First</span>
+            <span>v0.1.1</span>
           </div>
-          <ThemeToggleButton />
+          <div className="flex items-center space-x-1">
+            <LanguageToggleButton />
+            <ThemeToggleButton />
+          </div>
         </div>
       </aside>
 
@@ -509,7 +514,9 @@ function KuotaDashboardInner({
 export function KuotaDashboard(props: KuotaDashboardProps) {
   return (
     <ThemeProvider>
-      <KuotaDashboardInner {...props} />
+      <I18nProvider>
+        <KuotaDashboardInner {...props} />
+      </I18nProvider>
     </ThemeProvider>
   );
 }

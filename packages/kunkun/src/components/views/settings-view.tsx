@@ -17,14 +17,20 @@ import {
   Lock,
   AppWindow,
   Bell,
+  Sparkles,
+  RefreshCw,
+  Download,
 } from "lucide-react";
 import { ThemeSegmentedSelector, useTheme } from "../../lib/theme.js";
+import { useI18n, LanguageSegmentedSelector } from "../../lib/i18n.js";
+import { checkForUpdates, installUpdate, CURRENT_APP_VERSION, type UpdateResult } from "../../lib/updater.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
 import { PROVIDER_CATALOG, type ProviderCatalogEntry } from "@kuota/core";
 import { ProviderIcon } from "../ui/provider-icon.js";
 
 export function SettingsView() {
   const { resolvedTheme } = useTheme();
+  const { t, lang } = useI18n();
   const [showKeys, setShowKeys] = React.useState<Record<string, boolean>>({});
   const [keyValues, setKeyValues] = React.useState<Record<string, string>>({});
   const [endpointValues, setEndpointValues] = React.useState<Record<string, string>>({});
@@ -35,6 +41,54 @@ export function SettingsView() {
   const [enableNotifications, setEnableNotifications] = React.useState<boolean>(true);
   const [notificationThreshold, setNotificationThreshold] = React.useState<number>(15);
   const [statusNotice, setStatusNotice] = React.useState<string | null>(null);
+
+  const [updateStatus, setUpdateStatus] = React.useState<{
+    checking: boolean;
+    result: UpdateResult | null;
+    installing: boolean;
+    installMessage: string | null;
+  }>({
+    checking: false,
+    result: null,
+    installing: false,
+    installMessage: null,
+  });
+
+  const handleManualCheckUpdates = async () => {
+    setUpdateStatus((prev) => ({ ...prev, checking: true, installMessage: null }));
+    try {
+      const res = await checkForUpdates();
+      setUpdateStatus((prev) => ({ ...prev, checking: false, result: res }));
+    } catch (err) {
+      setUpdateStatus((prev) => ({
+        ...prev,
+        checking: false,
+        result: {
+          currentVersion: CURRENT_APP_VERSION,
+          available: false,
+          error: String(err),
+        },
+      }));
+    }
+  };
+
+  const handleInstallAppUpdate = async () => {
+    setUpdateStatus((prev) => ({ ...prev, installing: true }));
+    try {
+      const res = await installUpdate();
+      setUpdateStatus((prev) => ({
+        ...prev,
+        installing: false,
+        installMessage: res.message || (res.success ? "Update installed" : "Failed"),
+      }));
+    } catch (err) {
+      setUpdateStatus((prev) => ({
+        ...prev,
+        installing: false,
+        installMessage: `Error: ${String(err)}`,
+      }));
+    }
+  };
 
   // Check if running in Tauri desktop environment
   const isDesktop =
@@ -300,12 +354,22 @@ export function SettingsView() {
           <CardContent className="space-y-4 text-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-zinc-800">
               <div>
-                <div className="font-medium text-zinc-200">Interface Appearance</div>
+                <div className="font-medium text-zinc-200">{t("theme.appearance")}</div>
                 <div className="text-[11px] text-zinc-400">
                   Select color theme for web dashboard, desktop chrome, and vector icons
                 </div>
               </div>
               <ThemeSegmentedSelector />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-zinc-800">
+              <div>
+                <div className="font-medium text-zinc-200">{t("lang.language")}</div>
+                <div className="text-[11px] text-zinc-400">
+                  Switch between English and 简体中文 interface translations
+                </div>
+              </div>
+              <LanguageSegmentedSelector />
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-zinc-950/40 border border-zinc-800/80">
@@ -345,6 +409,100 @@ export function SettingsView() {
                 SVG Master
               </Badge>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Software Updates Card */}
+        <Card className="md:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-sky-400" />
+              <span>{t("update.software_updates")}</span>
+            </CardTitle>
+            <CardDescription>{t("update.software_updates_desc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-zinc-800">
+              <div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  {t("update.current_version")}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">
+                  v{CURRENT_APP_VERSION} · Channel: Stable Releases
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  disabled={updateStatus.checking || updateStatus.installing}
+                  onClick={handleManualCheckUpdates}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", updateStatus.checking && "animate-spin")} />
+                  <span>
+                    {updateStatus.checking ? t("update.checking") : t("update.check")}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Check Results Notice */}
+            {updateStatus.result && (
+              <div
+                className={cn(
+                  "p-3 rounded-xl border flex flex-col space-y-2",
+                  updateStatus.result.available
+                    ? "bg-blue-500/10 border-blue-500/30 text-blue-900 dark:text-blue-100"
+                    : updateStatus.result.error
+                      ? "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
+                      : "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {updateStatus.result.available ? (
+                      <Sparkles className="w-4 h-4 text-blue-500" />
+                    ) : updateStatus.result.error ? (
+                      <CheckCircle2 className="w-4 h-4 text-rose-500" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    )}
+                    <span className="font-semibold text-xs">
+                      {updateStatus.result.available
+                        ? `${t("update.available")}: v${updateStatus.result.targetVersion}`
+                        : updateStatus.result.error
+                          ? `${t("update.failed")}: ${updateStatus.result.error}`
+                          : t("update.already_latest")}
+                    </span>
+                  </div>
+
+                  {updateStatus.result.available && (
+                    <button
+                      type="button"
+                      disabled={updateStatus.installing}
+                      onClick={handleInstallAppUpdate}
+                      className="flex items-center space-x-1 px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>
+                        {updateStatus.installing ? t("update.installing") : t("update.install")}
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                {updateStatus.result.body && (
+                  <div className="text-[11px] text-slate-600 dark:text-zinc-300 whitespace-pre-wrap max-h-32 overflow-y-auto pl-6 font-mono">
+                    {updateStatus.result.body}
+                  </div>
+                )}
+                {updateStatus.installMessage && (
+                  <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 pl-6">
+                    {updateStatus.installMessage}
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

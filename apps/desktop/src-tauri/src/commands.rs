@@ -628,3 +628,62 @@ pub fn check_and_send_quota_alerts(status: &Value) {
         }
     }
 }
+
+use tauri_plugin_updater::UpdaterExt;
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+pub struct AppUpdateInfo {
+    pub current_version: String,
+    pub available: bool,
+    pub target_version: Option<String>,
+    pub body: Option<String>,
+    pub date: Option<String>,
+}
+
+#[tauri::command]
+pub async fn check_for_updates(app: tauri::AppHandle) -> Result<AppUpdateInfo, String> {
+    let current_version = env!("CARGO_PKG_VERSION").to_string();
+    let updater = match app.updater() {
+        Ok(u) => u,
+        Err(e) => return Err(format!("Updater not initialized: {}", e)),
+    };
+
+    match updater.check().await {
+        Ok(Some(update)) => Ok(AppUpdateInfo {
+            current_version,
+            available: true,
+            target_version: Some(update.version),
+            body: update.body,
+            date: update.date.map(|d| d.to_string()),
+        }),
+        Ok(None) => Ok(AppUpdateInfo {
+            current_version,
+            available: false,
+            target_version: None,
+            body: None,
+            date: None,
+        }),
+        Err(e) => Err(format!("Failed to check for updates: {}", e)),
+    }
+}
+
+#[tauri::command]
+pub async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    let updater = match app.updater() {
+        Ok(u) => u,
+        Err(e) => return Err(format!("Updater not initialized: {}", e)),
+    };
+
+    let update = match updater.check().await {
+        Ok(Some(u)) => u,
+        Ok(None) => return Err("No update available to install".to_string()),
+        Err(e) => return Err(format!("Failed to fetch update: {}", e)),
+    };
+
+    update
+        .download_and_install(|_downloaded, _total| {}, || {})
+        .await
+        .map_err(|e| format!("Failed to download and install update: {}", e))?;
+
+    Ok(())
+}
