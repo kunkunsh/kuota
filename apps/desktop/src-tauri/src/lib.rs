@@ -71,7 +71,7 @@ pub fn run() {
                                 let size = rect.size.to_logical::<f64>(scale);
                                 let win_size = tray_win
                                     .outer_size()
-                                    .unwrap_or(tauri::PhysicalSize::new(360, 580))
+                                    .unwrap_or(tauri::PhysicalSize::new(420, 720))
                                     .to_logical::<f64>(scale);
 
                                 let mut target_x = pos.x + (size.width / 2.0) - (win_size.width / 2.0);

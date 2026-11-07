@@ -33,6 +33,8 @@ import {
   ArrowRight,
   Copy,
   Check,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 export interface MenuBarPopoverViewProps {
@@ -128,6 +130,26 @@ export function MenuBarPopoverView({
   // Search input state
   const [searchQuery, setSearchQuery] = React.useState<string>("");
   const [copiedFallback, setCopiedFallback] = React.useState<boolean>(false);
+  const [popoverSize, setPopoverSize] = React.useState<"standard" | "tall" | "compact">("standard");
+
+  const handleCycleSize = async () => {
+    const next = popoverSize === "standard" ? "tall" : popoverSize === "tall" ? "compact" : "standard";
+    setPopoverSize(next);
+    const dimensions = {
+      standard: { width: 420, height: 720 },
+      tall: { width: 450, height: 860 },
+      compact: { width: 380, height: 580 },
+    }[next];
+
+    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+      try {
+        const { getCurrentWindow, LogicalSize } = await import("@tauri-apps/api/window");
+        await getCurrentWindow().setSize(new LogicalSize(dimensions.width, dimensions.height));
+      } catch (err) {
+        console.warn("Failed to set window size:", err);
+      }
+    }
+  };
 
   const handleCopyFallback = (providerId: string) => {
     let snippet = `export AI_PROVIDER=${providerId}`;
@@ -288,8 +310,21 @@ export function MenuBarPopoverView({
             HUD
           </span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <button
+            type="button"
+            onClick={handleCycleSize}
+            title={`Toggle popover size (${popoverSize === "standard" ? "Standard (720px) -> Tall (860px)" : popoverSize === "tall" ? "Tall (860px) -> Compact (580px)" : "Compact (580px) -> Standard (720px)"})`}
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/70 transition-colors"
+          >
+            {popoverSize === "tall" ? (
+              <Minimize2 className="w-3.5 h-3.5" />
+            ) : (
+              <Maximize2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => onRefresh?.()}
             disabled={isRefreshing}
             title="Refresh quota telemetry (⌘R)"
