@@ -62,7 +62,7 @@ async function main() {
     process.exit(1);
   }
 
-  const targetRepos = ["kunkunsh/homebrew-tap", "HuakunShen/homebrew-tap"];
+  const targetRepos = ["kunkunsh/homebrew-tap"];
   for (const repo of targetRepos) {
     await syncToRepo(repo, content);
   }
