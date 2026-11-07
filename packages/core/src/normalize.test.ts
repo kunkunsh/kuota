@@ -48,4 +48,25 @@ describe("redactSnapshot", () => {
     expect(JSON.stringify(result)).not.toContain("secret");
     expect(JSON.stringify(result)).not.toContain("private");
   });
+
+  it("preserves balance and billingModel when present", () => {
+    const result = redactSnapshot({
+      provider: "deepseek",
+      status: "ok",
+      fetchedAt: "2026-11-08T02:00:00Z",
+      source: "api.deepseek.com",
+      billingModel: "balance",
+      windows: [],
+      balance: {
+        balances: [
+          { currency: "USD", totalBalance: 15.5, grantedBalance: 5, toppedUpBalance: 10.5 },
+        ],
+        burnRateDaily: 1.2,
+        estimatedDaysLeft: 12.9,
+      },
+    });
+    expect(result.billingModel).toBe("balance");
+    expect(result.balance?.balances[0]?.totalBalance).toBe(15.5);
+    expect(result.balance?.burnRateDaily).toBe(1.2);
+  });
 });

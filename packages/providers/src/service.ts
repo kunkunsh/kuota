@@ -59,7 +59,8 @@ const emptySlot = (generation: number): Slot => ({
 });
 
 const isMeasurable = (s: QuotaSnapshot) =>
-  (s.status === "ok" || s.status === "partial") && s.windows.length > 0;
+  (s.status === "ok" || s.status === "partial") &&
+  (s.windows.length > 0 || Boolean(s.balance && s.balance.balances.length > 0));
 
 /**
  * Process-local TTL cache with per-provider singleflight, failure cooldowns and honest
@@ -79,6 +80,8 @@ export function createQuotaService(
   const slots = new Map<ProviderId, Slot>();
   const generations = new Map<ProviderId, number>();
   const policyFor = (id: ProviderId): RefreshPolicy => ({
+    ...COMMON,
+    successTtlMs: 300_000,
     ...DEFAULT_POLICIES[id],
     ...options.policies?.[id],
   });

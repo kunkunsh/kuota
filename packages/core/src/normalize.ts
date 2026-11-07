@@ -32,8 +32,37 @@ export function normalizeWindow(input: WindowInput): QuotaWindow {
 export function redactSnapshot(input: Record<string, unknown>): QuotaSnapshot {
   const provider = input.provider;
   const status = input.status;
-  return {
-    provider: provider === "claude" || provider === "antigravity" ? provider : "codex",
+  const billingModel =
+    input.billingModel === "subscription" ||
+    input.billingModel === "balance" ||
+    input.billingModel === "hybrid"
+      ? input.billingModel
+      : undefined;
+
+  let balance = null;
+  if (input.balance && typeof input.balance === "object") {
+    const rawBal = input.balance as Record<string, unknown>;
+    if (Array.isArray(rawBal.balances)) {
+      balance = {
+        balances: rawBal.balances
+          .filter((b) => b && typeof b === "object")
+          .map((b: any) => ({
+            currency: String(b.currency || "USD"),
+            totalBalance: Number(b.totalBalance) || 0,
+            grantedBalance: b.grantedBalance != null ? Number(b.grantedBalance) : undefined,
+            toppedUpBalance: b.toppedUpBalance != null ? Number(b.toppedUpBalance) : undefined,
+          })),
+        usage: rawBal.usage != null ? Number(rawBal.usage) : undefined,
+        limit: rawBal.limit != null ? Number(rawBal.limit) : undefined,
+        burnRateDaily: rawBal.burnRateDaily != null ? Number(rawBal.burnRateDaily) : undefined,
+        estimatedDaysLeft:
+          rawBal.estimatedDaysLeft != null ? Number(rawBal.estimatedDaysLeft) : undefined,
+      };
+    }
+  }
+
+  const result: QuotaSnapshot = {
+    provider: typeof provider === "string" ? provider : "unknown",
     status:
       status === "ok" ||
       status === "partial" ||
@@ -60,7 +89,10 @@ export function redactSnapshot(input: Record<string, unknown>): QuotaSnapshot {
         })
       : [],
     errorCode: typeof input.errorCode === "string" ? input.errorCode : null,
+    ...(billingModel !== undefined ? { billingModel } : {}),
+    ...(balance !== null ? { balance } : {}),
   };
+  return result;
 }
 
 export function makeUnavailableSnapshot(

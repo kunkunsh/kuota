@@ -2,7 +2,13 @@ import * as React from "react";
 import { PacedProgress } from "../paced-progress.js";
 import { AppleKey, AppleKeyCombo } from "../ui/apple-keyboard.js";
 import { ProviderIcon } from "../ui/provider-icon.js";
-import { calculatePace, windowProfile, type QuotaSnapshot } from "@kuota/core";
+import {
+  calculatePace,
+  windowProfile,
+  getProviderMeta,
+  formatCurrencyAmount,
+  type QuotaSnapshot,
+} from "@kuota/core";
 import {
   Search,
   RefreshCw,
@@ -13,6 +19,7 @@ import {
   Laptop,
   Sparkles,
   CircleDollarSign,
+  Wallet,
 } from "lucide-react";
 
 export interface IslandViewProps {
@@ -35,7 +42,6 @@ export function IslandView({
     activeTab = tab;
     setActiveTab = setTab;
   } catch {
-    // In headless test environments without React renderer dispatcher
     activeTab = mode;
   }
 
@@ -76,7 +82,7 @@ export function IslandView({
       </div>
 
       {activeTab === "launcher" ? (
-        /* (A) Kunkun Launcher Preview matching 11-kunkun-island.png (A) */
+        /* (A) Kunkun Launcher Preview */
         <div className="bg-[#121214] border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
           {/* Top Search bar */}
           <div className="flex items-center space-x-3 px-4 py-3.5 border-b border-zinc-800/80 bg-zinc-900/40">
@@ -131,15 +137,44 @@ export function IslandView({
             {/* Right Preview Panel */}
             <div className="col-span-7 p-3.5 space-y-3 bg-zinc-950/30">
               <div className="flex items-center space-x-2 pb-1 border-b border-zinc-800/60">
-                <span className="text-xs font-semibold text-zinc-200">AI Quota</span>
-                <span className="text-[10px] text-zinc-500">Your AI usage and remaining quota</span>
+                <span className="text-xs font-semibold text-zinc-200">AI Quota &amp; Wallets</span>
+                <span className="text-[10px] text-zinc-500">Live pacing &amp; balances</span>
               </div>
 
               {/* Provider Preview Rows */}
               <div className="space-y-2.5">
                 {snapshots.map((s) => {
+                  const meta = getProviderMeta(s.provider);
                   const main = s.windows[0];
+
+                  // Balance-only row
+                  if (!main && s.balance?.balances && s.balance.balances.length > 0) {
+                    const b = s.balance.balances[0];
+                    if (!b) return null;
+                    return (
+                      <div
+                        key={s.provider}
+                        className="p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800/80 space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center space-x-1.5">
+                            <ProviderIcon provider={s.provider} size={14} />
+                            <span className="font-semibold text-zinc-200">{meta.shortName}</span>
+                          </div>
+                          <span className="font-bold text-zinc-100 font-mono">
+                            {formatCurrencyAmount(b.totalBalance, b.currency)}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-zinc-500 flex items-center justify-between">
+                          <span>Prepaid Wallet</span>
+                          <span>{b.currency} balance</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   if (!main) return null;
+
                   const profile = windowProfile(s.provider, main.windowId, main.resetAt, now);
                   const reset = main.resetAt ? new Date(main.resetAt) : null;
                   const start =
@@ -164,9 +199,7 @@ export function IslandView({
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center space-x-1.5">
                           <ProviderIcon provider={s.provider} size={14} />
-                          <span className="font-semibold capitalize text-zinc-200">
-                            {s.provider}
-                          </span>
+                          <span className="font-semibold text-zinc-200">{meta.shortName}</span>
                         </div>
                         <span className="font-bold text-zinc-100">
                           {main.remainingPercent !== null
@@ -180,13 +213,11 @@ export function IslandView({
                           ? `${Math.max(1, Math.round((reset.getTime() - now.getTime()) / 3_600_000))}h`
                           : "unknown"}
                       </div>
-                      {/* Exactly ONE white vertical pace tick on remaining balance bar */}
                       <PacedProgress
                         remainingPercent={main.remainingPercent}
                         idealRemainingPercent={pace ? 100 - pace.idealUsedPercent : null}
                         quality={pace?.quality}
                         heightClass="h-1.5"
-                        showLegend={false}
                         barColor={
                           s.provider === "claude"
                             ? "bg-[#da7756]"
@@ -194,6 +225,7 @@ export function IslandView({
                               ? "bg-[#5c82ff]"
                               : "bg-emerald-500"
                         }
+                        showLegend={false}
                       />
                     </div>
                   );
@@ -204,15 +236,15 @@ export function IslandView({
               <div className="flex items-center space-x-2 p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 text-[10px] text-zinc-300">
                 <Calendar className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                 <span>
-                  At this pace: likely 1 day before reset ·{" "}
-                  <strong className="text-amber-400">medium confidence</strong>
+                  Telemetry active ·{" "}
+                  <strong className="text-emerald-400">Verified local &amp; API probes</strong>
                 </span>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        /* (B) Dynamic Island HUD Glance matching Reference-WarSaint-Dynamic-Island-Pace.png */
+        /* (B) Dynamic Island HUD Glance */
         <div className="bg-[#0c0c0e] border border-zinc-800 rounded-3xl p-4 shadow-2xl space-y-3.5">
           <div className="flex items-center justify-between text-xs pb-1 border-b border-zinc-800/60">
             <span className="font-semibold text-zinc-200">Today ▾</span>
@@ -226,9 +258,7 @@ export function IslandView({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5 truncate">
                   <ProviderIcon provider="claude" size={14} />
-                  <span className="text-xs font-semibold text-zinc-200 truncate">
-                    Claude · huakun.shen@…
-                  </span>
+                  <span className="text-xs font-semibold text-zinc-200 truncate">Claude</span>
                 </div>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono shrink-0">
                   Max 20x
@@ -273,57 +303,50 @@ export function IslandView({
               />
             </div>
 
-            {/* Quadrant 3: OpenCode Telemetry */}
+            {/* Quadrant 3: OpenCode Go */}
             <div className="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800 space-y-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <ProviderIcon provider="opencode" size={14} />
-                  <span className="text-xs font-semibold text-zinc-200">OpenCode</span>
+                  <ProviderIcon provider="opencodego" size={14} />
+                  <span className="text-xs font-semibold text-zinc-200">OpenCode Go</span>
                 </div>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               </div>
               <div className="flex items-baseline justify-between pt-1">
-                <span className="text-[10px] text-zinc-500">Today</span>
+                <span className="text-[10px] text-zinc-500">Weekly Quota</span>
                 <div className="flex items-baseline space-x-1.5">
-                  <span className="text-sm font-bold text-zinc-100">$7.74</span>
-                  <span className="text-[9px] text-zinc-500">2 min. ago</span>
+                  <span className="text-sm font-bold text-zinc-100">57% left</span>
                 </div>
               </div>
-              <div className="text-[10px] text-zinc-400">104M · 30% from cache</div>
+              <div className="text-[10px] text-zinc-400">Zen Plan · 40% monthly</div>
             </div>
 
-            {/* Quadrant 4: Spending API Value with Segmented Bar */}
+            {/* Quadrant 4: DeepSeek / OpenRouter Balances */}
             <div className="p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800 space-y-1.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <CircleDollarSign className="w-3.5 h-3.5 text-zinc-400" />
-                  <span className="text-xs font-semibold text-zinc-200">Spending</span>
+                  <ProviderIcon provider="deepseek" size={14} />
+                  <span className="text-xs font-semibold text-zinc-200">DeepSeek</span>
                 </div>
-                <span className="text-[10px] text-zinc-500">API value</span>
+                <span className="text-[10px] text-zinc-500">Wallet</span>
               </div>
               <div className="flex items-baseline space-x-1.5 pt-0.5">
-                <span className="text-base font-extrabold text-zinc-100">$30.23</span>
-                <span className="text-[10px] text-zinc-500">API value</span>
+                <span className="text-base font-extrabold text-zinc-100">$3.68</span>
+                <span className="text-[10px] text-zinc-500">USD available</span>
               </div>
-              {/* Warsaint 3-segment bar: Claude coral, Codex blue, Antigravity emerald */}
               <div className="h-1.5 w-full rounded-full bg-zinc-800/80 overflow-hidden flex space-x-0.5">
                 <div
-                  className="h-full bg-[#da7756]"
-                  style={{ width: "50%" }}
-                  title="Claude: $15.10"
-                />
-                <div
-                  className="h-full bg-[#5c82ff]"
-                  style={{ width: "33%" }}
-                  title="Codex: $10.00"
+                  className="h-full bg-blue-500"
+                  style={{ width: "95%" }}
+                  title="Cash balance: $3.70"
                 />
                 <div
                   className="h-full bg-emerald-400"
-                  style={{ width: "17%" }}
-                  title="OpenCode: $5.13"
+                  style={{ width: "5%" }}
+                  title="Granted balance"
                 />
               </div>
-              <div className="text-[10px] text-zinc-400">256M tokens · 70% from cache</div>
+              <div className="text-[10px] text-zinc-400">Funded · Pay-as-you-go</div>
             </div>
           </div>
 

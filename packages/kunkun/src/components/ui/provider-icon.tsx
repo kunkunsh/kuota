@@ -1,7 +1,20 @@
 import * as React from "react";
 import { cn } from "../../lib/utils.js";
 
-export type ProviderIconId = "claude" | "codex" | "antigravity" | "opencode" | "gemini" | string;
+export type ProviderIconId =
+  | "claude"
+  | "codex"
+  | "antigravity"
+  | "opencodego"
+  | "opencode"
+  | "openrouter"
+  | "deepseek"
+  | "mimo"
+  | "kimi"
+  | "glm"
+  | "minimax"
+  | "grok"
+  | string;
 
 export interface ProviderIconProps extends React.SVGAttributes<SVGElement> {
   provider: ProviderIconId;
@@ -13,7 +26,6 @@ export function ProviderIcon({ provider, size = 18, className, ...props }: Provi
   const norm = provider.toLowerCase();
 
   if (norm.includes("claude") || norm.includes("anthropic")) {
-    // Official Anthropic Asterisk / Sunburst SVG
     return (
       <svg
         width={size}
@@ -33,7 +45,6 @@ export function ProviderIcon({ provider, size = 18, className, ...props }: Provi
   }
 
   if (norm.includes("codex") || norm.includes("openai") || norm.includes("gpt")) {
-    // Official OpenAI Spiral Glyph SVG
     return (
       <svg
         width={size}
@@ -54,7 +65,6 @@ export function ProviderIcon({ provider, size = 18, className, ...props }: Provi
   }
 
   if (norm.includes("antigravity") || norm.includes("gemini") || norm.includes("google")) {
-    // Official Google Gemini / Antigravity Sparkle Star SVG
     return (
       <svg
         width={size}
@@ -74,7 +84,6 @@ export function ProviderIcon({ provider, size = 18, className, ...props }: Provi
   }
 
   if (norm.includes("opencode")) {
-    // OpenCode Terminal Glyph SVG
     return (
       <svg
         width={size}
@@ -91,6 +100,128 @@ export function ProviderIcon({ provider, size = 18, className, ...props }: Provi
         <rect width="18" height="18" x="3" y="3" rx="4" />
         <path d="m9 10 2 2-2 2" />
         <path d="M13 14h2" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("deepseek")) {
+    // DeepSeek Blue Whale / Wave glyph
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-[#0284c7] shrink-0", className)}
+        {...props}
+      >
+        <path d="M12 3c-4.97 0-9 4.03-9 9 0 3.32 1.8 6.22 4.47 7.77.34.2.78.07.98-.27.2-.34.07-.78-.27-.98C5.83 17.27 4.2 14.78 4.2 12c0-4.31 3.49-7.8 7.8-7.8s7.8 3.49 7.8 7.8c0 2.21-.92 4.21-2.4 5.64l-1.4-1.4a5.98 5.98 0 0 0 1.8-4.24c0-3.31-2.69-6-6-6s-6 2.69-6 6c0 1.66.67 3.16 1.76 4.24l-1.42 1.42A7.96 7.96 0 0 1 6 12c0-3.31 2.69-6 6-6s6 2.69 6 6c0 1.84-.83 3.49-2.14 4.59l1.42 1.42A9.97 9.97 0 0 0 21 12c0-4.97-4.03-9-9-9z" />
+        <circle cx="12" cy="12" r="2.5" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("openrouter")) {
+    // OpenRouter Connected Nodes
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={cn("text-indigo-400 shrink-0", className)}
+        {...props}
+      >
+        <circle cx="6" cy="6" r="3" />
+        <circle cx="18" cy="18" r="3" />
+        <circle cx="18" cy="6" r="3" />
+        <path d="M6 9v3a3 3 0 0 0 3 3h6" />
+        <path d="M18 9v6" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("mimo") || norm.includes("xiaomi")) {
+    // Xiaomi Mi Logo Orange Mark
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-[#ff6900] shrink-0", className)}
+        {...props}
+      >
+        <rect width="20" height="20" x="2" y="2" rx="5" fill="#ff6900" />
+        <path d="M7 8h2v8H7zm4 0h4a2 2 0 0 1 2 2v6h-2v-5a1 1 0 0 0-1-1h-1v6h-2z" fill="#ffffff" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("kimi") || norm.includes("moonshot")) {
+    // Moonshot Kimi Star & Crescent
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-purple-400 shrink-0", className)}
+        {...props}
+      >
+        <path d="M12 2l2.4 5.6L20 10l-4.2 4.1 1 5.9-4.8-2.8L7.2 20l1-5.9L4 10l5.6-2.4z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("glm") || norm.includes("zhipu")) {
+    // Zhipu GLM Blue Tech Mark
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-blue-500 shrink-0", className)}
+        {...props}
+      >
+        <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5L4.5 9.75 2 11l10 5 10-5-2.5-1.25L12 13.5zm0 4.5l-7.5-3.75L2 15.5l10 5 10-5-2.5-1.25L12 18z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("grok") || norm.includes("xai")) {
+    // xAI Grok X Mark
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-zinc-100 shrink-0", className)}
+        {...props}
+      >
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes("minimax")) {
+    // MiniMax Red Wave
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className={cn("text-rose-500 shrink-0", className)}
+        {...props}
+      >
+        <path d="M4 18V6l4 5 4-5v12h-2v-7l-2 2.5L6 11v7H4zm10 0V6l4 5 4-5v12h-2v-7l-2 2.5-2-2.5v7h-2z" />
       </svg>
     );
   }

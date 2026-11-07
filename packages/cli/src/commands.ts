@@ -41,11 +41,28 @@ function showHuman(snapshot: QuotaSnapshot): string {
   if (snapshot.status !== "ok" && snapshot.status !== "partial") {
     return `${snapshot.provider}: ${snapshot.status} (${snapshot.errorCode ?? "unknown"})`;
   }
-  const windows = snapshot.windows.map(
-    (window) =>
-      `${window.windowId}: ${window.remainingPercent === null ? "unknown" : `${window.remainingPercent}% remaining`}${window.resetAt ? ` · resets ${window.resetAt}` : ""}`,
-  );
-  return `${snapshot.provider}: ${snapshot.status}\n  ${windows.join("\n  ") || "quota unknown"}`;
+  const lines: string[] = [];
+  if (snapshot.balance && snapshot.balance.balances.length > 0) {
+    for (const b of snapshot.balance.balances) {
+      const sym = b.currency === "USD" ? "$" : b.currency === "CNY" ? "¥" : `${b.currency} `;
+      let s = `${sym}${b.totalBalance.toFixed(2)}`;
+      if (b.grantedBalance != null && b.grantedBalance > 0) {
+        s += ` (grant: ${sym}${b.grantedBalance.toFixed(2)})`;
+      }
+      lines.push(`Balance: ${s}`);
+    }
+    if (snapshot.balance.usage != null) {
+      lines.push(`Usage: $${snapshot.balance.usage.toFixed(2)}`);
+    }
+  }
+  if (snapshot.windows.length > 0) {
+    const windows = snapshot.windows.map(
+      (window) =>
+        `${window.windowId}: ${window.remainingPercent === null ? "unknown" : `${window.remainingPercent}% remaining`}${window.resetAt ? ` · resets ${window.resetAt}` : ""}`,
+    );
+    lines.push(...windows);
+  }
+  return `${snapshot.provider}: ${snapshot.status}\n  ${lines.join("\n  ") || "quota unknown"}`;
 }
 
 /** An executable presence check, not a logged-in/account-readiness claim. */
@@ -112,19 +129,26 @@ export async function runCli(
 
   const doctor = Command.make("doctor", { json: Options.boolean("json") }, ({ json }) =>
     Effect.sync(() => {
-      const tools = PROVIDER_METADATA.map((item) => ({
-        provider: item.id,
-        executable: item.id === "antigravity" ? "agy" : item.id,
-        installed: hasBinary(item.id === "antigravity" ? "agy" : item.id),
-        adapterImplemented: item.implemented,
-      }));
+      const tools = PROVIDER_METADATA.map((item) => {
+        const isCli = !item.envKeys || item.envKeys.length === 0;
+        const exeName = item.id === "antigravity" ? "agy" : item.id;
+        const hasEnv = item.envKeys?.some((k) => Boolean(process.env[k]));
+        const ready = isCli ? hasBinary(exeName) : hasEnv;
+        return {
+          provider: item.id,
+          type: item.billingModel ?? (isCli ? "subscription" : "balance"),
+          installed: ready,
+          status: ready ? "ready" : isCli ? "binary missing" : "api key missing",
+          adapterImplemented: item.implemented,
+        };
+      });
       if (json) output.writeStdout(JSON.stringify({ schemaVersion: 1, tools }));
       else
         output.writeStdout(
           tools
             .map(
               (tool) =>
-                `${tool.provider}: executable ${tool.installed ? "present" : "not found"}, adapter ${tool.adapterImplemented ? "ready" : "planned"}`,
+                `${tool.provider.padEnd(12)}: ${tool.status.padEnd(16)} (adapter ${tool.adapterImplemented ? "ready" : "planned"})`,
             )
             .join("\n"),
         );

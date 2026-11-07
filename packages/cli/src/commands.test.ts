@@ -18,18 +18,20 @@ function recordingOutput() {
 }
 
 describe("Kuota Effect CLI", () => {
-  it("lists the three built-in provider IDs as one JSON document", async () => {
+  it("lists all registered provider IDs as one JSON document", async () => {
     const sink = recordingOutput();
     const code = await runCli(["providers", "--json"], sink.output);
     expect(code).toBe(0);
     expect(sink.stdout).toHaveLength(1);
     const result = JSON.parse(sink.stdout[0]!);
     expect(result.schemaVersion).toBe(1);
-    expect(result.providers.map((p: { id: string }) => p.id)).toEqual([
-      "codex",
-      "claude",
-      "antigravity",
-    ]);
+    const ids = result.providers.map((p: { id: string }) => p.id);
+    expect(ids).toContain("codex");
+    expect(ids).toContain("claude");
+    expect(ids).toContain("antigravity");
+    expect(ids).toContain("opencodego");
+    expect(ids).toContain("openrouter");
+    expect(ids).toContain("deepseek");
     expect(sink.stderr).toEqual([]);
   });
 
@@ -100,9 +102,15 @@ describe("Kuota Effect CLI", () => {
 
   it("shows helpful guidance when run with no args in non-TTY environment", async () => {
     const sink = recordingOutput();
-    const code = await runCli([], sink.output, []);
-    expect(code).toBe(0);
-    expect(sink.stdout[0]).toContain("Kuota — Multi-provider AI Quota & Usage Monitor");
-    expect(sink.stderr).toEqual([]);
+    const originalIsTTY = process.stdout.isTTY;
+    process.stdout.isTTY = false as any;
+    try {
+      const code = await runCli([], sink.output, [], async () => {});
+      expect(code).toBe(0);
+      expect(sink.stdout[0]).toContain("Kuota — Multi-provider AI Quota & Usage Monitor");
+      expect(sink.stderr).toEqual([]);
+    } finally {
+      process.stdout.isTTY = originalIsTTY;
+    }
   });
 });

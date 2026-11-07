@@ -61,6 +61,7 @@ const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
     status: "ok",
     fetchedAt: new Date().toISOString(),
     source: "claude-oauth-usage",
+    billingModel: "subscription",
     windows: [
       {
         windowId: "weekly.all",
@@ -82,6 +83,7 @@ const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
     status: "ok",
     fetchedAt: new Date().toISOString(),
     source: "codex-app-server",
+    billingModel: "subscription",
     windows: [
       {
         windowId: "weekly.all",
@@ -103,6 +105,7 @@ const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
     status: "ok",
     fetchedAt: new Date().toISOString(),
     source: "antigravity-storage",
+    billingModel: "subscription",
     windows: [
       {
         windowId: "gemini-pro",
@@ -117,6 +120,97 @@ const DEFAULT_SNAPSHOTS: QuotaSnapshot[] = [
         resetAt: new Date(Date.now() + 4.1 * 86_400_000).toISOString(),
       },
     ],
+    errorCode: null,
+  },
+  {
+    provider: "opencodego",
+    status: "ok",
+    fetchedAt: new Date().toISOString(),
+    source: "opencode-zen-api",
+    billingModel: "subscription",
+    windows: [
+      {
+        windowId: "rolling",
+        usedPercent: 15,
+        remainingPercent: 85,
+        resetAt: new Date(Date.now() + 1.8 * 3_600_000).toISOString(),
+      },
+      {
+        windowId: "weekly",
+        usedPercent: 43,
+        remainingPercent: 57,
+        resetAt: new Date(Date.now() + 4.2 * 86_400_000).toISOString(),
+      },
+      {
+        windowId: "monthly",
+        usedPercent: 60,
+        remainingPercent: 40,
+        resetAt: new Date(Date.now() + 18.5 * 86_400_000).toISOString(),
+      },
+    ],
+    errorCode: null,
+  },
+  {
+    provider: "deepseek",
+    status: "ok",
+    fetchedAt: new Date().toISOString(),
+    source: "deepseek-user-balance",
+    billingModel: "balance",
+    windows: [],
+    balance: {
+      balances: [
+        {
+          currency: "USD",
+          totalBalance: 3.68,
+          grantedBalance: 0,
+          toppedUpBalance: 3.68,
+          usage: null,
+          limit: null,
+          burnRateDaily: null,
+          estimatedDaysLeft: null,
+        },
+        {
+          currency: "CNY",
+          totalBalance: -0.02,
+          grantedBalance: 0,
+          toppedUpBalance: -0.02,
+          usage: null,
+          limit: null,
+          burnRateDaily: null,
+          estimatedDaysLeft: null,
+        },
+      ],
+    },
+    errorCode: null,
+  },
+  {
+    provider: "openrouter",
+    status: "ok",
+    fetchedAt: new Date().toISOString(),
+    source: "openrouter-api",
+    billingModel: "hybrid",
+    windows: [
+      {
+        windowId: "daily_free_limit",
+        usedPercent: 25,
+        remainingPercent: 75,
+        resetAt: new Date(Date.now() + 0.6 * 86_400_000).toISOString(),
+      },
+    ],
+    balance: {
+      balances: [
+        {
+          currency: "USD",
+          totalBalance: 20.0,
+          grantedBalance: 0,
+          toppedUpBalance: 20.0,
+          usage: 20.0,
+          limit: 40.0,
+          burnRateDaily: 1.25,
+          estimatedDaysLeft: 16,
+        },
+      ],
+    },
     errorCode: null,
   },
 ];

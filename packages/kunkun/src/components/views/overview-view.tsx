@@ -7,18 +7,13 @@ import { cn } from "../../lib/utils.js";
 import {
   calculatePace,
   windowProfile,
+  getProviderMeta,
+  formatCurrencyAmount,
+  isBalanceFirst,
   type QuotaSnapshot,
   type QuotaForecastV1,
 } from "@kuota/core";
-import {
-  AlertTriangle,
-  Layers,
-  Calendar,
-  Clock,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-} from "lucide-react";
+import { AlertTriangle, Layers, Clock, ArrowRight, Wallet } from "lucide-react";
 
 export interface OverviewViewProps {
   snapshots: readonly QuotaSnapshot[];
@@ -70,9 +65,20 @@ export function OverviewView({
   onSelectProvider,
   onViewHistory,
 }: OverviewViewProps) {
+  let filter: "all" | "subscription" | "balance" = "all";
+  let setFilter: (f: "all" | "subscription" | "balance") => void = () => {};
+  try {
+    const [f, sf] = React.useState<"all" | "subscription" | "balance">("all");
+    filter = f;
+    setFilter = sf;
+  } catch {
+    filter = "all";
+  }
+
   // Aggregate real stats directly from snapshots
   const trackedCount = snapshots.length;
   const totalWindows = snapshots.reduce((acc, s) => acc + s.windows.length, 0);
+  const totalWallets = snapshots.reduce((acc, s) => acc + (s.balance?.balances.length ? 1 : 0), 0);
 
   // Collect real window reset countdowns
   const allResets = snapshots
@@ -81,17 +87,37 @@ export function OverviewView({
     .filter((ms): ms is number => ms !== null && ms > 0);
   const nearestResetMs = allResets.length > 0 ? Math.min(...allResets) : null;
 
-  // Real at-risk windows: <= 20% remaining balance or exhausted forecast
+  // Real at-risk count
   const atRiskCount = snapshots.reduce((acc, s) => {
-    return (
-      acc +
-      s.windows.filter((w) => {
-        if (w.remainingPercent !== null && w.remainingPercent <= 20) return true;
-        const f = forecasts.find((fc) => fc.provider === s.provider && fc.windowId === w.windowId);
-        return f?.exhaustedAt !== null && f?.exhaustedAt !== undefined;
-      }).length
-    );
+    let count = 0;
+    count += s.windows.filter((w) => {
+      if (w.remainingPercent !== null && w.remainingPercent <= 20) return true;
+      const f = forecasts.find((fc) => fc.provider === s.provider && fc.windowId === w.windowId);
+      return f?.exhaustedAt !== null && f?.exhaustedAt !== undefined;
+    }).length;
+
+    if (s.balance?.balances) {
+      for (const b of s.balance.balances) {
+        const threshold = b.currency === "CNY" ? 7 : 1;
+        if (b.totalBalance <= threshold) {
+          count += 1;
+        }
+      }
+    }
+    return acc + count;
   }, 0);
+
+  // Filtered snapshots according to tab
+  const filteredSnapshots = snapshots.filter((s) => {
+    if (filter === "all") return true;
+    if (filter === "subscription") {
+      return s.billingModel === "subscription" || (s.windows.length > 0 && !isBalanceFirst(s));
+    }
+    if (filter === "balance") {
+      return s.billingModel === "balance" || s.billingModel === "hybrid" || isBalanceFirst(s);
+    }
+    return true;
+  });
 
   // Dynamic real upcoming resets sorted chronologically
   const upcomingResets = snapshots
@@ -114,7 +140,7 @@ export function OverviewView({
 
   return (
     <div className="flex flex-col space-y-6">
-      {/* Header bar */}
+      {/* (0) Header bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-zinc-800">
         <div>
           <div className="flex items-center space-x-2">
@@ -123,28 +149,68 @@ export function OverviewView({
               variant="outline"
               className="text-[11px] text-zinc-400 bg-zinc-900 border-zinc-700"
             >
-              Today
+              Multi-Provider Telemetry
             </Badge>
           </div>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Independent AI quota pacing and limit forecasting across verified local tools.
+            Unified subscription quota pacing, prepaid wallet balances, and limit forecasting.
           </p>
         </div>
-        <div className="flex items-center space-x-3 text-xs text-zinc-400">
-          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-medium">Local device connected</span>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Filter Pills */}
+          <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 text-xs">
+            <button
+              type="button"
+              className={cn(
+                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                filter === "all"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200",
+              )}
+              onClick={() => setFilter("all")}
+            >
+              All ({snapshots.length})
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                filter === "subscription"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200",
+              )}
+              onClick={() => setFilter("subscription")}
+            >
+              Quota
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                filter === "balance"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:text-zinc-200",
+              )}
+              onClick={() => setFilter("balance")}
+            >
+              Wallets
+            </button>
           </div>
-          <span className="text-zinc-500">Live Telemetry</span>
+
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-medium">{trackedCount} Active</span>
+          </div>
         </div>
       </div>
 
-      {/* 4 Top KPI Cards with 100% Real Metrics */}
+      {/* (1) 4 Top KPI Cards with 100% Real Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">At-risk windows</div>
+              <div className="text-[11px] font-medium text-zinc-400">At-risk limits</div>
               <div
                 className={cn(
                   "text-2xl font-bold mt-1",
@@ -163,7 +229,7 @@ export function OverviewView({
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Tracked providers</div>
+              <div className="text-[11px] font-medium text-zinc-400">Active providers</div>
               <div className="text-2xl font-bold text-zinc-100 mt-1">{trackedCount}</div>
             </div>
             <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -175,11 +241,14 @@ export function OverviewView({
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Active windows</div>
-              <div className="text-2xl font-bold text-zinc-100 mt-1">{totalWindows}</div>
+              <div className="text-[11px] font-medium text-zinc-400">Quota &amp; Wallets</div>
+              <div className="text-2xl font-bold text-zinc-100 mt-1">
+                {totalWindows} <span className="text-xs font-normal text-zinc-400">win</span> /{" "}
+                {totalWallets} <span className="text-xs font-normal text-zinc-400">wallets</span>
+              </div>
             </div>
             <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <Calendar className="w-4 h-4" />
+              <Wallet className="w-4 h-4" />
             </div>
           </CardContent>
         </Card>
@@ -187,7 +256,7 @@ export function OverviewView({
         <Card className="bg-[#111113] border-zinc-800/80">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Next reset in</div>
+              <div className="text-[11px] font-medium text-zinc-400">Next cycle reset</div>
               <div className="text-2xl font-bold text-zinc-100 mt-1">
                 {formatRemainingDuration(nearestResetMs)}
               </div>
@@ -199,20 +268,182 @@ export function OverviewView({
         </Card>
       </div>
 
-      {/* Main Provider Cards Grid (2 cols on md, 3 cols on xl) */}
+      {/* (2) Main Provider Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {snapshots.map((snapshot, index) => {
+        {filteredSnapshots.map((snapshot) => {
           const providerId = snapshot.provider;
-          const providerTitle =
-            providerId === "claude"
-              ? "Claude Code"
-              : providerId === "codex"
-                ? "Codex"
-                : "Google Antigravity";
+          const meta = getProviderMeta(providerId);
+          const hasBalance = Boolean(snapshot.balance && snapshot.balance.balances.length > 0);
+          const isBalanceOnly = hasBalance && snapshot.windows.length === 0;
 
-          const planBadge =
-            providerId === "claude" ? "Max 20x" : providerId === "codex" ? "Pro" : "Gemini";
+          // Case 1: Balance-Only or Balance-First Provider
+          if (isBalanceOnly && snapshot.balance) {
+            const primaryBalance = snapshot.balance.balances[0];
+            const secondaryBalance = snapshot.balance.balances[1];
+            const isLow =
+              primaryBalance &&
+              primaryBalance.totalBalance <= (primaryBalance.currency === "CNY" ? 7 : 1);
 
+            return (
+              <Card
+                key={providerId}
+                className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                onClick={() => onSelectProvider?.(providerId)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                        <ProviderIcon provider={providerId} size={18} />
+                      </div>
+                      <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                        {meta.name}
+                      </CardTitle>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                    >
+                      Prepaid Wallet
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                    {meta.category === "llm_api"
+                      ? "LLM API Key"
+                      : meta.category === "aggregator"
+                        ? "API Aggregator"
+                        : "Cloud Engine"}{" "}
+                    · Pay-as-you-go balance
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-4 pt-1">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-3xl font-extrabold text-zinc-100">
+                        {formatCurrencyAmount(
+                          primaryBalance?.totalBalance,
+                          primaryBalance?.currency,
+                        )}
+                      </span>{" "}
+                      <span className="text-xs font-semibold text-zinc-400 uppercase">
+                        {primaryBalance?.currency ?? "USD"}
+                      </span>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] px-2 py-0.5",
+                        isLow
+                          ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                          : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+                      )}
+                    >
+                      {isLow ? "Low Balance" : "Funded"}
+                    </Badge>
+                  </div>
+
+                  {/* Cash vs Granted breakdown */}
+                  <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1">
+                    <div className="flex items-center justify-between text-zinc-400">
+                      <span>Topped-up Cash:</span>
+                      <span className="font-mono text-zinc-200">
+                        {formatCurrencyAmount(
+                          primaryBalance?.toppedUpBalance,
+                          primaryBalance?.currency,
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-zinc-400">
+                      <span>Granted Credits:</span>
+                      <span className="font-mono text-zinc-200">
+                        {formatCurrencyAmount(
+                          primaryBalance?.grantedBalance,
+                          primaryBalance?.currency,
+                        )}
+                      </span>
+                    </div>
+                    {secondaryBalance && (
+                      <div className="flex items-center justify-between text-zinc-400 border-t border-zinc-800/60 pt-1 mt-1">
+                        <span>Secondary ({secondaryBalance.currency}):</span>
+                        <span className="font-mono text-zinc-200">
+                          {formatCurrencyAmount(
+                            secondaryBalance.totalBalance,
+                            secondaryBalance.currency,
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }
+
+          // Case 2: Hybrid Provider (like OpenRouter or MiMo)
+          if (hasBalance && snapshot.windows.length > 0 && snapshot.balance) {
+            const primaryBalance = snapshot.balance.balances[0];
+            const primaryWindow = snapshot.windows[0];
+            const remaining = primaryWindow?.remainingPercent ?? 0;
+
+            return (
+              <Card
+                key={providerId}
+                className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                onClick={() => onSelectProvider?.(providerId)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2.5 min-w-0">
+                      <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                        <ProviderIcon provider={providerId} size={18} />
+                      </div>
+                      <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                        {meta.name}
+                      </CardTitle>
+                    </div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                    >
+                      Hybrid Credit
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                    Balance:{" "}
+                    {formatCurrencyAmount(primaryBalance?.totalBalance, primaryBalance?.currency)}{" "}
+                    {primaryBalance?.currency ?? "USD"}{primaryWindow ? ` · ${primaryWindow.windowId}` : ""}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-4 pt-1">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-3xl font-extrabold text-zinc-100">
+                        {formatCurrencyAmount(
+                          primaryBalance?.totalBalance,
+                          primaryBalance?.currency,
+                        )}
+                      </span>
+                    </div>
+                    <span className="text-xs text-zinc-400">
+                      {remaining.toFixed(0)}% quota left
+                    </span>
+                  </div>
+
+                  {/* Utilization Progress Bar */}
+                  <PacedProgress
+                    remainingPercent={remaining}
+                    idealRemainingPercent={null}
+                    label={`${meta.name} quota bar`}
+                    barColor="bg-indigo-500"
+                  />
+                </CardContent>
+              </Card>
+            );
+          }
+
+          // Case 3: Subscription Quota Provider
           const primaryWindow = snapshot.windows[0];
           const profile = primaryWindow
             ? windowProfile(snapshot.provider, primaryWindow.windowId, primaryWindow.resetAt, now)
@@ -241,10 +472,7 @@ export function OverviewView({
           return (
             <Card
               key={providerId}
-              className={cn(
-                "bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group",
-                index === 2 ? "md:col-span-2 xl:col-span-1" : "",
-              )}
+              className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
               onClick={() => onSelectProvider?.(providerId)}
             >
               <CardHeader className="pb-3">
@@ -254,15 +482,14 @@ export function OverviewView({
                       <ProviderIcon provider={providerId} size={18} />
                     </div>
                     <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
-                      {providerTitle}
+                      {meta.name}
                     </CardTitle>
                   </div>
-                  {/* Plan tier badge - no duplicate pace delta badge here */}
                   <Badge
                     variant="secondary"
                     className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                   >
-                    {planBadge}
+                    {meta.defaultPlan}
                   </Badge>
                 </div>
                 <CardDescription className="text-xs text-zinc-400 truncate mt-1">
@@ -280,18 +507,20 @@ export function OverviewView({
                   <span className="text-xs text-zinc-400">{used.toFixed(0)}% used</span>
                 </div>
 
-                {/* Paced progress bar representing remaining quota - pace delta with % rendered cleanly here */}
+                {/* Paced progress bar representing remaining quota */}
                 <PacedProgress
                   remainingPercent={remaining}
                   idealRemainingPercent={pace ? 100 - pace.idealUsedPercent : null}
                   quality={pace?.quality}
-                  label={`${providerTitle} pace bar`}
+                  label={`${meta.name} pace bar`}
                   barColor={
                     providerId === "claude"
                       ? "bg-[#da7756]"
                       : providerId === "codex"
                         ? "bg-[#5c82ff]"
-                        : "bg-emerald-500"
+                        : providerId === "opencodego"
+                          ? "bg-emerald-400"
+                          : "bg-emerald-500"
                   }
                 />
               </CardContent>
@@ -300,74 +529,85 @@ export function OverviewView({
         })}
       </div>
 
-      {/* Bottom Section: Real Monitored Windows + Real Upcoming Resets Table */}
+      {/* (3) Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
-        {/* Monitored Windows Breakdown (100% Real Live Quota Telemetry) */}
+        {/* Monitored Windows Breakdown */}
         <Card className="bg-[#111113] border-zinc-800 md:col-span-2 xl:col-span-1">
           <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
             <div className="min-w-0">
               <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
-                Active Quota Windows
+                Active Quota Windows &amp; Wallets
               </CardTitle>
               <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
-                All measured rate limits across local CLI & OAuth probes.
+                All measured rate limits across local CLI, API &amp; OAuth probes.
               </CardDescription>
             </div>
             <Badge
               variant="outline"
               className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 whitespace-nowrap shrink-0 px-2 py-0.5"
             >
-              {totalWindows} Windows Active
+              {totalWindows + totalWallets} Active
             </Badge>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2.5">
-              {snapshots.map((s) => (
-                <div
-                  key={s.provider}
-                  className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/70 space-y-2"
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-zinc-200 capitalize flex items-center space-x-1.5">
-                      <ProviderIcon provider={s.provider} size={14} />
-                      <span>
-                        {s.provider === "antigravity" ? "Google Antigravity" : s.provider}
+              {snapshots.map((s) => {
+                const meta = getProviderMeta(s.provider);
+                const hasBalance = Boolean(s.balance && s.balance.balances.length > 0);
+
+                return (
+                  <div
+                    key={s.provider}
+                    className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/70 space-y-2"
+                  >
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-zinc-200 capitalize flex items-center space-x-1.5">
+                        <ProviderIcon provider={s.provider} size={14} />
+                        <span>{meta.name}</span>
                       </span>
-                    </span>
-                    <span className="text-[11px] text-zinc-400">
-                      {s.windows.length} {s.windows.length === 1 ? "window" : "windows"}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {s.windows.map((w) => (
-                      <div
-                        key={w.windowId}
-                        className="flex items-center justify-between text-[11px]"
-                      >
-                        <span className="text-zinc-400 font-mono truncate max-w-[160px]">
-                          {w.windowId}
-                        </span>
-                        <div className="flex items-center space-x-2 shrink-0">
-                          <span
-                            className={cn(
-                              "font-medium",
-                              (w.remainingPercent ?? 0) <= 20 ? "text-amber-400" : "text-zinc-200",
-                            )}
+                      <span className="text-[11px] text-zinc-400">
+                        {hasBalance
+                          ? `${formatCurrencyAmount(s.balance?.balances[0]?.totalBalance, s.balance?.balances[0]?.currency)} balance`
+                          : `${s.windows.length} ${s.windows.length === 1 ? "window" : "windows"}`}
+                      </span>
+                    </div>
+
+                    {/* Window details */}
+                    {s.windows.length > 0 && (
+                      <div className="space-y-1.5">
+                        {s.windows.map((w) => (
+                          <div
+                            key={w.windowId}
+                            className="flex items-center justify-between text-[11px]"
                           >
-                            {w.remainingPercent !== null
-                              ? `${w.remainingPercent.toFixed(0)}% left`
-                              : "unmeasured"}
-                          </span>
-                        </div>
+                            <span className="text-zinc-400 font-mono truncate max-w-[160px]">
+                              {w.windowId}
+                            </span>
+                            <div className="flex items-center space-x-2 shrink-0">
+                              <span
+                                className={cn(
+                                  "font-medium",
+                                  (w.remainingPercent ?? 0) <= 20
+                                    ? "text-amber-400"
+                                    : "text-zinc-200",
+                                )}
+                              >
+                                {w.remainingPercent !== null
+                                  ? `${w.remainingPercent.toFixed(0)}% left`
+                                  : "unmeasured"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-zinc-400 border-t border-zinc-800/80 pt-2">
-              <span className="text-zinc-500">Telemetry: Local Process Probes</span>
+              <span className="text-zinc-500">Telemetry: Local Process &amp; API Probes</span>
               <button
                 type="button"
                 className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center space-x-1"
@@ -384,7 +624,9 @@ export function OverviewView({
         <Card className="bg-[#111113] border-zinc-800 md:col-span-2 xl:col-span-2">
           <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-sm font-semibold text-zinc-100">Upcoming Resets</CardTitle>
+              <CardTitle className="text-sm font-semibold text-zinc-100">
+                Upcoming Cycle Resets
+              </CardTitle>
               <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
                 Dynamic reset schedule sorted chronologically across all verified windows.
               </CardDescription>
@@ -414,51 +656,54 @@ export function OverviewView({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
-                    {upcomingResets.map((row, i) => (
-                      <tr
-                        key={`${row.provider}-${row.scope}-${i}`}
-                        className="hover:bg-zinc-900/30 transition-colors"
-                      >
-                        <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap flex items-center space-x-1.5">
-                          <ProviderIcon provider={row.provider} size={14} />
-                          <span className="capitalize">{row.provider}</span>
-                        </td>
-                        <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap font-mono text-[11px]">
-                          {row.scope}
-                        </td>
-                        <td className="py-2.5 pr-3 whitespace-nowrap font-medium">
-                          <span
-                            className={cn(
-                              (row.resetMs ?? 0) < 6 * 3_600_000
-                                ? "text-amber-400 font-semibold"
-                                : "text-zinc-200",
-                            )}
-                          >
-                            {formatRemainingDuration(row.resetMs)}
-                          </span>
-                        </td>
-                        <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">
-                          {row.resetDate ? formatResetDate(row.resetDate) : "--"}
-                        </td>
-                        <td className="py-2.5 text-right font-medium whitespace-nowrap">
-                          {row.usedPercent !== null ? (
+                    {upcomingResets.map((row, i) => {
+                      const meta = getProviderMeta(row.provider);
+                      return (
+                        <tr
+                          key={`${row.provider}-${row.scope}-${i}`}
+                          className="hover:bg-zinc-900/30 transition-colors"
+                        >
+                          <td className="py-2.5 pr-3 font-medium text-zinc-200 whitespace-nowrap flex items-center space-x-1.5">
+                            <ProviderIcon provider={row.provider} size={14} />
+                            <span>{meta.shortName}</span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap font-mono text-[11px]">
+                            {row.scope}
+                          </td>
+                          <td className="py-2.5 pr-3 whitespace-nowrap font-medium">
                             <span
                               className={cn(
-                                row.usedPercent >= 80
-                                  ? "text-red-400"
-                                  : row.usedPercent >= 50
-                                    ? "text-amber-400"
-                                    : "text-emerald-400",
+                                (row.resetMs ?? 0) < 6 * 3_600_000
+                                  ? "text-amber-400 font-semibold"
+                                  : "text-zinc-200",
                               )}
                             >
-                              {row.usedPercent.toFixed(0)}%
+                              {formatRemainingDuration(row.resetMs)}
                             </span>
-                          ) : (
-                            <span className="text-zinc-500">--</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="py-2.5 pr-3 text-zinc-400 whitespace-nowrap">
+                            {row.resetDate ? formatResetDate(row.resetDate) : "--"}
+                          </td>
+                          <td className="py-2.5 text-right font-medium whitespace-nowrap">
+                            {row.usedPercent !== null ? (
+                              <span
+                                className={cn(
+                                  row.usedPercent >= 80
+                                    ? "text-red-400"
+                                    : row.usedPercent >= 50
+                                      ? "text-amber-400"
+                                      : "text-emerald-400",
+                                )}
+                              >
+                                {row.usedPercent.toFixed(0)}%
+                              </span>
+                            ) : (
+                              <span className="text-zinc-500">--</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

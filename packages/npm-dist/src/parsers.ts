@@ -4,7 +4,11 @@ import {
   parseAntigravityUsageReport,
   parseAgyVersion,
 } from "../../providers/src/index.js";
-import type { ProviderId, QuotaSnapshot } from "../../core/src/index.js";
+import {
+  type ProviderId,
+  type QuotaSnapshot,
+  makeUnavailableSnapshot,
+} from "../../core/src/index.js";
 
 export {
   parseCodexRateLimits,
@@ -34,5 +38,7 @@ export function parseProviderQuota(
       return parseClaudeOAuthUsage(raw);
     case "antigravity":
       return parseAntigravityUsageReport(raw);
+    default:
+      return makeUnavailableSnapshot(provider, "UNSUPPORTED_PROVIDER", "unsupported");
   }
 }
