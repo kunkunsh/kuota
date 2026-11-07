@@ -18,7 +18,7 @@ export interface QuotaAlertEvent {
 
 export function computeTrayTitle(
   snapshots: readonly QuotaSnapshot[],
-  mode: MenuBarDisplayMode = "primary_percent",
+  mode: MenuBarDisplayMode = "icon_only",
 ): string {
   if (mode === "icon_only") {
     return "";

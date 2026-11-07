@@ -214,7 +214,7 @@ function DevApp() {
             try {
               const { invoke } = await import("@tauri-apps/api/core");
               const userCfg = ((await invoke("get_user_config")) as any) || {};
-              const displayMode = (userCfg.menuBarDisplayMode || "primary_percent") as MenuBarDisplayMode;
+              const displayMode = (userCfg.menuBarDisplayMode || "icon_only") as MenuBarDisplayMode;
               const title = computeTrayTitle(data, displayMode);
               await invoke("update_tray_title", { title });
 

@@ -123,10 +123,8 @@ export function MenuBarPopoverView({
     });
   }, [snapshots]);
 
-  // View mode: "overview" or a specific providerId
-  const [activeTab, setActiveTab] = React.useState<string>(() => {
-    return activeSnapshots[0]?.provider || "codex";
-  });
+  // View mode: "overview" (default) or a specific providerId
+  const [activeTab, setActiveTab] = React.useState<string>("overview");
 
   // Search input state
   const [searchQuery, setSearchQuery] = React.useState<string>("");
