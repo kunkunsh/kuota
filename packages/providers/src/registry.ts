@@ -67,7 +67,7 @@ export const PROVIDER_METADATA: readonly ProviderMetadata[] = [
     id: "opencodego",
     label: "OpenCode Go",
     implemented: true,
-    source: "opencode-zen-api",
+    source: "opencode-go-api",
     billingModel: "subscription",
     category: "coding_agent",
     envKeys: ["OPENCODE_API_KEY"],
