@@ -49,20 +49,21 @@ export function PacedProgress({
         ? Math.max(0, Math.min(100, 100 - idealUsedPercent))
         : null;
 
-  // Determine fill color based on remaining balance if no custom brand color provided
+  // Pace comparison: if remaining < idealRemaining, quota is draining faster than linear pace
+  const paceDelta =
+    remaining !== null && idealRemaining !== null ? remaining - idealRemaining : null;
+  const isOverspent = paceDelta !== null && paceDelta < -5;
+
+  // Determine fill color based on remaining balance and pacing if no custom brand color provided
   const fillClass =
     customBarColor ??
     (remaining === null
       ? "bg-zinc-700"
-      : remaining <= 15
+      : remaining <= 10
         ? "bg-red-500"
-        : remaining <= 35
+        : isOverspent
           ? "bg-amber-500"
           : "bg-emerald-500");
-
-  // Pace comparison: if remaining < idealRemaining, quota is draining faster than linear pace
-  const paceDelta =
-    remaining !== null && idealRemaining !== null ? remaining - idealRemaining : null;
 
   return (
     <div className={cn("flex flex-col space-y-1.5 w-full", className)} {...props}>

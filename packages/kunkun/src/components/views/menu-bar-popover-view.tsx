@@ -491,9 +491,33 @@ export function MenuBarPopoverView({
               <div className="space-y-2">
                 {sortedWindows.map((win, idx) => {
                   const label = formatWindowLabel(win.windowId);
-                  const isExhausted = win.remainingPercent <= 0;
+                  const remPercent = Math.min(100, Math.max(0, win.remainingPercent));
+                  const isExhausted = remPercent <= 0 || win.usedPercent >= 100;
                   const remainingMs = win.resetAt ? new Date(win.resetAt).getTime() - Date.now() : null;
                   const pace = resolveIdealPace(win, selectedSnapshot.provider, new Date());
+
+                  // White pace marker: where your remaining quota SHOULD be based on elapsed time
+                  const idealRemPercent = pace ? Math.min(100, Math.max(0, pace.idealRemainingPercent)) : null;
+                  const paceDelta = idealRemPercent !== null ? remPercent - idealRemPercent : null;
+                  const isOverspent = paceDelta !== null && paceDelta < -4;
+                  const isConserving = paceDelta !== null && paceDelta > 4;
+
+                  // Brand-tinted progress fill: represents REMAINING quota
+                  const barColor = isExhausted
+                    ? "bg-rose-500"
+                    : isOverspent
+                      ? selectedSnapshot.provider === "claude"
+                        ? "bg-[#da7756]"
+                        : "bg-amber-400"
+                      : selectedSnapshot.provider === "claude"
+                        ? "bg-[#da7756]"
+                        : selectedSnapshot.provider === "codex"
+                          ? "bg-[#5c82ff]"
+                          : selectedSnapshot.provider === "antigravity"
+                            ? "bg-emerald-500"
+                            : selectedSnapshot.provider === "opencodego"
+                              ? "bg-emerald-400"
+                              : "bg-cyan-400";
 
                   return (
                     <div
@@ -501,57 +525,63 @@ export function MenuBarPopoverView({
                       className="p-3 rounded-xl bg-zinc-900/70 border border-zinc-800/80 space-y-2"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-zinc-100">
-                          {label} {win.remainingPercent.toFixed(0)}% left
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-bold text-zinc-100">{label}</span>
+                          <span
+                            className={cn(
+                              "text-sm font-extrabold font-mono",
+                              isExhausted
+                                ? "text-rose-400"
+                                : isOverspent
+                                  ? selectedSnapshot.provider === "claude" ? "text-orange-400" : "text-amber-400"
+                                  : "text-zinc-100",
+                            )}
+                          >
+                            {remPercent.toFixed(0)}% left
+                          </span>
+                        </div>
                         {win.resetAt && (
-                          <span className="text-xs text-zinc-400 font-medium">
+                          <span className="text-xs text-zinc-400 font-medium font-mono">
                             Resets in {remainingMs != null ? formatRemainingDuration(remainingMs) : formatResetDate(win.resetAt)}
                           </span>
                         )}
                       </div>
 
-                      {/* Multi-segment Paced Bar with White Ideal Pace Marker */}
+                      {/* True Paced Bar: Colored fill = Remaining Quota; White vertical line = Target Remaining Pace */}
                       <div className="w-full h-2 rounded-full bg-zinc-800/90 overflow-hidden relative">
+                        {/* 1. Colored progress bar: Represents REMAINING QUOTA */}
                         <div
-                          className={cn(
-                            "h-full rounded-full transition-all duration-300",
-                            isExhausted
-                              ? "bg-rose-500"
-                              : win.remainingPercent < 20
-                              ? "bg-amber-400"
-                              : "bg-cyan-400",
-                          )}
-                          style={{ width: `${Math.min(100, Math.max(0, win.usedPercent))}%` }}
+                          className={cn("h-full rounded-full transition-all duration-300", barColor)}
+                          style={{ width: `${remPercent}%` }}
                         />
-                        {/* White Ideal Pace Bar (indicates expected usage speed vs time elapsed) */}
-                        {pace && (
+                        {/* 2. White Ideal Pace Bar: Represents where your remaining quota SHOULD be based on elapsed time */}
+                        {idealRemPercent !== null && (
                           <div
                             className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)] z-10"
-                            style={{ left: `${pace.idealUsedPercent}%` }}
-                            title={`Ideal usage at this point in cycle: ${pace.idealUsedPercent.toFixed(1)}%`}
+                            style={{ left: `${idealRemPercent}%` }}
+                            title={`Target remaining pace at this point in cycle: ${idealRemPercent.toFixed(1)}%`}
                           />
                         )}
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5">
                         <span>
-                          {pace ? (
-                            pace.paceStatus === "ahead" ? (
+                          {paceDelta !== null ? (
+                            isConserving ? (
                               <span className="text-emerald-400 font-medium">
-                                Ahead of pace · {(pace.idealUsedPercent - win.usedPercent).toFixed(0)}% in reserve
+                                On pace · +{paceDelta.toFixed(0)}% in reserve
                               </span>
-                            ) : pace.paceStatus === "behind" ? (
-                              <span className="text-amber-400 font-medium">
-                                Burning fast · {(win.usedPercent - pace.idealUsedPercent).toFixed(0)}% ahead of ideal pace
+                            ) : isOverspent ? (
+                              <span className={cn("font-medium", selectedSnapshot.provider === "claude" ? "text-orange-400" : "text-amber-400")}>
+                                Overspent · {Math.abs(paceDelta).toFixed(0)}% behind target pace
                               </span>
                             ) : (
-                              <span className="text-cyan-400 font-medium">On pace with reset schedule</span>
+                              <span className="text-cyan-400 font-medium">On track with reset schedule</span>
                             )
-                          ) : win.usedPercent < 50 ? (
-                            `${(50 - win.usedPercent).toFixed(0)}% in reserve`
+                          ) : remPercent > 50 ? (
+                            `${(remPercent - 50).toFixed(0)}% in reserve`
                           ) : (
-                            `${win.usedPercent.toFixed(0)}% used`
+                            `${remPercent.toFixed(0)}% left`
                           )}
                         </span>
                         <span className="text-zinc-500 font-mono">Used: {win.usedPercent.toFixed(0)}%</span>
@@ -767,8 +797,15 @@ export function MenuBarPopoverView({
                     displayRight = "Exhausted";
                     rightColor = "text-rose-400";
                   } else if (pWindows.length > 0) {
-                    displayRight = `${pWindows[0].remainingPercent.toFixed(0)}% left`;
-                    rightColor = pWindows[0].remainingPercent < 20 ? "text-amber-400" : "text-emerald-400";
+                    const pPace = resolveIdealPace(pWindows[0], snap.provider, new Date());
+                    const pRem = pWindows[0].remainingPercent;
+                    const pOverspent = pPace && pRem < pPace.idealRemainingPercent - 4;
+                    displayRight = `${pRem.toFixed(0)}% left`;
+                    rightColor = pOverspent
+                      ? (snap.provider === "claude" ? "text-orange-400" : "text-amber-400")
+                      : pRem < 20
+                        ? "text-amber-400"
+                        : "text-zinc-100";
                   } else if (snap.balance && snap.balance.balances.length > 0) {
                     const b = snap.balance.balances[0];
                     if (b.usage != null && b.totalBalance === 0) {
@@ -806,21 +843,40 @@ export function MenuBarPopoverView({
 
                       <div className="flex items-center space-x-2 shrink-0">
                         {pWindows.length > 0 && !isExhausted && (
-                          <div className="w-14 h-1.5 rounded-full bg-zinc-800 overflow-hidden relative">
-                            <div
-                              className="h-full bg-cyan-400 rounded-full"
-                              style={{ width: `${Math.min(100, Math.max(0, pWindows[0].usedPercent))}%` }}
-                            />
-                            {/* White Ideal Pace Marker */}
-                            {resolveIdealPace(pWindows[0], snap.provider, new Date()) && (
-                              <div
-                                className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_4px_rgba(255,255,255,0.95)] z-10"
-                                style={{
-                                  left: `${resolveIdealPace(pWindows[0], snap.provider, new Date())!.idealUsedPercent}%`,
-                                }}
-                              />
-                            )}
-                          </div>
+                          (() => {
+                            const pWin = pWindows[0];
+                            const pPace = resolveIdealPace(pWin, snap.provider, new Date());
+                            const pRem = Math.min(100, Math.max(0, pWin.remainingPercent));
+                            const pIdealRem = pPace ? Math.min(100, Math.max(0, pPace.idealRemainingPercent)) : null;
+                            const pDelta = pIdealRem !== null ? pRem - pIdealRem : null;
+                            const pOverspent = pDelta !== null && pDelta < -4;
+
+                            const pBarColor = pOverspent
+                              ? (snap.provider === "claude" ? "bg-[#da7756]" : "bg-amber-400")
+                              : (snap.provider === "claude"
+                                  ? "bg-[#da7756]"
+                                  : snap.provider === "codex"
+                                    ? "bg-[#5c82ff]"
+                                    : snap.provider === "antigravity" || snap.provider === "opencodego"
+                                      ? "bg-emerald-400"
+                                      : "bg-cyan-400");
+
+                            return (
+                              <div className="w-14 h-1.5 rounded-full bg-zinc-800 overflow-hidden relative">
+                                <div
+                                  className={cn("h-full rounded-full transition-all duration-300", pBarColor)}
+                                  style={{ width: `${pRem}%` }}
+                                />
+                                {/* White Ideal Pace Marker: time remaining position */}
+                                {pIdealRem !== null && (
+                                  <div
+                                    className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_4px_rgba(255,255,255,0.95)] z-10"
+                                    style={{ left: `${pIdealRem}%` }}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })()
                         )}
                         <span className={cn("font-mono text-xs font-bold", rightColor)}>
                           {displayRight}
