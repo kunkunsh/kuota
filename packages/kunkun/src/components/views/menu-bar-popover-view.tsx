@@ -7,7 +7,6 @@ import {
   type QuotaWindow,
 } from "@kuota/core";
 import { ProviderIcon } from "../ui/provider-icon.js";
-import { PacedProgress } from "../paced-progress.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
 import { cn } from "../../lib/utils.js";
 import {
@@ -15,13 +14,12 @@ import {
   Power,
   RefreshCw,
   Clock,
-  AlertTriangle,
-  CheckCircle2,
-  ExternalLink,
-  ChevronRight,
   Wallet,
   Activity,
   Layers,
+  CheckCircle2,
+  AlertTriangle,
+  Flame,
 } from "lucide-react";
 
 export interface MenuBarPopoverViewProps {
@@ -64,10 +62,10 @@ function sortWindowsForDisplay(windows: readonly QuotaWindow[]): QuotaWindow[] {
   return [...windows].sort((a, b) => {
     const getScore = (w: QuotaWindow) => {
       const id = w.windowId.toLowerCase();
-      if (id.includes("month")) return 10;
+      if (id.includes("token_plan") || id.includes("month")) return 10;
       if (id.includes("week")) return 8;
-      if (id.includes("session") || id.includes("5h") || id.includes("rolling")) return 6;
-      if (id.includes("day") || id.includes("daily")) return 4;
+      if (id.includes("session") || id.includes("5h") || id.includes("rolling") || id.includes("primary")) return 6;
+      if (id.includes("day") || id.includes("daily") || id.includes("secondary")) return 4;
       return 1;
     };
     return getScore(b) - getScore(a);
@@ -81,8 +79,13 @@ function formatWindowLabel(windowId: string): string {
   if (lower.includes("week")) return "Weekly Quota";
   if (lower.includes("session") || lower.includes("rolling")) return "5-Hour Session Window";
   if (lower.includes("5h")) return "5-Hour Session Window";
+  if (lower.includes("primary")) return "Primary Session Limit";
+  if (lower.includes("secondary")) return "Secondary Limit";
   if (lower.includes("daily") || lower.includes("day")) return "Daily Quota";
-  return windowId;
+  if (lower.includes("sonnet")) return "Claude Sonnet Limit";
+  if (lower.includes("gemini")) return "Gemini Flash/Pro Quota";
+  if (lower.includes("completions")) return "7-Day Usage Activity";
+  return windowId.charAt(0).toUpperCase() + windowId.slice(1);
 }
 
 export function MenuBarPopoverView({
@@ -148,13 +151,22 @@ export function MenuBarPopoverView({
   const hasBalance = Boolean(selectedSnapshot?.balance && selectedSnapshot.balance.balances.length > 0);
   const isBalancePriority = selectedSnapshot ? isBalanceFirst(selectedSnapshot) : false;
 
+  const isExhaustedSelected =
+    selectedSnapshot?.windows.some((w) => w.remainingPercent <= 0) ||
+    selectedSnapshot?.errorCode === "QUOTA_EXHAUSTED";
+
+  const billingModelLabel =
+    (selectedSnapshot?.billingModel ?? meta?.billingModel) === "subscription"
+      ? "Subscription"
+      : "Prepaid Wallet";
+
   return (
     <div className="flex flex-col h-screen w-full select-none bg-zinc-950/95 text-zinc-100 font-sans antialiased border border-zinc-800/80 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-2xl">
       {/* 1. Header Bar: App branding + Quick Refresh */}
-      <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-zinc-800/60 bg-zinc-900/40">
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-zinc-800/60 bg-zinc-900/40 shrink-0">
         <div className="flex items-center space-x-2">
           <KuotaLogo className="w-4 h-4 text-emerald-400" />
-          <span className="text-xs font-bold tracking-wider text-zinc-200">KUOTA</span>
+          <span className="text-xs font-bold tracking-wider text-zinc-100">KUOTA</span>
           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             HUD
           </span>
@@ -164,16 +176,16 @@ export function MenuBarPopoverView({
             onClick={() => onRefresh?.()}
             disabled={isRefreshing}
             title="Refresh quota telemetry"
-            className="p-1 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors disabled:opacity-50"
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/70 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-emerald-400")} />
           </button>
         </div>
       </div>
 
-      {/* 2. Top Horizontal Provider Tab Strip (Stats / vorssaint icon row) */}
-      <div className="px-2 py-2 border-b border-zinc-800/50 bg-zinc-900/20">
-        <div className="flex items-center space-x-1 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
+      {/* 2. Top Horizontal Provider Tab Strip (Stats / vorssaint icon row with active pill) */}
+      <div className="px-2.5 py-2 border-b border-zinc-800/60 bg-zinc-900/25 shrink-0">
+        <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar scroll-smooth py-0.5">
           {activeSnapshots.map((snap) => {
             const isSelected = snap.provider === selectedProviderId;
             const pMeta = getProviderMeta(snap.provider);
@@ -185,17 +197,22 @@ export function MenuBarPopoverView({
               <button
                 key={snap.provider}
                 onClick={() => setSelectedProviderId(snap.provider)}
-                title={`${pMeta.displayName} (${pMeta.badge})`}
+                title={`${pMeta.name} (${pMeta.defaultPlan || pMeta.billingModel})`}
                 className={cn(
-                  "relative flex items-center justify-center p-2 rounded-xl transition-all duration-150 shrink-0",
+                  "relative flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl transition-all duration-150 shrink-0 text-xs font-medium",
                   isSelected
                     ? "bg-zinc-800 text-white shadow-md ring-1 ring-white/20"
                     : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50",
                 )}
               >
-                <ProviderIcon provider={snap.provider} size={18} />
+                <ProviderIcon provider={snap.provider} size={15} />
+                {isSelected && (
+                  <span className="text-[11px] font-medium tracking-tight">
+                    {pMeta.name}
+                  </span>
+                )}
                 {isExhausted && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-zinc-900" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 ring-2 ring-zinc-900 shrink-0" />
                 )}
               </button>
             );
@@ -207,34 +224,51 @@ export function MenuBarPopoverView({
       <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-3.5 divide-y divide-zinc-800/50">
         {selectedSnapshot && meta ? (
           <div className="space-y-3">
-            {/* Provider title and badge */}
+            {/* Provider title and badge (FIXED: Using meta.name!) */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <ProviderIcon provider={selectedSnapshot.provider} size={20} />
-                <div>
-                  <div className="text-sm font-semibold text-zinc-100 leading-tight">
-                    {meta.displayName}
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="p-2 rounded-xl bg-zinc-900/90 border border-zinc-800/80 shadow-sm flex items-center justify-center shrink-0">
+                  <ProviderIcon provider={selectedSnapshot.provider} size={20} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-zinc-100 truncate">
+                    {meta.name}
                   </div>
-                  <div className="text-[11px] text-zinc-400">{meta.badge}</div>
+                  <div className="text-[11px] text-zinc-400 truncate">
+                    {meta.defaultPlan} · {meta.source}
+                  </div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-300 border border-zinc-700/50">
-                {selectedSnapshot.billingModel === "subscription" ? "Subscription" : "Wallet"}
+              <span
+                className={cn(
+                  "text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0",
+                  isExhaustedSelected
+                    ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                    : "bg-zinc-800/80 text-zinc-300 border-zinc-700/50",
+                )}
+              >
+                {isExhaustedSelected ? "Exhausted" : billingModelLabel}
               </span>
             </div>
 
             {/* Quota / Balance Hero Stat */}
             {isBalancePriority && hasBalance ? (
-              <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-2">
-                <div className="text-[11px] font-medium text-zinc-400 flex items-center space-x-1.5">
-                  <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>
-                    {selectedSnapshot.balance!.balances[0].usage != null &&
-                    selectedSnapshot.balance!.balances[0].totalBalance === 0
-                      ? "Monthly Platform Spend"
-                      : "Available Balance"}
+              <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] font-medium text-zinc-400">
+                  <div className="flex items-center space-x-1.5">
+                    <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>
+                      {selectedSnapshot.balance!.balances[0].usage != null &&
+                      selectedSnapshot.balance!.balances[0].totalBalance === 0
+                        ? "Monthly Platform Spend"
+                        : "Available Balance"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                    Active
                   </span>
                 </div>
+
                 {/* Dual Currency, Single Currency, or Monthly Spend */}
                 {selectedSnapshot.balance!.balances[0].usage != null &&
                 selectedSnapshot.balance!.balances[0].totalBalance === 0 ? (
@@ -247,7 +281,7 @@ export function MenuBarPopoverView({
                   </div>
                 ) : selectedSnapshot.balance!.balances.length > 1 ? (
                   <div className="space-y-1">
-                    <div className="text-xl font-bold tracking-tight text-zinc-100 flex items-baseline space-x-1.5">
+                    <div className="text-xl font-bold tracking-tight text-zinc-100 flex items-baseline space-x-1.5 flex-wrap">
                       <span>
                         {formatCurrencyAmount(
                           selectedSnapshot.balance!.balances[0].totalBalance,
@@ -257,7 +291,7 @@ export function MenuBarPopoverView({
                       <span className="text-zinc-500 font-normal text-xs">+</span>
                       <span
                         className={cn(
-                          "text-sm font-semibold",
+                          "text-base font-semibold",
                           selectedSnapshot.balance!.balances[1].totalBalance < 0
                             ? "text-rose-400"
                             : "text-zinc-300",
@@ -278,6 +312,7 @@ export function MenuBarPopoverView({
                     )}
                   </div>
                 )}
+
                 {/* Cash vs Grant Breakdown or Spend Breakdown */}
                 {selectedSnapshot.balance!.balances[0].usage != null &&
                 selectedSnapshot.balance!.balances[0].totalBalance === 0 ? (
@@ -312,7 +347,6 @@ export function MenuBarPopoverView({
               <div className="space-y-2.5">
                 {/* Render Each Window Progress Bar (Support 2 lines: monthly + 5-hour window!) */}
                 {sortedWindows.map((win, idx) => {
-                  const isPrimary = idx === 0;
                   const isExhausted = win.remainingPercent <= 0;
                   const label = formatWindowLabel(win.windowId);
                   const remainingMs = win.resetAt ? new Date(win.resetAt).getTime() - Date.now() : null;
@@ -323,7 +357,7 @@ export function MenuBarPopoverView({
                       className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-1.5"
                     >
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-zinc-200">{label}</span>
+                        <span className="font-semibold text-zinc-200">{label}</span>
                         <span
                           className={cn(
                             "font-bold font-mono",
@@ -378,11 +412,11 @@ export function MenuBarPopoverView({
           </div>
         ) : null}
 
-        {/* 4. Quick Overview List of All Tracked Providers */}
+        {/* 4. Quick Overview List of All Tracked Providers (FIXED: Using pMeta.name!) */}
         <div className="pt-3 space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-medium text-zinc-400 px-0.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-400 px-0.5">
             <span>TRACKED SERVICES ({activeSnapshots.length})</span>
-            <span className="text-[10px] text-zinc-500">Click to inspect</span>
+            <span className="text-[10px] text-zinc-500 font-normal">Click to inspect</span>
           </div>
 
           <div className="space-y-1">
@@ -405,8 +439,13 @@ export function MenuBarPopoverView({
                 rightColor = pWindows[0].remainingPercent < 20 ? "text-amber-400" : "text-emerald-400";
               } else if (snap.balance && snap.balance.balances.length > 0) {
                 const b = snap.balance.balances[0];
-                displayRight = formatCurrencyAmount(b.totalBalance, b.currency);
-                rightColor = b.totalBalance <= 0 ? "text-rose-400" : "text-emerald-400";
+                if (b.usage != null && b.totalBalance === 0) {
+                  displayRight = `$${b.usage.toFixed(2)}`;
+                  rightColor = "text-emerald-400";
+                } else {
+                  displayRight = formatCurrencyAmount(b.totalBalance, b.currency);
+                  rightColor = b.totalBalance <= 0 ? "text-rose-400" : "text-emerald-400";
+                }
               } else {
                 displayRight = "Active";
                 rightColor = "text-zinc-400";
@@ -417,28 +456,30 @@ export function MenuBarPopoverView({
                   key={snap.provider}
                   onClick={() => setSelectedProviderId(snap.provider)}
                   className={cn(
-                    "flex items-center justify-between px-2.5 py-2 rounded-xl text-xs cursor-pointer transition-colors",
+                    "flex items-center justify-between px-2.5 py-2 rounded-xl text-xs cursor-pointer transition-all duration-150",
                     isSelected
-                      ? "bg-zinc-800/80 text-zinc-100 border border-zinc-700/60"
+                      ? "bg-zinc-800/90 text-zinc-100 border border-zinc-700/70 shadow-sm"
                       : "hover:bg-zinc-900/70 text-zinc-300 border border-transparent",
                   )}
                 >
-                  <div className="flex items-center space-x-2.5 min-w-0">
+                  <div className="flex items-center space-x-2.5 min-w-0 pr-2">
                     <ProviderIcon provider={snap.provider} size={16} />
-                    <span className="font-medium truncate">{pMeta.displayName}</span>
+                    <span className="font-semibold truncate text-zinc-200">
+                      {pMeta.name}
+                    </span>
                   </div>
 
                   <div className="flex items-center space-x-2 shrink-0">
                     {/* Mini visual bar if window exists */}
                     {pWindows.length > 0 && !isExhausted && (
-                      <div className="w-12 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                      <div className="w-10 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
                         <div
                           className="h-full bg-indigo-500 rounded-full"
                           style={{ width: `${Math.min(100, Math.max(0, pWindows[0].usedPercent))}%` }}
                         />
                       </div>
                     )}
-                    <span className={cn("font-mono text-[11px] font-semibold", rightColor)}>
+                    <span className={cn("font-mono text-[11px] font-bold", rightColor)}>
                       {displayRight}
                     </span>
                   </div>
@@ -450,10 +491,10 @@ export function MenuBarPopoverView({
       </div>
 
       {/* 5. Bottom Action Footer (matching user's screenshot [Settings] [Quit]) */}
-      <div className="p-3 border-t border-zinc-800/80 bg-zinc-900/50 grid grid-cols-2 gap-2">
+      <div className="p-3 border-t border-zinc-800/80 bg-zinc-900/50 grid grid-cols-2 gap-2 shrink-0">
         <button
           onClick={handleOpenDashboard}
-          className="flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 hover:text-white text-zinc-300 text-xs font-medium border border-zinc-700/50 transition-colors shadow-sm active:scale-[0.98]"
+          className="flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 hover:text-white text-zinc-300 text-xs font-semibold border border-zinc-700/50 transition-colors shadow-sm active:scale-[0.98]"
         >
           <Settings className="w-3.5 h-3.5 text-zinc-400" />
           <span>Settings</span>
@@ -461,7 +502,7 @@ export function MenuBarPopoverView({
 
         <button
           onClick={handleQuit}
-          className="flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-900/60 text-zinc-300 text-xs font-medium border border-zinc-700/50 transition-colors shadow-sm active:scale-[0.98]"
+          className="flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl bg-zinc-800/80 hover:bg-rose-950/40 hover:text-rose-300 hover:border-rose-900/60 text-zinc-300 text-xs font-semibold border border-zinc-700/50 transition-colors shadow-sm active:scale-[0.98]"
         >
           <Power className="w-3.5 h-3.5 text-zinc-400" />
           <span>Quit</span>
