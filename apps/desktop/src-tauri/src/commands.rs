@@ -319,6 +319,27 @@ pub fn get_keychain_password(provider: String) -> Option<String> {
 
 #[tauri::command]
 pub fn set_keychain_password(provider: String, secret: String) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let status = Command::new("security")
+            .arg("add-generic-password")
+            .arg("-s")
+            .arg("dev.huakun.kuota")
+            .arg("-a")
+            .arg(format!("api_key:{}", provider))
+            .arg("-w")
+            .arg(&secret)
+            .arg("-A")
+            .arg("-U")
+            .status();
+
+        if let Ok(s) = status {
+            if s.success() {
+                return Ok(());
+            }
+        }
+    }
+
     let entry = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", provider))
         .map_err(|e| e.to_string())?;
     entry.set_password(&secret).map_err(|e| e.to_string())?;
@@ -327,6 +348,17 @@ pub fn set_keychain_password(provider: String, secret: String) -> Result<(), Str
 
 #[tauri::command]
 pub fn delete_keychain_password(provider: String) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = Command::new("security")
+            .arg("delete-generic-password")
+            .arg("-s")
+            .arg("dev.huakun.kuota")
+            .arg("-a")
+            .arg(format!("api_key:{}", provider))
+            .status();
+    }
+
     let entry = keyring::Entry::new("dev.huakun.kuota", &format!("api_key:{}", provider))
         .map_err(|e| e.to_string())?;
     let _ = entry.delete_credential();

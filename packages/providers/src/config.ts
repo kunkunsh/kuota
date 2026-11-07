@@ -37,7 +37,7 @@ export function writeKeychainPasswordSync(providerId: string, secret: string): b
   if (platform() === "darwin") {
     try {
       execSync(
-        `security add-generic-password -s "${KEYCHAIN_SERVICE}" -a "api_key:${providerId}" -w "${secret.replace(/"/g, '\\"')}" -U`,
+        `security add-generic-password -s "${KEYCHAIN_SERVICE}" -a "api_key:${providerId}" -w "${secret.replace(/"/g, '\\"')}" -A -U`,
         { stdio: ["pipe", "pipe", "ignore"], timeout: 2000 },
       );
       return true;

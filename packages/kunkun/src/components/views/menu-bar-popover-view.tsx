@@ -228,10 +228,24 @@ export function MenuBarPopoverView({
               <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-2">
                 <div className="text-[11px] font-medium text-zinc-400 flex items-center space-x-1.5">
                   <Wallet className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Available Balance</span>
+                  <span>
+                    {selectedSnapshot.balance!.balances[0].usage != null &&
+                    selectedSnapshot.balance!.balances[0].totalBalance === 0
+                      ? "Monthly Platform Spend"
+                      : "Available Balance"}
+                  </span>
                 </div>
-                {/* Dual Currency or Single Currency */}
-                {selectedSnapshot.balance!.balances.length > 1 ? (
+                {/* Dual Currency, Single Currency, or Monthly Spend */}
+                {selectedSnapshot.balance!.balances[0].usage != null &&
+                selectedSnapshot.balance!.balances[0].totalBalance === 0 ? (
+                  <div className="space-y-0.5">
+                    <div className="text-2xl font-bold tracking-tight text-zinc-100 flex items-baseline space-x-1.5">
+                      <span>${selectedSnapshot.balance!.balances[0].usage.toFixed(2)}</span>
+                      <span className="text-xs text-zinc-400 font-semibold uppercase">USD</span>
+                      <span className="text-[11px] text-zinc-500 font-normal">(Nov Spend)</span>
+                    </div>
+                  </div>
+                ) : selectedSnapshot.balance!.balances.length > 1 ? (
                   <div className="space-y-1">
                     <div className="text-xl font-bold tracking-tight text-zinc-100 flex items-baseline space-x-1.5">
                       <span>
@@ -264,27 +278,35 @@ export function MenuBarPopoverView({
                     )}
                   </div>
                 )}
-                {/* Cash vs Grant Breakdown */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/60 text-[11px]">
-                  <div>
-                    <span className="text-zinc-500">Topped-up Cash: </span>
-                    <span className="text-zinc-300 font-mono">
-                      {formatCurrencyAmount(
-                        selectedSnapshot.balance!.balances[0].cashBalance,
-                        selectedSnapshot.balance!.balances[0].currency,
-                      )}
-                    </span>
+                {/* Cash vs Grant Breakdown or Spend Breakdown */}
+                {selectedSnapshot.balance!.balances[0].usage != null &&
+                selectedSnapshot.balance!.balances[0].totalBalance === 0 ? (
+                  <div className="pt-2 border-t border-zinc-800/60 text-[11px] text-zinc-400 flex items-center justify-between">
+                    <span>Scope: <code className="text-zinc-300 font-mono">api.usage.read</code></span>
+                    <span className="text-emerald-400 font-medium">Admin Verified</span>
                   </div>
-                  <div>
-                    <span className="text-zinc-500">Granted Credit: </span>
-                    <span className="text-zinc-300 font-mono">
-                      {formatCurrencyAmount(
-                        selectedSnapshot.balance!.balances[0].grantedBalance,
-                        selectedSnapshot.balance!.balances[0].currency,
-                      )}
-                    </span>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/60 text-[11px]">
+                    <div>
+                      <span className="text-zinc-500">Topped-up Cash: </span>
+                      <span className="text-zinc-300 font-mono">
+                        {formatCurrencyAmount(
+                          selectedSnapshot.balance!.balances[0].cashBalance,
+                          selectedSnapshot.balance!.balances[0].currency,
+                        )}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500">Granted Credit: </span>
+                      <span className="text-zinc-300 font-mono">
+                        {formatCurrencyAmount(
+                          selectedSnapshot.balance!.balances[0].grantedBalance,
+                          selectedSnapshot.balance!.balances[0].currency,
+                        )}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ) : sortedWindows.length > 0 ? (
               <div className="space-y-2.5">

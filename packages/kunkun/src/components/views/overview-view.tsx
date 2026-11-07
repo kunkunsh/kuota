@@ -549,15 +549,31 @@ export function OverviewView({
                   <CardContent className="space-y-4 pt-1">
                     <div className="flex items-baseline justify-between flex-wrap gap-2">
                       <div className="flex items-baseline space-x-1.5 flex-wrap">
-                        <span className="text-3xl font-extrabold text-zinc-100 font-mono">
-                          {formatCurrencyAmount(
-                            primaryBalance?.totalBalance,
-                            primaryBalance?.currency,
-                          )}
-                        </span>{" "}
-                        <span className="text-xs font-semibold text-zinc-400 uppercase">
-                          {primaryBalance?.currency ?? "USD"}
-                        </span>
+                        {primaryBalance?.usage != null && primaryBalance?.totalBalance === 0 ? (
+                          <>
+                            <span className="text-3xl font-extrabold text-zinc-100 font-mono">
+                              ${primaryBalance.usage.toFixed(2)}
+                            </span>{" "}
+                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                              USD
+                            </span>
+                            <span className="text-[11px] text-zinc-500 ml-1">
+                              (Nov Spend)
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-3xl font-extrabold text-zinc-100 font-mono">
+                              {formatCurrencyAmount(
+                                primaryBalance?.totalBalance,
+                                primaryBalance?.currency,
+                              )}
+                            </span>{" "}
+                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                              {primaryBalance?.currency ?? "USD"}
+                            </span>
+                          </>
+                        )}
                         {secondaryBalance && (
                           <div className="flex items-baseline space-x-1 ml-1 text-zinc-300">
                             <span className="text-zinc-500 font-medium text-sm">+</span>
@@ -584,12 +600,18 @@ export function OverviewView({
                         variant="outline"
                         className={cn(
                           "text-[10px] px-2 py-0.5",
-                          isLow
-                            ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                            : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+                          primaryBalance?.usage != null && primaryBalance?.totalBalance === 0
+                            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                            : isLow
+                              ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                              : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
                         )}
                       >
-                        {isLow ? "Low Balance" : "Funded"}
+                        {primaryBalance?.usage != null && primaryBalance?.totalBalance === 0
+                          ? "Admin Verified"
+                          : isLow
+                            ? "Low Balance"
+                            : "Funded"}
                       </Badge>
                     </div>
 
