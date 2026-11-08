@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { createKuotaRouter } from "./router.js";
 
 describe("TanStack Router Architecture for Kuota", () => {
