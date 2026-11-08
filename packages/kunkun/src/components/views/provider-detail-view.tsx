@@ -16,15 +16,30 @@ import { Wallet, ShieldCheck } from "lucide-react";
 
 export function ProviderDetailView({
   snapshots,
-  selectedId,
+  selectedId: propSelectedId,
   onSelectProvider,
 }: {
   snapshots: readonly QuotaSnapshot[];
   selectedId?: string;
   onSelectProvider?: (id: string) => void;
 }) {
-  const currentId = selectedId ?? snapshots[0]?.provider ?? "codex";
-  const snapshot = snapshots.find((s) => s.provider === currentId);
+  const [activeId, setActiveId] = React.useState<string>(() => {
+    return propSelectedId ?? snapshots[0]?.provider ?? "codex";
+  });
+
+  React.useEffect(() => {
+    if (propSelectedId && propSelectedId !== activeId) {
+      setActiveId(propSelectedId);
+    }
+  }, [propSelectedId]);
+
+  const handleSelect = (id: string) => {
+    setActiveId(id);
+    onSelectProvider?.(id);
+  };
+
+  const currentId = activeId;
+  const snapshot = snapshots.find((s) => s.provider === currentId) ?? snapshots[0];
   const meta = getProviderMeta(currentId);
 
   const hasBalance = Boolean(snapshot?.balance && snapshot.balance.balances.length > 0);
@@ -56,7 +71,7 @@ export function ProviderDetailView({
                     ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-700 shadow-xs font-semibold"
                     : "bg-slate-200/60 dark:bg-zinc-900/60 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800/80 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800"
                 }`}
-                onClick={() => onSelectProvider?.(s.provider)}
+                onClick={() => handleSelect(s.provider)}
               >
                 <ProviderIcon provider={s.provider} size={13} />
                 <span>{m.shortName}</span>

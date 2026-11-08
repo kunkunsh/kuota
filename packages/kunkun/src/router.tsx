@@ -75,9 +75,29 @@ const rootRoute = createRootRouteWithContext<KuotaRouterContext>()({
   component: () => <Outlet />,
 });
 
+const KuotaRouterReactContext = React.createContext<KuotaRouterContext | null>(null);
+
+export function useKuotaRouterContext(): KuotaRouterContext {
+  const reactCtx = React.useContext(KuotaRouterReactContext);
+  const routeCtx = useRouteContext({ strict: false }) as unknown as KuotaRouterContext | undefined;
+  return (
+    reactCtx ??
+    routeCtx ?? {
+      snapshots: [],
+      historyEvents: [],
+      forecasts: [],
+      series: {},
+      now: new Date(),
+      isRefreshing: false,
+      selectedProvider: "codex",
+      setSelectedProvider: () => {},
+    }
+  );
+}
+
 // 2. Dashboard Layout Component
 function DashboardLayout() {
-  const ctx = useRouteContext({ from: rootRoute.id });
+  const ctx = useKuotaRouterContext();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const { resolvedTheme } = useTheme();
@@ -297,7 +317,7 @@ const overviewRoute = createRoute({
 });
 
 function OverviewRouteComponent() {
-  const ctx = useRouteContext({ from: rootRoute.id });
+  const ctx = useKuotaRouterContext();
   const navigate = useNavigate();
 
   return (
@@ -318,7 +338,7 @@ const historyRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: "/history",
   component: function HistoryRouteComponent() {
-    const ctx = useRouteContext({ from: rootRoute.id });
+    const ctx = useKuotaRouterContext();
     return <HistoryView events={ctx.historyEvents} forecasts={ctx.forecasts} />;
   },
 });
@@ -327,7 +347,7 @@ const detailRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: "/detail",
   component: function DetailRouteComponent() {
-    const ctx = useRouteContext({ from: rootRoute.id });
+    const ctx = useKuotaRouterContext();
     return (
       <ProviderDetailView
         snapshots={ctx.snapshots}
@@ -342,7 +362,7 @@ const connectionsRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: "/connections",
   component: function ConnectionsRouteComponent() {
-    const ctx = useRouteContext({ from: rootRoute.id });
+    const ctx = useKuotaRouterContext();
     const navigate = useNavigate();
     return (
       <ConnectionsView
@@ -396,7 +416,7 @@ const islandRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: "/island",
   component: function IslandRouteComponent() {
-    const ctx = useRouteContext({ from: rootRoute.id });
+    const ctx = useKuotaRouterContext();
     return <IslandView snapshots={ctx.snapshots} now={ctx.now} mode={ctx.islandMode} />;
   },
 });
@@ -406,7 +426,7 @@ const popoverRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/popover",
   component: function PopoverRouteComponent() {
-    const ctx = useRouteContext({ from: rootRoute.id });
+    const ctx = useKuotaRouterContext();
     const navigate = useNavigate();
     return (
       <MenuBarPopoverView
@@ -490,5 +510,9 @@ export interface KuotaRouterProviderProps {
 }
 
 export function KuotaRouterProvider({ router, context }: KuotaRouterProviderProps) {
-  return <RouterProvider router={router} context={context} />;
+  return (
+    <KuotaRouterReactContext.Provider value={context}>
+      <RouterProvider router={router} context={context} />
+    </KuotaRouterReactContext.Provider>
+  );
 }
