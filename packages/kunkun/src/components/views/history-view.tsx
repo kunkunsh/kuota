@@ -253,15 +253,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
   return (
     <div className="flex flex-col space-y-6">
       {/* Header & Filter Bar */}
-      <div className="flex flex-col space-y-3 pb-3 border-b border-zinc-800">
+      <div className="flex flex-col space-y-3 pb-3 border-b border-slate-200 dark:border-zinc-800">
         <div>
-          <div className="text-xs text-zinc-500 font-medium">
-            Kuota / Analytics / <span className="text-zinc-300">History & Forecast</span>
+          <div className="text-xs text-slate-400 dark:text-zinc-500 font-medium">
+            Kuota / Analytics / <span className="text-slate-700 dark:text-zinc-300">History & Forecast</span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-zinc-100 mt-1">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 mt-1">
             History & Forecast
           </h2>
-          <p className="text-xs text-zinc-400">
+          <p className="text-xs text-slate-500 dark:text-zinc-400">
             Immutable snapshot log telemetry, linear pacing benchmarks, and regression forecasts.
           </p>
         </div>
@@ -270,17 +270,17 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {/* Provider Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-200">
-              <span className="text-zinc-400 font-medium">Provider:</span>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
+              <span className="text-slate-500 dark:text-zinc-400 font-medium">Provider:</span>
               <select
-                className="bg-transparent text-zinc-100 focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
               >
                 {allProviderIds.map((id) => {
                   const meta = DEFAULT_PROVIDERS.find((p) => p.id === id);
                   return (
-                    <option key={id} value={id} className="bg-zinc-900 text-zinc-100">
+                    <option key={id} value={id} className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">
                       {meta ? meta.name : id}
                     </option>
                   );
@@ -289,15 +289,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
             </div>
 
             {/* Window Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-200">
-              <span className="text-zinc-400 font-medium">Window:</span>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
+              <span className="text-slate-500 dark:text-zinc-400 font-medium">Window:</span>
               <select
-                className="bg-transparent text-zinc-100 focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
                 value={windowId}
                 onChange={(e) => setWindowId(e.target.value)}
               >
                 {availableWindows.map((w) => (
-                  <option key={w} value={w} className="bg-zinc-900 text-zinc-100">
+                  <option key={w} value={w} className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">
                     {w}
                   </option>
                 ))}
@@ -305,37 +305,37 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
             </div>
 
             {/* Range Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-200">
-              <span className="text-zinc-400 font-medium">Range:</span>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
+              <span className="text-slate-500 dark:text-zinc-400 font-medium">Range:</span>
               <select
-                className="bg-transparent text-zinc-100 focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
                 value={range}
                 onChange={(e) => setRange(e.target.value)}
               >
-                <option value="7d" className="bg-zinc-900">Last 7 days</option>
-                <option value="14d" className="bg-zinc-900">Last 14 days</option>
-                <option value="30d" className="bg-zinc-900">Last 30 days</option>
+                <option value="7d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 7 days</option>
+                <option value="14d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 14 days</option>
+                <option value="30d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 30 days</option>
               </select>
             </div>
 
             {/* Mode Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-200">
-              <span className="text-zinc-400 font-medium">Forecast mode:</span>
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
+              <span className="text-slate-500 dark:text-zinc-400 font-medium">Forecast mode:</span>
               <select
-                className="bg-transparent text-zinc-100 focus:outline-none cursor-pointer"
+                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
                 value={mode}
                 onChange={(e) => setMode(e.target.value as any)}
               >
-                <option value="all-window" className="bg-zinc-900">All-window (full epoch)</option>
-                <option value="recent-activity" className="bg-zinc-900">Recent-activity (48h)</option>
+                <option value="all-window" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">All-window (full epoch)</option>
+                <option value="recent-activity" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Recent-activity (48h)</option>
               </select>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 text-xs">
-            <span className={`w-2 h-2 rounded-full ${latestEvent ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
-            <span className="text-zinc-300 font-medium">Last observation:</span>
-            <span className="text-zinc-400">
+            <span className={`w-2 h-2 rounded-full ${latestEvent ? "bg-emerald-400 animate-pulse" : "bg-slate-400 dark:bg-zinc-600"}`} />
+            <span className="text-slate-700 dark:text-zinc-300 font-medium">Last observation:</span>
+            <span className="text-slate-500 dark:text-zinc-400">
               {latestEvent
                 ? `${new Date(latestEvent.observedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}, ${new Date(latestEvent.observedAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} · ${latestEvent.usedPercent}% used`
                 : "No telemetry recorded yet"}
@@ -347,14 +347,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       {/* Main Grid: Hero Chart on Left (8 cols) + Stats on Right (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Hero Chart Container (8 cols) */}
-        <Card className="lg:col-span-8 bg-[#111113] border-zinc-800">
+        <Card className="lg:col-span-8">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-semibold text-zinc-100">
+                <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                   Quota Usage — History & Forecast
                 </CardTitle>
-                <CardDescription className="text-xs text-zinc-400">
+                <CardDescription className="text-xs text-slate-500 dark:text-zinc-400">
                   {providerDisplayName} ({windowId}). Real immutable measurements from local JSONL journal. Forecast model: {mode}.
                 </CardDescription>
               </div>
@@ -628,14 +628,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
         {/* Right Sidebar Cards (4 cols) */}
         <div className="lg:col-span-4 flex flex-col space-y-3">
           {/* 1. Used Gauge */}
-          <Card className="bg-[#111113] border-zinc-800">
+          <Card>
             <CardContent className="p-4 flex items-center space-x-4">
               <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
                 <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
                   <path
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
-                    stroke="#27272a"
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-zinc-800"
                     strokeWidth="3.5"
                   />
                   <path
@@ -646,15 +647,15 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                     strokeWidth="3.5"
                   />
                 </svg>
-                <span className="absolute text-[10px] font-bold text-zinc-100">
+                <span className="absolute text-[10px] font-bold text-slate-900 dark:text-zinc-100">
                   {latestEvent?.usedPercent !== undefined ? `${latestEvent.usedPercent}%` : "—%"}
                 </span>
               </div>
               <div>
-                <div className="text-sm font-bold text-zinc-100">
+                <div className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                   {latestEvent?.usedPercent !== undefined ? `${latestEvent.usedPercent}% used` : "No Telemetry"}
                 </div>
-                <div className="text-xs text-zinc-400">
+                <div className="text-xs text-slate-500 dark:text-zinc-400">
                   {latestEvent ? `${latestEvent.usedPercent}% of ${windowId} quota consumed` : "Awaiting first sample"}
                 </div>
               </div>
@@ -662,19 +663,19 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           </Card>
 
           {/* 2. Pace */}
-          <Card className="bg-[#111113] border-zinc-800">
+          <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-zinc-400">Linear Pacing</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Linear Pacing</div>
                 {pace ? (
                   <>
                     <div
                       className={`text-base font-bold mt-0.5 ${
                         pace.paceStatus === "ahead"
-                          ? "text-emerald-400"
+                          ? "text-emerald-600 dark:text-emerald-400"
                           : pace.paceStatus === "behind"
-                            ? "text-amber-400"
-                            : "text-cyan-400"
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-cyan-600 dark:text-cyan-400"
                       }`}
                     >
                       {pace.paceStatus === "ahead"
@@ -683,31 +684,31 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                           ? `+${(pace.actualUsedPercent - pace.idealUsedPercent).toFixed(1)}% above pace`
                           : "On pace with schedule"}
                     </div>
-                    <div className="text-xs text-zinc-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                       Ideal budget: {pace.idealUsedPercent.toFixed(1)}% · Actual: {pace.actualUsedPercent}%
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="text-base font-bold text-zinc-300 mt-0.5">
+                    <div className="text-base font-bold text-slate-700 dark:text-zinc-300 mt-0.5">
                       {latestEvent?.resetAt ? "Calculating pace..." : "No reset schedule"}
                     </div>
-                    <div className="text-xs text-zinc-400 mt-0.5">Window has no fixed deadline</div>
+                    <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Window has no fixed deadline</div>
                   </>
                 )}
               </div>
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <TrendingUp className="w-4 h-4" />
               </div>
             </CardContent>
           </Card>
 
           {/* 3. Projected exhaustion */}
-          <Card className="bg-[#111113] border-zinc-800">
+          <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-zinc-400">Projected Exhaustion</div>
-                <div className="text-base font-bold text-zinc-100 mt-0.5">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Projected Exhaustion</div>
+                <div className="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
                   {currentForecast?.exhaustedAt
                     ? new Date(currentForecast.exhaustedAt).toLocaleDateString(undefined, {
                         month: "short",
@@ -719,40 +720,40 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                       ? "Accumulating samples"
                       : "Safe through reset"}
                 </div>
-                <div className="text-xs text-zinc-400 mt-0.5">
+                <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                   {currentForecast?.exhaustedAt
                     ? `Expected to hit 100% before reset`
                     : currentForecast?.reasons?.[0] ?? "Usage slope is within quota limit"}
                 </div>
               </div>
-              <div className="p-2.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+              <div className="p-2.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
                 <Clock className="w-4 h-4" />
               </div>
             </CardContent>
           </Card>
 
           {/* 4. Forecast confidence */}
-          <Card className="bg-[#111113] border-zinc-800">
+          <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-zinc-400">Forecast Confidence</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Forecast Confidence</div>
                 <div className="mt-1">
                   <Badge
                     variant="outline"
                     className={`font-bold ${
                       currentForecast?.quality === "high"
-                        ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
+                        ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/40 bg-emerald-500/10"
                         : currentForecast?.quality === "medium"
-                          ? "text-cyan-400 border-cyan-500/40 bg-cyan-500/10"
+                          ? "text-cyan-600 dark:text-cyan-400 border-cyan-500/40 bg-cyan-500/10"
                           : currentForecast?.quality === "low"
-                            ? "text-amber-400 border-amber-500/40 bg-amber-500/10"
-                            : "text-zinc-400 border-zinc-700 bg-zinc-800/40"
+                            ? "text-amber-600 dark:text-amber-400 border-amber-500/40 bg-amber-500/10"
+                            : "text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800/40"
                     }`}
                   >
                     {(currentForecast?.quality ?? "INSUFFICIENT").toUpperCase()}
                   </Badge>
                 </div>
-                <div className="text-xs text-zinc-400 mt-1">
+                <div className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
                   {currentForecast?.reasons?.join(" · ") || "Requires continuous samples over time"}
                 </div>
               </div>
@@ -760,14 +761,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           </Card>
 
           {/* 5. Samples */}
-          <Card className="bg-[#111113] border-zinc-800">
+          <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-zinc-400">Telemetry Samples</div>
-                <div className="text-base font-bold text-zinc-100 mt-0.5">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Telemetry Samples</div>
+                <div className="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
                   {currentEvents.length} recorded
                 </div>
-                <div className="text-xs text-zinc-400 mt-0.5">
+                <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                   {earliestEvent && latestEvent
                     ? `Span: ${(
                         (new Date(latestEvent.observedAt).getTime() -
@@ -777,7 +778,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                     : "Automatic periodic collection active"}
                 </div>
               </div>
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <Layers className="w-4 h-4" />
               </div>
             </CardContent>
@@ -793,18 +794,18 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       />
 
       {/* Raw Snapshot Records Table & Inspector */}
-      <Card className="bg-[#111113] border-zinc-800">
+      <Card>
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sm font-semibold text-zinc-100">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
               Raw Snapshot Logs & Inspector
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-400">
+            <CardDescription className="text-xs text-slate-500 dark:text-zinc-400">
               Inspect immutable JSONL telemetry events, timestamps, and normalized field provenance.
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-zinc-400">{events.length} total events in journal</span>
+            <span className="text-xs text-slate-500 dark:text-zinc-400">{events.length} total events in journal</span>
           </div>
         </CardHeader>
 
@@ -812,7 +813,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-zinc-800 text-zinc-500 font-medium">
+                <tr className="border-b border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-500 font-medium">
                   <th className="py-2.5">Recorded At (UTC)</th>
                   <th className="py-2.5">Provider</th>
                   <th className="py-2.5">Window</th>
@@ -821,10 +822,10 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                   <th className="py-2.5 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/60 text-zinc-300">
+              <tbody className="divide-y divide-slate-200/60 dark:divide-zinc-800/60 text-slate-700 dark:text-zinc-300">
                 {events.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-zinc-500">
+                    <td colSpan={6} className="py-6 text-center text-slate-400 dark:text-zinc-500">
                       No raw snapshot logs recorded yet. Telemetry daemon runs every 15 minutes.
                     </td>
                   </tr>
@@ -833,17 +834,17 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                     .reverse()
                     .slice(0, 10)
                     .map((event) => (
-                      <tr key={event.eventId} className="hover:bg-zinc-900/40 transition-colors">
-                        <td className="py-2.5 font-mono text-zinc-400">
+                      <tr key={event.eventId} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors">
+                        <td className="py-2.5 font-mono text-slate-500 dark:text-zinc-400">
                           {new Date(event.recordedAt).toLocaleString()}
                         </td>
-                        <td className="py-2.5 font-medium text-zinc-200 capitalize">
+                        <td className="py-2.5 font-medium text-slate-900 dark:text-zinc-200 capitalize">
                           {event.provider}
                         </td>
-                        <td className="py-2.5 text-zinc-400">
+                        <td className="py-2.5 text-slate-500 dark:text-zinc-400">
                           {"windowId" in event ? event.windowId : "-"}
                         </td>
-                        <td className="py-2.5 text-zinc-200 font-medium">
+                        <td className="py-2.5 text-slate-900 dark:text-zinc-200 font-medium">
                           {"usedPercent" in event && event.usedPercent !== null
                             ? `${event.usedPercent}%`
                             : "-"}
@@ -853,8 +854,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                             variant={event.kind === "quota_observed" ? "default" : "outline"}
                             className={`text-[10px] ${
                               event.kind === "quota_observed"
-                                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                                : "text-zinc-400"
+                                ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                                : "text-slate-600 dark:text-zinc-400"
                             }`}
                           >
                             {event.kind}
@@ -863,7 +864,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                         <td className="py-2.5 text-right">
                           <button
                             type="button"
-                            className="px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[11px] font-medium transition-colors inline-flex items-center space-x-1"
+                            className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-[11px] font-medium transition-colors inline-flex items-center space-x-1 cursor-pointer"
                             onClick={() => setInspectingSnapshot(event)}
                           >
                             <FileCode className="w-3 h-3" />
@@ -880,27 +881,27 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       </Card>
 
       {/* Bottom Alert Banner */}
-      <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-amber-950/30 border border-amber-800/40 text-amber-200 text-xs">
-        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+      <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs">
+        <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-amber-300">Continuous Local History:</span> All snapshots are strictly stored locally in append-only JSONL files at <code className="font-mono text-amber-300">~/Library/Application Support/kuota/history/</code>. No usage data or API keys are ever transmitted off this device.
+          <span className="font-semibold text-amber-700 dark:text-amber-300">Continuous Local History:</span> All snapshots are strictly stored locally in append-only JSONL files at <code className="font-mono text-amber-700 dark:text-amber-300">~/Library/Application Support/kuota/history/</code>. No usage data or API keys are ever transmitted off this device.
         </div>
       </div>
 
       {/* Snapshot Inspector Modal */}
       {inspectingSnapshot && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#111113] border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="bg-white dark:bg-[#111113] border border-slate-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-slate-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-zinc-800">
               <div className="flex items-center space-x-2">
-                <FileCode className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-sm font-semibold text-zinc-100">
+                <FileCode className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                   Snapshot Envelope Inspector · {inspectingSnapshot.eventId.slice(0, 12)}…
                 </h3>
               </div>
               <button
                 type="button"
-                className="p-1 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
                 onClick={() => setInspectingSnapshot(null)}
               >
                 <X className="w-4 h-4" />
@@ -913,19 +914,19 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 language="json"
               />
 
-              <div className="rounded-xl bg-zinc-900/60 border border-zinc-800/80 p-3 space-y-2 text-zinc-400">
-                <div className="font-semibold text-zinc-200">Field Provenance Guarantee</div>
-                <p className="text-[11px] leading-normal">
+              <div className="rounded-xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 p-3 space-y-2 text-slate-600 dark:text-zinc-400">
+                <div className="font-semibold text-slate-900 dark:text-zinc-200">Field Provenance Guarantee</div>
+                <p className="text-[11px] leading-normal text-slate-500 dark:text-zinc-400">
                   Snapshot timestamps reflect the true vendor fetch time. No API tokens,
                   keys, passwords, or session cookies are recorded in this immutable envelope.
                 </p>
               </div>
             </div>
 
-            <div className="p-3 border-t border-zinc-800 flex justify-end">
+            <div className="p-3 border-t border-slate-200 dark:border-zinc-800 flex justify-end">
               <button
                 type="button"
-                className="px-4 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 transition-colors"
+                className="px-4 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-medium text-slate-800 dark:text-zinc-200 transition-colors cursor-pointer"
                 onClick={() => setInspectingSnapshot(null)}
               >
                 Close

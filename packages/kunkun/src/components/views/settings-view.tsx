@@ -331,10 +331,10 @@ export function SettingsView() {
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex flex-col space-y-1">
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-zinc-100">
           Settings &amp; Configuration
         </h2>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-slate-500 dark:text-zinc-400">
           OS Keychain credentials, appearance themes, local scheduler parameters, and retention policies.
         </p>
       </div>
@@ -343,61 +343,61 @@ export function SettingsView() {
         {/* Appearance & Brand Identity Card */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
-              <Palette className="w-4 h-4 text-emerald-400" />
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2 text-slate-900 dark:text-zinc-100">
+              <Palette className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               <span>Appearance &amp; Brand Theme</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
               Toggle between Dark, Light, and System appearances with adaptive vector mark rendering
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-zinc-200">{t("theme.appearance")}</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">{t("theme.appearance")}</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Select color theme for web dashboard, desktop chrome, and vector icons
                 </div>
               </div>
               <ThemeSegmentedSelector />
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-zinc-200">{t("lang.language")}</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">{t("lang.language")}</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Switch between English and 简体中文 interface translations
                 </div>
               </div>
               <LanguageSegmentedSelector />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-zinc-950/40 border border-zinc-800/80">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl bg-slate-100/60 dark:bg-zinc-950/40 border border-slate-200 dark:border-zinc-800/80">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-3">
                   <div className="flex flex-col items-center space-y-1">
-                    <div className="p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/60 flex items-center justify-center">
+                    <div className="p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 flex items-center justify-center shadow-2xs">
                       <KuotaLogo size={32} withBackground={false} theme={resolvedTheme} />
                     </div>
-                    <span className="text-[10px] text-zinc-500">Unboxed Glyph</span>
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">Unboxed Glyph</span>
                   </div>
 
                   <div className="flex flex-col items-center space-y-1">
-                    <div className="p-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/60 flex items-center justify-center">
+                    <div className="p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 flex items-center justify-center shadow-2xs">
                       <KuotaLogo size={32} withBackground={true} theme={resolvedTheme} />
                     </div>
-                    <span className="text-[10px] text-zinc-500">Squircle Icon</span>
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">Squircle Icon</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col space-y-0.5">
-                  <div className="font-medium text-xs text-zinc-200">
+                  <div className="font-medium text-xs text-slate-800 dark:text-zinc-200">
                     Kuota Vector System A ({resolvedTheme} mode)
                   </div>
-                  <div className="text-[11px] text-zinc-400">
-                    Mint arc (<code className="text-[10px] text-emerald-400">#36D7A2</code>),{" "}
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    Mint arc (<code className="text-[10px] text-emerald-600 dark:text-emerald-400">#36D7A2</code>),{" "}
                     {resolvedTheme === "dark" ? "ivory" : "graphite"} glyph (
-                    <code className="text-[10px] text-zinc-300">
+                    <code className="text-[10px] text-slate-700 dark:text-zinc-300">
                       {resolvedTheme === "dark" ? "#F6F8F5" : "#1C2026"}
                     </code>
                     ), deterministic SVG.
@@ -405,7 +405,7 @@ export function SettingsView() {
                 </div>
               </div>
 
-              <Badge variant="outline" className="text-[10px] self-start sm:self-center">
+              <Badge variant="outline" className="text-[10px] self-start sm:self-center text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">
                 SVG Master
               </Badge>
             </div>
@@ -518,10 +518,10 @@ export function SettingsView() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div className="space-y-0.5 pr-4">
-                <div className="font-medium text-zinc-200">Show Menu Bar Icon</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">Show Menu Bar Icon</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Display Kuota in the macOS menu bar with live quota stats. Click to toggle HUD popover.
                 </div>
               </div>
@@ -529,7 +529,7 @@ export function SettingsView() {
                 type="button"
                 onClick={() => handleToggleMenuBar(!showMenuBar)}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  showMenuBar ? "bg-emerald-500" : "bg-zinc-700"
+                  showMenuBar ? "bg-emerald-500" : "bg-slate-300 dark:bg-zinc-700"
                 }`}
               >
                 <span
@@ -540,23 +540,23 @@ export function SettingsView() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div className="space-y-0.5">
-                <div className="font-medium text-zinc-200">Auto-Dismiss on Blur (Focus Loss)</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">Auto-Dismiss on Blur (Focus Loss)</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Like native system monitors (Stats, iStat Menus), the popover closes immediately when clicking outside.
                 </div>
               </div>
-              <Badge variant="outline" className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+              <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                 Active
               </Badge>
             </div>
 
             {/* Menu Bar Status Display Mode */}
-            <div className="py-2 border-b border-zinc-800 space-y-2">
+            <div className="py-2 border-b border-slate-200 dark:border-zinc-800 space-y-2">
               <div className="space-y-0.5">
-                <div className="font-medium text-zinc-200">Status Bar Display Format</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">Status Bar Display Format</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Choose what telemetry appears directly next to the menu bar icon in the macOS status bar
                 </div>
               </div>
@@ -572,15 +572,15 @@ export function SettingsView() {
                     key={mode.id}
                     type="button"
                     onClick={() => handleSelectMenuBarMode(mode.id)}
-                    className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                    className={`flex flex-col items-start p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
                       menuBarMode === mode.id
-                        ? "bg-emerald-500/10 border-emerald-500/50 text-white"
-                        : "bg-zinc-900/60 border-zinc-800 hover:border-zinc-700 text-zinc-400"
+                        ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-800 dark:text-white"
+                        : "bg-slate-50 dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 text-slate-600 dark:text-zinc-400"
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="font-semibold text-xs text-zinc-200">{mode.label}</span>
-                      <span className="font-mono text-[10px] text-emerald-400">{mode.preview}</span>
+                      <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200">{mode.label}</span>
+                      <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">{mode.preview}</span>
                     </div>
                   </button>
                 ))}
@@ -591,11 +591,11 @@ export function SettingsView() {
             <div className="py-2 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5 pr-4">
-                  <div className="font-medium text-zinc-200 flex items-center space-x-1.5">
-                    <Bell className="w-3.5 h-3.5 text-amber-400" />
+                  <div className="font-medium text-slate-800 dark:text-zinc-200 flex items-center space-x-1.5">
+                    <Bell className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                     <span>Low Quota Sound Alerts</span>
                   </div>
-                  <div className="text-[11px] text-zinc-400">
+                  <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                     Send native macOS banner notifications with sound when remaining quota drops below threshold or resets.
                   </div>
                 </div>
@@ -603,7 +603,7 @@ export function SettingsView() {
                   type="button"
                   onClick={() => handleToggleNotifications(!enableNotifications)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    enableNotifications ? "bg-emerald-500" : "bg-zinc-700"
+                    enableNotifications ? "bg-emerald-500" : "bg-slate-300 dark:bg-zinc-700"
                   }`}
                 >
                   <span
@@ -616,16 +616,16 @@ export function SettingsView() {
 
               {enableNotifications && (
                 <div className="flex items-center space-x-2 pt-1 pl-1">
-                  <span className="text-[11px] text-zinc-400">Warning Threshold:</span>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">Warning Threshold:</span>
                   {[10, 15, 20, 25].map((thresh) => (
                     <button
                       key={thresh}
                       type="button"
                       onClick={() => handleChangeThreshold(thresh)}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-colors ${
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-colors cursor-pointer ${
                         notificationThreshold === thresh
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                          : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                          ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40"
+                          : "bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                       }`}
                     >
                       &le; {thresh}%
@@ -676,24 +676,24 @@ export function SettingsView() {
                 return (
                   <div
                     key={p.id}
-                    className="p-3.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 hover:border-zinc-700/80 transition-all space-y-2.5"
+                    className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700/80 transition-all space-y-2.5"
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm shrink-0">
+                        <div className="p-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs shrink-0">
                           <ProviderIcon provider={p.id} size={16} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center space-x-1.5">
-                            <span className="font-semibold text-zinc-100 truncate">{p.name}</span>
+                            <span className="font-semibold text-slate-900 dark:text-zinc-100 truncate">{p.name}</span>
                             {isSaved && (
-                              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2 shrink-0">
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2 shrink-0">
                                 Protected
                               </span>
                             )}
                           </div>
-                          <span className="font-mono text-[10px] text-zinc-500">{envName}</span>
+                          <span className="font-mono text-[10px] text-slate-500 dark:text-zinc-500">{envName}</span>
                         </div>
                       </div>
 
@@ -701,24 +701,24 @@ export function SettingsView() {
                       <button
                         type="button"
                         onClick={() => toggleGuide(p.id)}
-                        className="flex items-center space-x-1 text-[11px] text-zinc-400 hover:text-zinc-200 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 transition-colors"
+                        className="flex items-center space-x-1 text-[11px] text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-zinc-200 px-2 py-0.5 rounded bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 transition-colors cursor-pointer"
                       >
-                        <HelpCircle className="w-3 h-3 text-indigo-400" />
+                        <HelpCircle className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />
                         <span>Where to get</span>
                       </button>
                     </div>
 
                     {/* Step-by-Step Guide Box (Cherry Studio style) */}
                     {isGuideOpen && (
-                      <div className="p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-900/40 text-[11px] space-y-2 animate-in fade-in duration-200">
-                        <div className="text-zinc-300 leading-relaxed font-normal">
+                      <div className="p-2.5 rounded-lg bg-indigo-500/10 dark:bg-indigo-950/20 border border-indigo-500/20 dark:border-indigo-900/40 text-[11px] space-y-2 animate-in fade-in duration-200">
+                        <div className="text-slate-700 dark:text-zinc-300 leading-relaxed font-normal">
                           {p.howToGet || `Visit ${p.name} developer portal to create an API key.`}
                         </div>
                         {p.consoleUrl && (
                           <button
                             type="button"
                             onClick={() => openConsoleUrl(p.consoleUrl)}
-                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/30 font-medium transition-colors text-[10px]"
+                            className="inline-flex items-center space-x-1 px-2.5 py-1 rounded bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-700 dark:text-indigo-200 border border-indigo-500/30 font-medium transition-colors text-[10px] cursor-pointer"
                           >
                             <span>Open Developer Console</span>
                             <ExternalLink className="w-2.5 h-2.5 ml-1" />
@@ -736,13 +736,13 @@ export function SettingsView() {
                         onChange={(e) =>
                           setKeyValues((prev) => ({ ...prev, [p.id]: e.target.value }))
                         }
-                        className="w-full pl-2.5 pr-16 py-1.5 text-xs bg-zinc-900/90 border border-zinc-800 rounded-lg text-zinc-100 font-mono focus:outline-none focus:border-zinc-600 transition-colors"
+                        className="w-full pl-2.5 pr-16 py-1.5 text-xs bg-white dark:bg-zinc-900/90 border border-slate-300 dark:border-zinc-800 rounded-lg text-slate-900 dark:text-zinc-100 font-mono focus:outline-none focus:border-slate-500 dark:focus:border-zinc-600 transition-colors"
                       />
                       <div className="absolute right-1.5 flex items-center space-x-1">
                         <button
                           type="button"
                           onClick={() => toggleShowKey(p.id)}
-                          className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+                          className="p-1 text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors cursor-pointer"
                         >
                           {isShown ? (
                             <EyeOff className="w-3.5 h-3.5" />
@@ -755,7 +755,7 @@ export function SettingsView() {
 
                     {/* Action buttons */}
                     <div className="flex items-center justify-between text-[11px] pt-0.5">
-                      <span className="text-[10px] text-zinc-500 capitalize">
+                      <span className="text-[10px] text-slate-500 dark:text-zinc-500 capitalize">
                         {p.billingModel === "subscription" ? "Quota Subscription" : "Prepaid Wallet"}
                       </span>
 
@@ -764,7 +764,7 @@ export function SettingsView() {
                           <button
                             type="button"
                             onClick={() => handleDeleteKey(p.id)}
-                            className="flex items-center space-x-1 px-2 py-1 rounded text-red-400 hover:bg-red-500/10 border border-red-500/20 text-[10px] transition-colors"
+                            className="flex items-center space-x-1 px-2 py-1 rounded text-red-600 dark:text-red-400 hover:bg-red-500/10 border border-red-500/20 text-[10px] transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3 h-3" />
                             <span>Remove</span>
@@ -773,7 +773,7 @@ export function SettingsView() {
                         <button
                           type="button"
                           onClick={() => handleSaveKey(p.id)}
-                          className="flex items-center space-x-1 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 text-[10px] font-medium transition-colors"
+                          className="flex items-center space-x-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 border border-slate-300 dark:border-zinc-700 text-[10px] font-medium transition-colors cursor-pointer"
                         >
                           <Save className="w-3 h-3 mr-0.5" />
                           <span>Save Key</span>
@@ -786,11 +786,11 @@ export function SettingsView() {
             </div>
 
             {/* Security Guarantee banner */}
-            <div className="flex items-center space-x-2.5 text-[11px] text-zinc-400 bg-emerald-950/20 p-3 rounded-xl border border-emerald-900/40 mt-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex items-center space-x-2.5 text-[11px] text-slate-600 dark:text-zinc-400 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 mt-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>
-                <strong>Zero Plaintext Guarantee:</strong> Entered API keys are stored via{" "}
-                <code className="text-emerald-300 font-mono">tauri-plugin-keyring</code> in your native OS
+                <strong className="text-slate-800 dark:text-zinc-200">Zero Plaintext Guarantee:</strong> Entered API keys are stored via{" "}
+                <code className="text-emerald-700 dark:text-emerald-300 font-mono">tauri-plugin-keyring</code> in your native OS
                 Keychain (Apple Keychain on macOS, Windows Credential Manager on Windows). They are never saved
                 in plaintext files or synced to the cloud.
               </span>
@@ -801,46 +801,46 @@ export function SettingsView() {
         {/* Sampling Cadence Card */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
-              <Clock className="w-4 h-4 text-emerald-400" />
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2 text-slate-900 dark:text-zinc-100">
+              <Clock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               <span>Sampling Cadence</span>
             </CardTitle>
-            <CardDescription>Frequency of automated background quota checks</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">Frequency of automated background quota checks</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-zinc-200">Adaptive Sampling</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">Adaptive Sampling</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   15 min while active coding, 60 min background
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
               >
                 Active
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-zinc-200">Sleeping Device Mode</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">Sleeping Device Mode</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Skip checks on lid close; no catch-up synthetic events
                 </div>
               </div>
-              <Badge variant="outline">Enabled</Badge>
+              <Badge variant="outline" className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">Enabled</Badge>
             </div>
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-zinc-200">429 Rate Limit Cooldown</div>
-                <div className="text-[11px] text-zinc-400">
+                <div className="font-medium text-slate-800 dark:text-zinc-200">429 Rate Limit Cooldown</div>
+                <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Enforce strict 15-minute wait before retry
                 </div>
               </div>
-              <Badge variant="outline">Enforced</Badge>
+              <Badge variant="outline" className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">Enforced</Badge>
             </div>
           </CardContent>
         </Card>
@@ -848,24 +848,24 @@ export function SettingsView() {
         {/* Local Storage & Retention Card */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center space-x-2">
-              <HardDrive className="w-4 h-4 text-sky-400" />
+            <CardTitle className="text-sm font-semibold flex items-center space-x-2 text-slate-900 dark:text-zinc-100">
+              <HardDrive className="w-4 h-4 text-sky-500 dark:text-sky-400" />
               <span>Local Storage &amp; Retention</span>
             </CardTitle>
-            <CardDescription>Disk space policy for historical JSONL events</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">Disk space policy for historical JSONL events</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-              <span className="text-zinc-300">Retention Horizon</span>
-              <span className="font-medium text-zinc-100">400 days (local JSONL)</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
+              <span className="text-slate-600 dark:text-zinc-300">Retention Horizon</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">400 days (local JSONL)</span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-              <span className="text-zinc-300">Partition Strategy</span>
-              <span className="font-medium text-zinc-100">UTC Day (events-YYYY-MM-DD.jsonl)</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
+              <span className="text-slate-600 dark:text-zinc-300">Partition Strategy</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">UTC Day (events-YYYY-MM-DD.jsonl)</span>
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-zinc-300">Max Partition File Size</span>
-              <span className="font-medium text-zinc-100">16 MiB with auto-rotation</span>
+              <span className="text-slate-600 dark:text-zinc-300">Max Partition File Size</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">16 MiB with auto-rotation</span>
             </div>
           </CardContent>
         </Card>

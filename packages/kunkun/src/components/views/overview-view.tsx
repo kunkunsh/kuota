@@ -283,32 +283,32 @@ export function OverviewView({
   return (
     <div className="flex flex-col space-y-6">
       {/* (0) Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-bold tracking-tight text-zinc-100">KUOTA</h2>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">KUOTA</h2>
             <Badge
               variant="outline"
-              className="text-[11px] text-zinc-400 bg-zinc-900 border-zinc-700"
+              className="text-[11px] text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border-slate-300 dark:border-zinc-700"
             >
               Multi-Provider Telemetry
             </Badge>
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Unified subscription quota pacing, prepaid wallet balances, and limit forecasting.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Filter Pills */}
-          <div className="flex rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 text-xs">
+          <div className="flex rounded-lg bg-slate-200/60 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 p-0.5 text-xs">
             <button
               type="button"
               className={cn(
-                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                "px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer",
                 filter === "all"
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200",
               )}
               onClick={() => setFilter("all")}
             >
@@ -317,10 +317,10 @@ export function OverviewView({
             <button
               type="button"
               className={cn(
-                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                "px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer",
                 filter === "subscription"
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200",
               )}
               onClick={() => setFilter("subscription")}
             >
@@ -329,10 +329,10 @@ export function OverviewView({
             <button
               type="button"
               className={cn(
-                "px-2.5 py-1 rounded-md font-medium transition-colors",
+                "px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer",
                 filter === "balance"
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-xs font-semibold"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200",
               )}
               onClick={() => setFilter("balance")}
             >
@@ -344,14 +344,14 @@ export function OverviewView({
           <button
             type="button"
             onClick={() => setShowCustomizeModal(true)}
-            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs transition-colors"
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 text-xs transition-colors cursor-pointer shadow-2xs"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-400" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
             <span>Customize</span>
           </button>
 
-          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-medium">{trackedCount} Shown</span>
           </div>
         </div>
@@ -359,61 +359,61 @@ export function OverviewView({
 
       {/* (1) 4 Top KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <Card className="bg-[#111113] border-zinc-800/80">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">At-risk limits</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">At-risk limits</div>
               <div
                 className={cn(
                   "text-2xl font-bold mt-1",
-                  atRiskCount > 0 ? "text-amber-400" : "text-zinc-100",
+                  atRiskCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-slate-900 dark:text-zinc-100",
                 )}
               >
                 {atRiskCount}
               </div>
             </div>
-            <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20">
               <AlertTriangle className="w-4 h-4" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#111113] border-zinc-800/80">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Active providers</div>
-              <div className="text-2xl font-bold text-zinc-100 mt-1">{trackedCount}</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Active providers</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{trackedCount}</div>
             </div>
-            <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 border border-blue-500/20">
               <Layers className="w-4 h-4" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#111113] border-zinc-800/80">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Quota &amp; Wallets</div>
-              <div className="text-2xl font-bold text-zinc-100 mt-1">
-                {totalWindows} <span className="text-xs font-normal text-zinc-400">win</span> /{" "}
-                {totalWallets} <span className="text-xs font-normal text-zinc-400">wallets</span>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Quota &amp; Wallets</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">
+                {totalWindows} <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">win</span> /{" "}
+                {totalWallets} <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">wallets</span>
               </div>
             </div>
-            <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 border border-purple-500/20">
               <Layers className="w-4 h-4" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#111113] border-zinc-800/80">
+        <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-zinc-400">Nearest reset</div>
-              <div className="text-2xl font-bold text-zinc-100 mt-1">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Nearest reset</div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">
                 {formatRemainingDuration(nearestResetMs)}
               </div>
             </div>
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
               <Clock className="w-4 h-4" />
             </div>
           </CardContent>
@@ -445,51 +445,51 @@ export function OverviewView({
               return (
                 <Card
                   key={providerId}
-                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  className="hover:border-slate-400 dark:hover:border-zinc-700 transition-colors cursor-pointer group"
                   onClick={() => onSelectProvider?.(providerId)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs flex items-center justify-center shrink-0">
                           <ProviderIcon provider={providerId} size={18} />
                         </div>
-                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                        <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">
                           {meta.name}
                         </CardTitle>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                        className="text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                       >
                         Project API Key
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                    <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-1">
                       Inference &amp; Chat Ready · Organization Scoped
                     </CardDescription>
                   </CardHeader>
 
                   <CardContent className="space-y-3.5 pt-1">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-2xl font-bold text-zinc-100">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-zinc-100">
                         Active Key
                       </span>
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-2 py-0.5 text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                        className="text-[10px] px-2 py-0.5 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
                       >
                         Connected
                       </Badge>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1.5 text-zinc-400">
+                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-slate-600 dark:text-zinc-400">
                       <div className="flex items-center justify-between">
                         <span>Key Type:</span>
-                        <span className="font-mono text-zinc-200">sk-proj-... (Project Key)</span>
+                        <span className="font-mono text-slate-900 dark:text-zinc-200">sk-proj-... (Project Key)</span>
                       </div>
-                      <div className="text-[10.5px] text-zinc-400 leading-relaxed border-t border-zinc-800/60 pt-1.5">
-                        OpenAI restricts Project Keys from reading Billing by default. To display live credit and spend, grant <code className="text-zinc-200">api.usage.read</code> scope in OpenAI Console or use an Admin Key (<code className="text-zinc-200">sk-admin-...</code>).
+                      <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed border-t border-slate-200 dark:border-zinc-800/60 pt-1.5">
+                        OpenAI restricts Project Keys from reading Billing by default. To display live credit and spend, grant <code className="text-slate-800 dark:text-zinc-200 font-semibold">api.usage.read</code> scope in OpenAI Console or use an Admin Key (<code className="text-slate-800 dark:text-zinc-200 font-semibold">sk-admin-...</code>).
                       </div>
                     </div>
                   </CardContent>
@@ -519,27 +519,27 @@ export function OverviewView({
               return (
                 <Card
                   key={providerId}
-                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  className="hover:border-slate-400 dark:hover:border-zinc-700 transition-colors cursor-pointer group"
                   onClick={() => onSelectProvider?.(providerId)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs flex items-center justify-center shrink-0">
                           <ProviderIcon provider={providerId} size={18} />
                         </div>
-                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                        <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">
                           {meta.name}
                         </CardTitle>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                        className="text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                       >
                         Prepaid Wallet
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                    <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-1">
                       {meta.category === "llm_api"
                         ? "LLM API Key"
                         : meta.category === "aggregator"
@@ -554,38 +554,38 @@ export function OverviewView({
                       <div className="flex items-baseline space-x-1.5 flex-wrap">
                         {primaryBalance?.usage != null && primaryBalance?.totalBalance === 0 ? (
                           <>
-                            <span className="text-3xl font-extrabold text-zinc-100 font-mono">
+                            <span className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 font-mono">
                               ${primaryBalance.usage.toFixed(2)}
                             </span>{" "}
-                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase">
                               USD
                             </span>
-                            <span className="text-[11px] text-zinc-500 ml-1">
+                            <span className="text-[11px] text-slate-500 dark:text-zinc-500 ml-1">
                               (Nov Spend)
                             </span>
                           </>
                         ) : (
                           <>
-                            <span className="text-3xl font-extrabold text-zinc-100 font-mono">
+                            <span className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100 font-mono">
                               {formatCurrencyAmount(
                                 primaryBalance?.totalBalance,
                                 primaryBalance?.currency,
                               )}
                             </span>{" "}
-                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase">
                               {primaryBalance?.currency ?? "USD"}
                             </span>
                           </>
                         )}
                         {secondaryBalance && (
-                          <div className="flex items-baseline space-x-1 ml-1 text-zinc-300">
-                            <span className="text-zinc-500 font-medium text-sm">+</span>
+                          <div className="flex items-baseline space-x-1 ml-1 text-slate-700 dark:text-zinc-300">
+                            <span className="text-slate-400 dark:text-zinc-500 font-medium text-sm">+</span>
                             <span
                               className={cn(
                                 "text-xl font-bold font-mono",
                                 secondaryBalance.totalBalance < 0
-                                  ? "text-zinc-400"
-                                  : "text-zinc-200",
+                                  ? "text-slate-500 dark:text-zinc-400"
+                                  : "text-slate-900 dark:text-zinc-200",
                               )}
                             >
                               {formatCurrencyAmount(
@@ -593,7 +593,7 @@ export function OverviewView({
                                 secondaryBalance.currency,
                               )}
                             </span>
-                            <span className="text-xs font-semibold text-zinc-400 uppercase">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase">
                               {secondaryBalance.currency}
                             </span>
                           </div>
@@ -604,10 +604,10 @@ export function OverviewView({
                         className={cn(
                           "text-[10px] px-2 py-0.5",
                           primaryBalance?.usage != null && primaryBalance?.totalBalance === 0
-                            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                            ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
                             : isLow
-                              ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                              : "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+                              ? "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+                              : "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
                         )}
                       >
                         {primaryBalance?.usage != null && primaryBalance?.totalBalance === 0
@@ -619,18 +619,18 @@ export function OverviewView({
                     </div>
 
                     {/* Breakdown of each currency wallet */}
-                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-[11px] space-y-1.5">
+                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 text-[11px] space-y-1.5">
                       {sortedBalances.map((b) => (
-                        <div key={b.currency} className="flex items-center justify-between text-zinc-400">
-                          <span className="font-medium text-zinc-300">
+                        <div key={b.currency} className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                          <span className="font-medium text-slate-800 dark:text-zinc-300">
                             {b.currency === "USD" ? "USD Account:" : "CNY (人民币):"}
                           </span>
                           <div className="flex items-center space-x-2 font-mono">
-                            <span className={cn(b.totalBalance < 0 ? "text-amber-400" : "text-zinc-100 font-semibold")}>
+                            <span className={cn(b.totalBalance < 0 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-slate-900 dark:text-zinc-100 font-semibold")}>
                               {formatCurrencyAmount(b.totalBalance, b.currency)} {b.currency}
                             </span>
                             {b.toppedUpBalance !== undefined && (
-                              <span className="text-[10px] text-zinc-500">
+                              <span className="text-[10px] text-slate-500 dark:text-zinc-500">
                                 (Cash: {formatCurrencyAmount(b.toppedUpBalance, b.currency)})
                               </span>
                             )}
@@ -652,27 +652,27 @@ export function OverviewView({
               return (
                 <Card
                   key={providerId}
-                  className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                  className="hover:border-slate-400 dark:hover:border-zinc-700 transition-colors cursor-pointer group"
                   onClick={() => onSelectProvider?.(providerId)}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                        <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs flex items-center justify-center shrink-0">
                           <ProviderIcon provider={providerId} size={18} />
                         </div>
-                        <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                        <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">
                           {meta.name}
                         </CardTitle>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                        className="text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                       >
                         Hybrid Credit
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                    <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-1">
                       Balance:{" "}
                       {formatCurrencyAmount(primaryBalance?.totalBalance, primaryBalance?.currency)}{" "}
                       {primaryBalance?.currency ?? "USD"}
@@ -683,14 +683,14 @@ export function OverviewView({
                   <CardContent className="space-y-4 pt-1">
                     <div className="flex items-baseline justify-between">
                       <div>
-                        <span className="text-3xl font-extrabold text-zinc-100">
+                        <span className="text-3xl font-extrabold text-slate-900 dark:text-zinc-100">
                           {formatCurrencyAmount(
                             primaryBalance?.totalBalance,
                             primaryBalance?.currency,
                           )}
                         </span>
                       </div>
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-slate-500 dark:text-zinc-400">
                         {remaining.toFixed(0)}% quota left
                       </span>
                     </div>
@@ -728,27 +728,27 @@ export function OverviewView({
             return (
               <Card
                 key={providerId}
-                className="bg-[#111113] border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer group"
+                className="hover:border-slate-400 dark:hover:border-zinc-700 transition-colors cursor-pointer group"
                 onClick={() => onSelectProvider?.(providerId)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center space-x-2.5 min-w-0">
-                      <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shadow-sm flex items-center justify-center shrink-0">
+                      <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs flex items-center justify-center shrink-0">
                         <ProviderIcon provider={providerId} size={18} />
                       </div>
-                      <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+                      <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">
                         {meta.name}
                       </CardTitle>
                     </div>
                     <Badge
                       variant="secondary"
-                      className="text-[10px] font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
+                      className="text-[10px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700/60 whitespace-nowrap shrink-0 px-2 py-0.5"
                     >
                       {meta.defaultPlan}
                     </Badge>
                   </div>
-                  <CardDescription className="text-xs text-zinc-400 truncate mt-1">
+                  <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-1">
                     {primaryWindow ? formatWindowLabel(primaryWindow.windowId) : "Standard Quota"} · Resets in{" "}
                     {primaryReset
                       ? formatRemainingDuration(primaryReset.getTime() - now.getTime())
@@ -760,11 +760,11 @@ export function OverviewView({
                   {/* Row 1: Primary Quota Progress */}
                   <div>
                     <div className="flex items-baseline justify-between mb-1.5">
-                      <span className="text-2xl font-extrabold text-zinc-100">
+                      <span className="text-2xl font-extrabold text-slate-900 dark:text-zinc-100">
                         {primaryRemaining.toFixed(0)}%{" "}
-                        <span className="text-xs font-normal text-zinc-400">left</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">left</span>
                       </span>
-                      <span className="text-xs text-zinc-400">{primaryUsed.toFixed(0)}% used</span>
+                      <span className="text-xs text-slate-500 dark:text-zinc-400">{primaryUsed.toFixed(0)}% used</span>
                     </div>
 
                     <PacedProgress
@@ -789,17 +789,17 @@ export function OverviewView({
 
                   {/* Row 2: Secondary Quota Progress (e.g. Weekly quota or 5h Session) */}
                   {secondaryWindow && (
-                    <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 space-y-1.5">
+                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 space-y-1.5">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-zinc-300 font-medium">
+                        <span className="text-slate-800 dark:text-zinc-300 font-medium">
                           {formatWindowLabel(secondaryWindow.windowId)}
                         </span>
-                        <div className="flex items-center space-x-1.5 text-zinc-400 font-mono">
-                          <span className="font-semibold text-zinc-200">
+                        <div className="flex items-center space-x-1.5 text-slate-500 dark:text-zinc-400 font-mono">
+                          <span className="font-semibold text-slate-900 dark:text-zinc-200">
                             {secondaryRemaining.toFixed(0)}% left
                           </span>
                           {secondaryReset && (
-                            <span className="text-zinc-500 text-[10px]">
+                            <span className="text-slate-400 dark:text-zinc-500 text-[10px]">
                               ({formatRemainingDuration(secondaryReset.getTime() - now.getTime())})
                             </span>
                           )}
@@ -820,9 +820,9 @@ export function OverviewView({
 
                   {/* Row 3: Auxiliary badge if 3 windows exist */}
                   {thirdWindow && (
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-0.5">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-zinc-500 pt-0.5">
                       <span className="truncate">{formatWindowLabel(thirdWindow.windowId)}:</span>
-                      <span className="font-mono text-zinc-400">
+                      <span className="font-mono text-slate-600 dark:text-zinc-400">
                         {thirdWindow.remainingPercent !== null
                           ? `${thirdWindow.remainingPercent.toFixed(0)}% remaining`
                           : "active"}
@@ -839,19 +839,19 @@ export function OverviewView({
       {/* (3) Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
         {/* Monitored Windows Breakdown */}
-        <Card className="bg-[#111113] border-zinc-800 md:col-span-2 xl:col-span-1">
+        <Card className="md:col-span-2 xl:col-span-1">
           <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
             <div className="min-w-0">
-              <CardTitle className="text-sm font-semibold text-zinc-100 truncate">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100 truncate">
                 Active Quota Windows &amp; Wallets
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
+              <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                 All measured rate limits across local CLI, API &amp; OAuth probes.
               </CardDescription>
             </div>
             <Badge
               variant="outline"
-              className="text-[10px] text-emerald-400 border-emerald-500/30 bg-emerald-500/10 whitespace-nowrap shrink-0 px-2 py-0.5"
+              className="text-[10px] text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 whitespace-nowrap shrink-0 px-2 py-0.5"
             >
               {totalWindows + totalWallets} Active
             </Badge>
@@ -865,14 +865,14 @@ export function OverviewView({
                 return (
                   <div
                     key={s.provider}
-                    className="p-3 rounded-lg bg-zinc-900/60 border border-zinc-800/70 space-y-2"
+                    className="p-3 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/70 space-y-2"
                   >
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-zinc-200 capitalize flex items-center space-x-1.5">
+                      <span className="font-semibold text-slate-900 dark:text-zinc-200 capitalize flex items-center space-x-1.5">
                         <ProviderIcon provider={s.provider} size={14} />
                         <span>{meta.name}</span>
                       </span>
-                      <span className="text-[11px] text-zinc-400">
+                      <span className="text-[11px] text-slate-500 dark:text-zinc-400">
                         {hasBalance
                           ? `${formatCurrencyAmount(s.balance?.balances[0]?.totalBalance, s.balance?.balances[0]?.currency)} balance`
                           : `${s.windows.length} ${s.windows.length === 1 ? "window" : "windows"}`}
@@ -886,7 +886,7 @@ export function OverviewView({
                             key={w.windowId}
                             className="flex items-center justify-between text-[11px]"
                           >
-                            <span className="text-zinc-400 font-mono truncate max-w-[160px]">
+                            <span className="text-slate-600 dark:text-zinc-400 font-mono truncate max-w-[160px]">
                               {formatWindowLabel(w.windowId)}
                             </span>
                             <div className="flex items-center space-x-2 shrink-0">
@@ -894,8 +894,8 @@ export function OverviewView({
                                 className={cn(
                                   "font-medium",
                                   (w.remainingPercent ?? 0) <= 20
-                                    ? "text-amber-400"
-                                    : "text-zinc-200",
+                                    ? "text-amber-600 dark:text-amber-400"
+                                    : "text-slate-900 dark:text-zinc-200",
                                 )}
                               >
                                 {w.remainingPercent !== null
@@ -912,11 +912,11 @@ export function OverviewView({
               })}
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-zinc-400 border-t border-zinc-800/80 pt-2">
-              <span className="text-zinc-500">Telemetry: Local Process &amp; API Probes</span>
+            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 border-t border-slate-200 dark:border-zinc-800/80 pt-2">
+              <span className="text-slate-500 dark:text-zinc-500">Telemetry: Local Process &amp; API Probes</span>
               <button
                 type="button"
-                className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center space-x-1"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium inline-flex items-center space-x-1 cursor-pointer"
                 onClick={onViewHistory}
               >
                 <span>Full history</span>
@@ -927,33 +927,33 @@ export function OverviewView({
         </Card>
 
         {/* Real Upcoming Resets Table */}
-        <Card className="bg-[#111113] border-zinc-800 md:col-span-2 xl:col-span-2">
+        <Card className="md:col-span-2 xl:col-span-2">
           <CardHeader className="pb-3 flex flex-row items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-sm font-semibold text-zinc-100">
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                 Upcoming Cycle Resets
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400 truncate mt-0.5">
+              <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-0.5">
                 Dynamic reset schedule sorted chronologically across all verified windows.
               </CardDescription>
             </div>
             <Badge
               variant="outline"
-              className="text-[10px] text-zinc-400 border-zinc-700 bg-zinc-900 whitespace-nowrap shrink-0 px-2 py-0.5"
+              className="text-[10px] text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-900 whitespace-nowrap shrink-0 px-2 py-0.5"
             >
               {upcomingResets.length} Scheduled
             </Badge>
           </CardHeader>
           <CardContent>
             {upcomingResets.length === 0 ? (
-              <div className="py-8 text-center text-xs text-zinc-500">
+              <div className="py-8 text-center text-xs text-slate-500 dark:text-zinc-500">
                 No active rolling or weekly reset windows detected.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
-                    <tr className="border-b border-zinc-800 text-zinc-400 font-medium pb-2 text-[11px]">
+                    <tr className="border-b border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 font-medium pb-2 text-[11px]">
                       <th className="pb-2">Provider</th>
                       <th className="pb-2">Window Scope</th>
                       <th className="pb-2">Remaining</th>
@@ -961,7 +961,7 @@ export function OverviewView({
                       <th className="pb-2">Exact Timestamp</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800/50">
+                  <tbody className="divide-y divide-slate-200/60 dark:divide-zinc-800/50">
                     {upcomingResets.map((reset, idx) => {
                       const meta = getProviderMeta(reset.provider);
                       const isAtRisk =
@@ -970,13 +970,13 @@ export function OverviewView({
                       return (
                         <tr
                           key={`${reset.provider}-${reset.scope}-${idx}`}
-                          className="hover:bg-zinc-900/40 transition-colors"
+                          className="hover:bg-slate-100/60 dark:hover:bg-zinc-900/40 transition-colors"
                         >
-                          <td className="py-2.5 flex items-center space-x-2 font-medium text-zinc-200">
+                          <td className="py-2.5 flex items-center space-x-2 font-medium text-slate-900 dark:text-zinc-200">
                             <ProviderIcon provider={reset.provider} size={15} />
                             <span>{meta.name}</span>
                           </td>
-                          <td className="py-2.5 text-zinc-400 font-mono text-[11px]">
+                          <td className="py-2.5 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
                             {formatWindowLabel(reset.scope)}
                           </td>
                           <td className="py-2.5">
@@ -985,8 +985,8 @@ export function OverviewView({
                               className={cn(
                                 "text-[10px] px-2 py-0.5 font-mono",
                                 isAtRisk
-                                  ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                                  : "text-zinc-300 border-zinc-700 bg-zinc-900",
+                                  ? "text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/10"
+                                  : "text-slate-800 dark:text-zinc-300 border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-900",
                               )}
                             >
                               {reset.remainingPercent !== null
@@ -994,10 +994,10 @@ export function OverviewView({
                                 : "N/A"}
                             </Badge>
                           </td>
-                          <td className="py-2.5 text-zinc-300 font-medium font-mono text-[11px]">
+                          <td className="py-2.5 text-slate-900 dark:text-zinc-300 font-medium font-mono text-[11px]">
                             {formatRemainingDuration(reset.resetMs)}
                           </td>
-                          <td className="py-2.5 text-zinc-400 font-mono text-[11px]">
+                          <td className="py-2.5 text-slate-500 dark:text-zinc-400 font-mono text-[11px]">
                             {reset.resetDate ? formatResetDate(reset.resetDate) : "—"}
                           </td>
                         </tr>
@@ -1014,21 +1014,21 @@ export function OverviewView({
       {/* Customize Providers Modal */}
       {showCustomizeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#111113] border border-zinc-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <div className="bg-white dark:bg-[#111113] border border-slate-200 dark:border-zinc-800 rounded-xl max-w-lg w-full p-5 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 text-slate-900 dark:text-zinc-100">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-semibold text-zinc-100 flex items-center space-x-2">
-                  <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-base font-semibold text-slate-900 dark:text-zinc-100 flex items-center space-x-2">
+                  <SlidersHorizontal className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                   <span>Customize Visible Cards</span>
                 </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                   Choose which AI providers to display on your dashboard overview.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCustomizeModal(false)}
-                className="p-1 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1044,22 +1044,22 @@ export function OverviewView({
                 return (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700/80 transition-colors"
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700/80 transition-colors"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-1.5 rounded-md bg-zinc-950 border border-zinc-800">
+                      <div className="p-1.5 rounded-md bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-2xs">
                         <ProviderIcon provider={p.id} size={16} />
                       </div>
                       <div>
-                        <div className="text-xs font-medium text-zinc-200 flex items-center space-x-1.5">
+                        <div className="text-xs font-medium text-slate-900 dark:text-zinc-200 flex items-center space-x-1.5">
                           <span>{p.name}</span>
                           {isConfigured && (
-                            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2">
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2">
                               Active
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-zinc-500 capitalize">
+                        <div className="text-[10px] text-slate-500 dark:text-zinc-500 capitalize">
                           {p.category.replace("_", " ")} · {p.defaultPlan}
                         </div>
                       </div>
@@ -1070,7 +1070,7 @@ export function OverviewView({
                       onClick={() => handleToggleVisibility(p.id)}
                       className={cn(
                         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                        isVisible ? "bg-emerald-500" : "bg-zinc-700",
+                        isVisible ? "bg-emerald-500" : "bg-slate-300 dark:bg-zinc-700",
                       )}
                     >
                       <span
@@ -1085,14 +1085,14 @@ export function OverviewView({
               })}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
-              <span className="text-[11px] text-zinc-500">
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
+              <span className="text-[11px] text-slate-500 dark:text-zinc-500">
                 Preferences are persisted automatically to your config.
               </span>
               <button
                 type="button"
                 onClick={() => setShowCustomizeModal(false)}
-                className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 transition-colors"
+                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-medium text-slate-800 dark:text-zinc-200 transition-colors cursor-pointer"
               >
                 Done
               </button>

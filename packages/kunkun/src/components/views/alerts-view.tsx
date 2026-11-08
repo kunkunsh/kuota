@@ -33,33 +33,33 @@ export function AlertsView() {
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex flex-col space-y-1">
-        <h2 className="text-lg font-semibold tracking-tight text-zinc-100">
+        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-zinc-100">
           Alerts & Quota Automation
         </h2>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-slate-500 dark:text-zinc-400">
           Proactive notifications when consumption pace or rate limits require attention.
         </p>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold">Configured Alert Rules</CardTitle>
-          <CardDescription>Evaluated locally during periodic snapshot collection.</CardDescription>
+          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Configured Alert Rules</CardTitle>
+          <CardDescription className="text-slate-500 dark:text-zinc-400">Evaluated locally during periodic snapshot collection.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Target Window</TableHead>
-                <TableHead>Trigger Condition</TableHead>
-                <TableHead>Delivery Channel</TableHead>
-                <TableHead>State</TableHead>
+              <TableRow className="border-slate-200 dark:border-zinc-800">
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Target Window</TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Trigger Condition</TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Delivery Channel</TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">State</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="divide-y divide-slate-200/60 dark:divide-zinc-800/60">
               {rules.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-semibold text-zinc-200">
+                <TableRow key={r.id} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/30">
+                  <TableCell className="font-semibold text-slate-900 dark:text-zinc-200">
                     <div className="flex items-center space-x-2">
                       <ProviderIcon
                         provider={
@@ -74,8 +74,8 @@ export function AlertsView() {
                       <span>{r.target}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-zinc-300">{r.condition}</TableCell>
-                  <TableCell className="text-zinc-400">{r.channel}</TableCell>
+                  <TableCell className="text-slate-700 dark:text-zinc-300">{r.condition}</TableCell>
+                  <TableCell className="text-slate-500 dark:text-zinc-400">{r.channel}</TableCell>
                   <TableCell>
                     <Badge variant="success">{r.status}</Badge>
                   </TableCell>
