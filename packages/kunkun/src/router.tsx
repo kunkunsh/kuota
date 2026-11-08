@@ -39,7 +39,6 @@ import { AlertsView } from "./components/views/alerts-view.js";
 import { SettingsView } from "./components/views/settings-view.js";
 import { IslandView } from "./components/views/island-view.js";
 import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
-import { KuotaLogo } from "./components/ui/kuota-logo.js";
 import { Loader } from "./components/kokonutui/loader.js";
 import { ThemeToggleButton, useTheme } from "./lib/theme.js";
 import { LanguageToggleButton, useI18n } from "./lib/i18n.js";
@@ -136,33 +135,13 @@ function DashboardLayout() {
       {/* Sidebar Navigation */}
       <aside className="w-56 flex-shrink-0 border-r border-slate-200 dark:border-zinc-800 bg-slate-100/90 dark:bg-[#111113] flex flex-col justify-between select-none">
         <div className="flex flex-col">
-          {/* Top Logo / Drag Header */}
+          {/* Top Window Drag Header */}
           <div
             data-tauri-drag-region
             onMouseDown={handleStartDragging}
             onDoubleClick={handleToggleMaximize}
-            className={`h-11 border-b border-slate-200 dark:border-zinc-800/80 flex items-center space-x-2.5 px-3 select-none cursor-default ${
-              isDesktop ? "pl-[78px]" : ""
-            }`}
-          >
-            <KuotaLogo
-              size={20}
-              withBackground={false}
-              theme={resolvedTheme}
-              className="shrink-0 transition-transform duration-200 hover:scale-105"
-            />
-            <div className="flex flex-col" data-tauri-drag-region>
-              <span
-                data-tauri-drag-region
-                className="font-semibold text-xs tracking-tight text-slate-900 dark:text-zinc-100"
-              >
-                Kuota
-              </span>
-              <span data-tauri-drag-region className="text-[9px] text-slate-500 dark:text-zinc-500">
-                AI Quota Suite
-              </span>
-            </div>
-          </div>
+            className="h-11 border-b border-slate-200 dark:border-zinc-800/80 select-none cursor-default"
+          />
 
           <nav className="flex flex-col space-y-1 p-3">
             {navItems.map((item) => {

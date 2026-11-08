@@ -351,6 +351,53 @@ export function SettingsView() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* About Kuota Hero Card */}
+        <Card className="md:col-span-2 overflow-hidden border-slate-200 dark:border-zinc-800">
+          <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-gradient-to-r from-slate-100/90 via-white to-slate-50 dark:from-zinc-900/90 dark:via-[#111113] dark:to-zinc-950/60">
+            <div className="flex items-center space-x-4 min-w-0">
+              <div className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm shrink-0">
+                <KuotaLogo size={42} withBackground={true} theme={resolvedTheme} />
+              </div>
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+                    Kuota
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-mono border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                  >
+                    v{CURRENT_APP_VERSION}
+                  </Badge>
+                  <span className="text-[11px] text-slate-400 dark:text-zinc-600">·</span>
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                    AI Quota Suite
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 max-w-xl">
+                  Unified multi-provider quota telemetry, real-time rate pacing, token burn
+                  tracking, and native desktop HUD.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-zinc-400 shrink-0">
+              <Badge
+                variant="outline"
+                className="text-[10px] border-slate-300 dark:border-zinc-700 text-slate-600 dark:text-zinc-400"
+              >
+                Tauri 2 · Rust Core
+              </Badge>
+              <Badge
+                variant="outline"
+                className="text-[10px] border-slate-300 dark:border-zinc-700 text-slate-600 dark:text-zinc-400"
+              >
+                MIT License
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
         {/* Appearance & Brand Identity Card */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">

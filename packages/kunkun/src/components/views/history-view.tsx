@@ -1,9 +1,16 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card.js";
 import { Badge } from "../ui/badge.js";
-import { resolveIdealPace, type QuotaForecastV1, type QuotaHistoryEventV1 } from "@kuota/core";
+import {
+  resolveIdealPace,
+  getProviderMeta,
+  type QuotaForecastV1,
+  type QuotaHistoryEventV1,
+} from "@kuota/core";
 import { ActivityTerrain } from "../charts/activity-terrain.js";
 import { AnimatedCodeBlock } from "../ui/animated-code-block.js";
+import { DropdownSelect } from "../ui/dropdown-select.js";
+import { ProviderIcon } from "../ui/provider-icon.js";
 import { TrendingUp, Clock, Layers, AlertTriangle, FileCode, X, Activity } from "lucide-react";
 
 export interface HistoryViewProps {
@@ -19,6 +26,10 @@ const DEFAULT_PROVIDERS = [
   { id: "openrouter", name: "OpenRouter" },
   { id: "deepseek", name: "DeepSeek" },
   { id: "mimo", name: "Xiaomi MiMo" },
+  { id: "kimi", name: "Kimi Moonshot" },
+  { id: "glm", name: "Zhipu GLM" },
+  { id: "minimax", name: "MiniMax" },
+  { id: "grok", name: "xAI Grok" },
   { id: "openai", name: "OpenAI Platform" },
 ];
 
@@ -258,100 +269,60 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
         {/* Filter controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            {/* Provider Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Provider:</span>
-              <select
-                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
-                value={provider}
-                onChange={(e) => setProvider(e.target.value)}
-              >
-                {allProviderIds.map((id) => {
-                  const meta = DEFAULT_PROVIDERS.find((p) => p.id === id);
-                  return (
-                    <option
-                      key={id}
-                      value={id}
-                      className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                    >
-                      {meta ? meta.name : id}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+            {/* Provider Custom Dropdown */}
+            <DropdownSelect
+              labelPrefix="Provider:"
+              value={provider}
+              onChange={setProvider}
+              popoverWidth="min-w-[260px]"
+              options={allProviderIds.map((id) => {
+                const meta = getProviderMeta(id);
+                return {
+                  value: id,
+                  label: meta.name,
+                  sublabel: meta.category ? meta.category.replace("_", " ") : undefined,
+                  badge: meta.defaultPlan,
+                  icon: <ProviderIcon provider={id} size={15} />,
+                };
+              })}
+            />
 
-            {/* Window Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Window:</span>
-              <select
-                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
-                value={windowId}
-                onChange={(e) => setWindowId(e.target.value)}
-              >
-                {availableWindows.map((w) => (
-                  <option
-                    key={w}
-                    value={w}
-                    className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                  >
-                    {w}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Window Custom Dropdown */}
+            <DropdownSelect
+              labelPrefix="Window:"
+              value={windowId}
+              onChange={setWindowId}
+              popoverWidth="min-w-[170px]"
+              options={availableWindows.map((w) => ({
+                value: w,
+                label: w,
+              }))}
+            />
 
-            {/* Range Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Range:</span>
-              <select
-                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
-                value={range}
-                onChange={(e) => setRange(e.target.value)}
-              >
-                <option
-                  value="7d"
-                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                >
-                  Last 7 days
-                </option>
-                <option
-                  value="14d"
-                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                >
-                  Last 14 days
-                </option>
-                <option
-                  value="30d"
-                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                >
-                  Last 30 days
-                </option>
-              </select>
-            </div>
+            {/* Range Custom Dropdown */}
+            <DropdownSelect
+              labelPrefix="Range:"
+              value={range}
+              onChange={setRange}
+              popoverWidth="min-w-[160px]"
+              options={[
+                { value: "7d", label: "Last 7 days" },
+                { value: "14d", label: "Last 14 days" },
+                { value: "30d", label: "Last 30 days" },
+              ]}
+            />
 
-            {/* Mode Select */}
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 shadow-2xs">
-              <span className="text-slate-500 dark:text-zinc-400 font-medium">Forecast mode:</span>
-              <select
-                className="bg-transparent text-slate-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
-                value={mode}
-                onChange={(e) => setMode(e.target.value as any)}
-              >
-                <option
-                  value="all-window"
-                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                >
-                  All-window (full epoch)
-                </option>
-                <option
-                  value="recent-activity"
-                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
-                >
-                  Recent-activity (48h)
-                </option>
-              </select>
-            </div>
+            {/* Mode Custom Dropdown */}
+            <DropdownSelect
+              labelPrefix="Forecast mode:"
+              value={mode}
+              onChange={(m) => setMode(m as any)}
+              popoverWidth="min-w-[250px]"
+              options={[
+                { value: "all-window", label: "All-window (full epoch)" },
+                { value: "recent-activity", label: "Recent activity (48h)" },
+              ]}
+            />
           </div>
 
           <div className="flex items-center space-x-2 text-xs">
