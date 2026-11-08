@@ -57,7 +57,9 @@ export const openaiProvider = defineHttpProvider({
 
     try {
       const now = new Date();
-      const monthStart = Math.floor(new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000);
+      const monthStart = Math.floor(
+        new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000,
+      );
       const costsRes = await fetch(
         `https://api.openai.com/v1/organization/costs?start_time=${monthStart}&limit=31`,
         { headers },
@@ -114,7 +116,7 @@ export const openaiProvider = defineHttpProvider({
             totalBalance: 0,
             usage: monthSpend,
             grantedBalance: 0,
-            cashBalance: 0,
+            toppedUpBalance: 0,
           },
         ]
       : [];

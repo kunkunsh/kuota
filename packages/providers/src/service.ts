@@ -81,7 +81,6 @@ export function createQuotaService(
   const generations = new Map<ProviderId, number>();
   const policyFor = (id: ProviderId): RefreshPolicy => ({
     ...COMMON,
-    successTtlMs: 300_000,
     ...DEFAULT_POLICIES[id],
     ...options.policies?.[id],
   });

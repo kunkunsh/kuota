@@ -13,7 +13,12 @@ export function TableHeader({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn("[&_tr]:border-b border-slate-200 dark:border-zinc-800", className)} {...props} />;
+  return (
+    <thead
+      className={cn("[&_tr]:border-b border-slate-200 dark:border-zinc-800", className)}
+      {...props}
+    />
+  );
 }
 
 export function TableBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
@@ -47,7 +52,10 @@ export function TableHead({ className, ...props }: React.ThHTMLAttributes<HTMLTa
 export function TableCell({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
   return (
     <td
-      className={cn("p-3 align-middle [&:has([role=checkbox])]:pr-0 text-slate-800 dark:text-zinc-300", className)}
+      className={cn(
+        "p-3 align-middle [&:has([role=checkbox])]:pr-0 text-slate-800 dark:text-zinc-300",
+        className,
+      )}
       {...props}
     />
   );

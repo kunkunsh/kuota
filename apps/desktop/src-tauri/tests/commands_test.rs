@@ -4,7 +4,7 @@ use kuota_desktop::commands::{self, AppState};
 async fn test_get_app_info() {
     let info = commands::get_app_info();
     assert_eq!(info["name"], "Kuota");
-    assert_eq!(info["version"], "0.1.1");
+    assert_eq!(info["version"], env!("CARGO_PKG_VERSION"));
     assert_eq!(info["mode"], "desktop");
     assert!(info["platform"].is_string());
 }

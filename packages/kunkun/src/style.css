@@ -10,7 +10,8 @@
   --color-muted: var(--app-text-muted);
 }
 
-:root, html.light {
+:root,
+html.light {
   --app-bg: #f8fafc;
   --app-surface: #ffffff;
   --app-sidebar: #f1f5f9;
@@ -38,5 +39,7 @@ body {
   padding: 0;
   background-color: var(--app-bg);
   color: var(--app-text);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }

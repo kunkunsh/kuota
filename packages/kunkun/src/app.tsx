@@ -134,9 +134,7 @@ function KuotaDashboardInner({
   }, [activeRefreshing, onRefresh]);
 
   // Convert initialRoute into TanStack Router path
-  const initialPath: string = initialRoute.startsWith("/")
-    ? initialRoute
-    : `/${initialRoute}`;
+  const initialPath: string = initialRoute.startsWith("/") ? initialRoute : `/${initialRoute}`;
 
   // Stable TanStack Router instance using createHashHistory()
   const router = React.useMemo(() => createKuotaRouter(initialPath), [initialPath]);

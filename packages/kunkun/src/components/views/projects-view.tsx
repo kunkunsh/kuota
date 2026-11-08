@@ -11,7 +11,12 @@ export function ProjectsView() {
           <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-zinc-100">
             Projects & Activity
           </h2>
-          <Badge variant="outline" className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800">Opt-in Beta</Badge>
+          <Badge
+            variant="outline"
+            className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800"
+          >
+            Opt-in Beta
+          </Badge>
         </div>
         <p className="text-xs text-slate-500 dark:text-zinc-400">
           Correlate local AI tool consumption with workspace activity without exposing paths or
@@ -29,8 +34,12 @@ export function ProjectsView() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Local Workspace Allocation</CardTitle>
-          <CardDescription className="text-slate-500 dark:text-zinc-400">Estimated quota share by local repository</CardDescription>
+          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+            Local Workspace Allocation
+          </CardTitle>
+          <CardDescription className="text-slate-500 dark:text-zinc-400">
+            Estimated quota share by local repository
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-xs py-2 border-b border-slate-200 dark:border-zinc-800">

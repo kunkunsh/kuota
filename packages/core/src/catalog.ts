@@ -193,7 +193,8 @@ export const PROVIDER_CATALOG: readonly ProviderCatalogEntry[] = [
     defaultEndpoint: "https://api.openai.com/v1",
     docUrl: "https://platform.openai.com/docs",
     consoleUrl: "https://platform.openai.com/usage",
-    howToGet: "访问 OpenAI Platform -> Dashboard -> API Keys 创建 Key，并在 Usage 页面查看额度与充值",
+    howToGet:
+      "访问 OpenAI Platform -> Dashboard -> API Keys 创建 Key，并在 Usage 页面查看额度与充值",
     description: "OpenAI Developer Platform API credit balance, usage limits, and project grants.",
   },
 ];

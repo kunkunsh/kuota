@@ -141,9 +141,14 @@ export function OverviewView({
     React.useEffect(() => {
       async function loadConfig() {
         try {
-          if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+          if (
+            typeof window !== "undefined" &&
+            ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+          ) {
             const { invoke } = await import("@tauri-apps/api/core");
-            const cfg = (await invoke("get_user_config")) as { visibility?: Record<string, boolean> };
+            const cfg = (await invoke("get_user_config")) as {
+              visibility?: Record<string, boolean>;
+            };
             if (cfg && cfg.visibility && Object.keys(cfg.visibility).length > 0) {
               setVisibility((prev) => ({ ...cfg.visibility, ...prev }));
             }
@@ -177,7 +182,10 @@ export function OverviewView({
       // Persist to backend / config.json asynchronously
       void (async () => {
         try {
-          if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+          if (
+            typeof window !== "undefined" &&
+            ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+          ) {
             const { invoke } = await import("@tauri-apps/api/core");
             await invoke("save_user_config", { config: { version: 1, visibility: next } });
           } else {
@@ -286,7 +294,9 @@ export function OverviewView({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">KUOTA</h2>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
+              KUOTA
+            </h2>
             <Badge
               variant="outline"
               className="text-[11px] text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border-slate-300 dark:border-zinc-700"
@@ -362,11 +372,15 @@ export function OverviewView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">At-risk limits</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                At-risk limits
+              </div>
               <div
                 className={cn(
                   "text-2xl font-bold mt-1",
-                  atRiskCount > 0 ? "text-amber-500 dark:text-amber-400" : "text-slate-900 dark:text-zinc-100",
+                  atRiskCount > 0
+                    ? "text-amber-500 dark:text-amber-400"
+                    : "text-slate-900 dark:text-zinc-100",
                 )}
               >
                 {atRiskCount}
@@ -381,8 +395,12 @@ export function OverviewView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Active providers</div>
-              <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{trackedCount}</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Active providers
+              </div>
+              <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">
+                {trackedCount}
+              </div>
             </div>
             <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400 border border-blue-500/20">
               <Layers className="w-4 h-4" />
@@ -393,10 +411,16 @@ export function OverviewView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Quota &amp; Wallets</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Quota &amp; Wallets
+              </div>
               <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">
-                {totalWindows} <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">win</span> /{" "}
-                {totalWallets} <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">wallets</span>
+                {totalWindows}{" "}
+                <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">win</span> /{" "}
+                {totalWallets}{" "}
+                <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
+                  wallets
+                </span>
               </div>
             </div>
             <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 border border-purple-500/20">
@@ -408,7 +432,9 @@ export function OverviewView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Nearest reset</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Nearest reset
+              </div>
               <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">
                 {formatRemainingDuration(nearestResetMs)}
               </div>
@@ -425,7 +451,8 @@ export function OverviewView({
         <div className="p-8 text-center rounded-xl bg-zinc-900/30 border border-zinc-800/60">
           <p className="text-sm text-zinc-400">No active providers matching the current filter.</p>
           <p className="text-xs text-zinc-500 mt-1">
-            Click <strong>Customize</strong> above to toggle providers or configure credentials in Settings.
+            Click <strong>Customize</strong> above to toggle providers or configure credentials in
+            Settings.
           </p>
         </div>
       ) : (
@@ -486,10 +513,21 @@ export function OverviewView({
                     <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 text-[11px] space-y-1.5 text-slate-600 dark:text-zinc-400">
                       <div className="flex items-center justify-between">
                         <span>Key Type:</span>
-                        <span className="font-mono text-slate-900 dark:text-zinc-200">sk-proj-... (Project Key)</span>
+                        <span className="font-mono text-slate-900 dark:text-zinc-200">
+                          sk-proj-... (Project Key)
+                        </span>
                       </div>
                       <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 leading-relaxed border-t border-slate-200 dark:border-zinc-800/60 pt-1.5">
-                        OpenAI restricts Project Keys from reading Billing by default. To display live credit and spend, grant <code className="text-slate-800 dark:text-zinc-200 font-semibold">api.usage.read</code> scope in OpenAI Console or use an Admin Key (<code className="text-slate-800 dark:text-zinc-200 font-semibold">sk-admin-...</code>).
+                        OpenAI restricts Project Keys from reading Billing by default. To display
+                        live credit and spend, grant{" "}
+                        <code className="text-slate-800 dark:text-zinc-200 font-semibold">
+                          api.usage.read
+                        </code>{" "}
+                        scope in OpenAI Console or use an Admin Key (
+                        <code className="text-slate-800 dark:text-zinc-200 font-semibold">
+                          sk-admin-...
+                        </code>
+                        ).
                       </div>
                     </div>
                   </CardContent>
@@ -579,7 +617,9 @@ export function OverviewView({
                         )}
                         {secondaryBalance && (
                           <div className="flex items-baseline space-x-1 ml-1 text-slate-700 dark:text-zinc-300">
-                            <span className="text-slate-400 dark:text-zinc-500 font-medium text-sm">+</span>
+                            <span className="text-slate-400 dark:text-zinc-500 font-medium text-sm">
+                              +
+                            </span>
                             <span
                               className={cn(
                                 "text-xl font-bold font-mono",
@@ -621,12 +661,21 @@ export function OverviewView({
                     {/* Breakdown of each currency wallet */}
                     <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 text-[11px] space-y-1.5">
                       {sortedBalances.map((b) => (
-                        <div key={b.currency} className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                        <div
+                          key={b.currency}
+                          className="flex items-center justify-between text-slate-600 dark:text-zinc-400"
+                        >
                           <span className="font-medium text-slate-800 dark:text-zinc-300">
                             {b.currency === "USD" ? "USD Account:" : "CNY (人民币):"}
                           </span>
                           <div className="flex items-center space-x-2 font-mono">
-                            <span className={cn(b.totalBalance < 0 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-slate-900 dark:text-zinc-100 font-semibold")}>
+                            <span
+                              className={cn(
+                                b.totalBalance < 0
+                                  ? "text-amber-600 dark:text-amber-400 font-semibold"
+                                  : "text-slate-900 dark:text-zinc-100 font-semibold",
+                              )}
+                            >
                               {formatCurrencyAmount(b.totalBalance, b.currency)} {b.currency}
                             </span>
                             {b.toppedUpBalance !== undefined && (
@@ -699,7 +748,8 @@ export function OverviewView({
                       remainingPercent={remaining}
                       idealRemainingPercent={
                         sortedWindows[0]
-                          ? resolveIdealPace(sortedWindows[0], providerId, now)?.idealRemainingPercent ?? null
+                          ? (resolveIdealPace(sortedWindows[0], providerId, now)
+                              ?.idealRemainingPercent ?? null)
                           : null
                       }
                       label={`${meta.name} quota bar`}
@@ -749,7 +799,8 @@ export function OverviewView({
                     </Badge>
                   </div>
                   <CardDescription className="text-xs text-slate-500 dark:text-zinc-400 truncate mt-1">
-                    {primaryWindow ? formatWindowLabel(primaryWindow.windowId) : "Standard Quota"} · Resets in{" "}
+                    {primaryWindow ? formatWindowLabel(primaryWindow.windowId) : "Standard Quota"} ·
+                    Resets in{" "}
                     {primaryReset
                       ? formatRemainingDuration(primaryReset.getTime() - now.getTime())
                       : "unknown"}
@@ -762,16 +813,21 @@ export function OverviewView({
                     <div className="flex items-baseline justify-between mb-1.5">
                       <span className="text-2xl font-extrabold text-slate-900 dark:text-zinc-100">
                         {primaryRemaining.toFixed(0)}%{" "}
-                        <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">left</span>
+                        <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
+                          left
+                        </span>
                       </span>
-                      <span className="text-xs text-slate-500 dark:text-zinc-400">{primaryUsed.toFixed(0)}% used</span>
+                      <span className="text-xs text-slate-500 dark:text-zinc-400">
+                        {primaryUsed.toFixed(0)}% used
+                      </span>
                     </div>
 
                     <PacedProgress
                       remainingPercent={primaryRemaining}
                       idealRemainingPercent={
                         primaryWindow
-                          ? resolveIdealPace(primaryWindow, providerId, now)?.idealRemainingPercent ?? null
+                          ? (resolveIdealPace(primaryWindow, providerId, now)
+                              ?.idealRemainingPercent ?? null)
                           : null
                       }
                       label={`${meta.name} primary pace bar`}
@@ -809,7 +865,8 @@ export function OverviewView({
                       <PacedProgress
                         remainingPercent={secondaryRemaining}
                         idealRemainingPercent={
-                          resolveIdealPace(secondaryWindow, providerId, now)?.idealRemainingPercent ?? null
+                          resolveIdealPace(secondaryWindow, providerId, now)
+                            ?.idealRemainingPercent ?? null
                         }
                         heightClass="h-1.5"
                         showLegend={false}
@@ -913,7 +970,9 @@ export function OverviewView({
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 border-t border-slate-200 dark:border-zinc-800/80 pt-2">
-              <span className="text-slate-500 dark:text-zinc-500">Telemetry: Local Process &amp; API Probes</span>
+              <span className="text-slate-500 dark:text-zinc-500">
+                Telemetry: Local Process &amp; API Probes
+              </span>
               <button
                 type="button"
                 className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium inline-flex items-center space-x-1 cursor-pointer"
@@ -1038,8 +1097,7 @@ export function OverviewView({
               {PROVIDER_CATALOG.map((p) => {
                 const snapshot = snapshots.find((s) => s.provider === p.id);
                 const isConfigured = snapshot ? isProviderConfigured(snapshot) : false;
-                const isVisible =
-                  visibility[p.id] !== undefined ? visibility[p.id] : isConfigured;
+                const isVisible = visibility[p.id] !== undefined ? visibility[p.id] : isConfigured;
 
                 return (
                   <div

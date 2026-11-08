@@ -34,20 +34,29 @@ export function UsageView() {
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex flex-col space-y-1">
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-zinc-100">Usage & Value</h2>
-        <p className="text-xs text-slate-500 dark:text-zinc-400">Attributed token volume and API-equivalent value.</p>
+        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-zinc-100">
+          Usage & Value
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-zinc-400">
+          Attributed token volume and API-equivalent value.
+        </p>
       </div>
 
       <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
-        <span className="font-semibold text-amber-700 dark:text-amber-200">Notice:</span> API-equivalent value is a local workload
-        estimate based on public API rates, not your actual vendor subscription bill.
+        <span className="font-semibold text-amber-700 dark:text-amber-200">Notice:</span>{" "}
+        API-equivalent value is a local workload estimate based on public API rates, not your actual
+        vendor subscription bill.
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-500 dark:text-zinc-400">Total Estimated Value</CardDescription>
-            <CardTitle className="text-xl font-bold text-slate-900 dark:text-zinc-100">$32.45</CardTitle>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
+              Total Estimated Value
+            </CardDescription>
+            <CardTitle className="text-xl font-bold text-slate-900 dark:text-zinc-100">
+              $32.45
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-[11px] text-slate-500 dark:text-zinc-400">
             Based on 16.2M combined tokens this cycle
@@ -56,8 +65,12 @@ export function UsageView() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-500 dark:text-zinc-400">Cache Read Hit Rate</CardDescription>
-            <CardTitle className="text-xl font-bold text-emerald-600 dark:text-emerald-400">73.5%</CardTitle>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
+              Cache Read Hit Rate
+            </CardDescription>
+            <CardTitle className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              73.5%
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-[11px] text-slate-500 dark:text-zinc-400">
             Prompt caching saved approximately $48.20
@@ -66,8 +79,12 @@ export function UsageView() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription className="text-slate-500 dark:text-zinc-400">Total Generated Tokens</CardDescription>
-            <CardTitle className="text-xl font-bold text-slate-900 dark:text-zinc-100">1.08M</CardTitle>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
+              Total Generated Tokens
+            </CardDescription>
+            <CardTitle className="text-xl font-bold text-slate-900 dark:text-zinc-100">
+              1.08M
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-[11px] text-slate-500 dark:text-zinc-400">
             Across 3 active model families
@@ -86,7 +103,9 @@ export function UsageView() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Model Breakdown</CardTitle>
+              <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+                Model Breakdown
+              </CardTitle>
               <CardDescription className="text-xs text-slate-500 dark:text-zinc-400">
                 Token distribution: input vs output vs cached tokens
               </CardDescription>

@@ -15,7 +15,12 @@ import { ProviderIcon } from "../ui/provider-icon.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
 import { ThemeToggleButton } from "../../lib/theme.js";
 import { useI18n, LanguageToggleButton } from "../../lib/i18n.js";
-import { checkForUpdates, installUpdate, CURRENT_APP_VERSION, type UpdateResult } from "../../lib/updater.js";
+import {
+  checkForUpdates,
+  installUpdate,
+  CURRENT_APP_VERSION,
+  type UpdateResult,
+} from "../../lib/updater.js";
 import { cn } from "../../lib/utils.js";
 import {
   Settings,
@@ -70,8 +75,18 @@ function formatResetDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);
     const monthNames = [
-      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     const m = monthNames[date.getMonth()];
     const d = date.getDate();
@@ -89,7 +104,13 @@ function sortWindowsForDisplay(windows: readonly QuotaWindow[]): QuotaWindow[] {
       const id = w.windowId.toLowerCase();
       if (id.includes("token_plan") || id.includes("month")) return 10;
       if (id.includes("week")) return 8;
-      if (id.includes("session") || id.includes("5h") || id.includes("rolling") || id.includes("primary")) return 6;
+      if (
+        id.includes("session") ||
+        id.includes("5h") ||
+        id.includes("rolling") ||
+        id.includes("primary")
+      )
+        return 6;
       if (id.includes("day") || id.includes("daily") || id.includes("secondary")) return 4;
       return 1;
     };
@@ -197,7 +218,10 @@ export function MenuBarPopoverView({
     let mounted = true;
     const checkFrontmost = async () => {
       try {
-        if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+        if (
+          typeof window !== "undefined" &&
+          ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+        ) {
           const { invoke } = await import("@tauri-apps/api/core");
           const info = await invoke<any>("get_frontmost_app");
           if (mounted && info) {
@@ -234,7 +258,10 @@ export function MenuBarPopoverView({
     try {
       localStorage.setItem("kuota-menubar-mode", mode);
       const title = computeTrayTitle(snapshots, mode, frontmostInfo?.mappedProvider);
-      if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+      if (
+        typeof window !== "undefined" &&
+        ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+      ) {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("update_tray_title", { title });
       }
@@ -243,15 +270,21 @@ export function MenuBarPopoverView({
 
   React.useEffect(() => {
     const title = computeTrayTitle(snapshots, trayMode, frontmostInfo?.mappedProvider);
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
-      import("@tauri-apps/api/core").then(({ invoke }) => {
-        invoke("update_tray_title", { title }).catch(() => {});
-      }).catch(() => {});
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
+      import("@tauri-apps/api/core")
+        .then(({ invoke }) => {
+          invoke("update_tray_title", { title }).catch(() => {});
+        })
+        .catch(() => {});
     }
   }, [snapshots, trayMode, frontmostInfo]);
 
   const handleCycleSize = async () => {
-    const next = popoverSize === "standard" ? "tall" : popoverSize === "tall" ? "compact" : "standard";
+    const next =
+      popoverSize === "standard" ? "tall" : popoverSize === "tall" ? "compact" : "standard";
     setPopoverSize(next);
     const dimensions = {
       standard: { width: 420, height: 720 },
@@ -259,7 +292,10 @@ export function MenuBarPopoverView({
       compact: { width: 380, height: 580 },
     }[next];
 
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
       try {
         const { getCurrentWindow, LogicalSize } = await import("@tauri-apps/api/window");
         await getCurrentWindow().setSize(new LogicalSize(dimensions.width, dimensions.height));
@@ -274,7 +310,8 @@ export function MenuBarPopoverView({
     if (providerId === "antigravity") snippet = "agy";
     else if (providerId === "codex") snippet = "codex";
     else if (providerId === "claude") snippet = "claude";
-    else if (providerId === "deepseek") snippet = "export OPENAI_BASE_URL=https://api.deepseek.com/v1";
+    else if (providerId === "deepseek")
+      snippet = "export OPENAI_BASE_URL=https://api.deepseek.com/v1";
     navigator.clipboard?.writeText(snippet);
     setCopiedFallback(true);
     setTimeout(() => setCopiedFallback(false), 2000);
@@ -302,7 +339,10 @@ export function MenuBarPopoverView({
   }, [activeSnapshots, activeTab]);
 
   const handleOpenDashboard = async () => {
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("open_dashboard_window");
@@ -315,7 +355,10 @@ export function MenuBarPopoverView({
   };
 
   const handleQuit = async () => {
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("exit_app");
@@ -328,7 +371,10 @@ export function MenuBarPopoverView({
   };
 
   const openExternal = async (url: string) => {
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
       try {
         const { invoke } = await import("@tauri-apps/api/core");
         await invoke("open_external_url", { url });
@@ -340,11 +386,13 @@ export function MenuBarPopoverView({
 
   const meta = selectedSnapshot ? getProviderMeta(selectedSnapshot.provider) : null;
   const sortedWindows = selectedSnapshot ? sortWindowsForDisplay(selectedSnapshot.windows) : [];
-  const hasBalance = Boolean(selectedSnapshot?.balance && selectedSnapshot.balance.balances.length > 0);
+  const hasBalance = Boolean(
+    selectedSnapshot?.balance && selectedSnapshot.balance.balances.length > 0,
+  );
   const isBalancePriority = selectedSnapshot ? isBalanceFirst(selectedSnapshot) : false;
 
   const isExhaustedSelected =
-    selectedSnapshot?.windows.some((w) => w.remainingPercent <= 0) ||
+    selectedSnapshot?.windows.some((w) => (w.remainingPercent ?? 100) <= 0) ||
     selectedSnapshot?.errorCode === "QUOTA_EXHAUSTED";
 
   // Smart Quota Fallback Advisor: find optimal active alternative provider when quota is exhausted
@@ -353,7 +401,8 @@ export function MenuBarPopoverView({
     const candidates = activeSnapshots.filter((s) => {
       if (s.provider === selectedSnapshot.provider) return false;
       const exhausted =
-        s.windows.some((w) => w.remainingPercent <= 0) || s.errorCode === "QUOTA_EXHAUSTED";
+        s.windows.some((w) => (w.remainingPercent ?? 100) <= 0) ||
+        s.errorCode === "QUOTA_EXHAUSTED";
       return !exhausted;
     });
     if (candidates.length === 0) return null;
@@ -362,15 +411,18 @@ export function MenuBarPopoverView({
       const bWin = b.windows[0]?.remainingPercent ?? 0;
       const aBal = a.balance?.balances[0]?.totalBalance ?? 0;
       const bBal = b.balance?.balances[0]?.totalBalance ?? 0;
-      return (bWin + bBal * 10) - (aWin + aBal * 10);
+      return bWin + bBal * 10 - (aWin + aBal * 10);
     });
     const best = candidates[0];
     const bestMeta = getProviderMeta(best.provider);
     let desc = "";
-    if (best.windows.length > 0) {
+    if (best.windows.length > 0 && best.windows[0]?.remainingPercent != null) {
       desc = `${best.windows[0].remainingPercent.toFixed(0)}% remaining`;
     } else if (best.balance && best.balance.balances.length > 0) {
-      desc = formatCurrencyAmount(best.balance.balances[0].totalBalance, best.balance.balances[0].currency);
+      desc = formatCurrencyAmount(
+        best.balance.balances[0].totalBalance,
+        best.balance.balances[0].currency,
+      );
     } else {
       desc = "Ready & funded";
     }
@@ -381,7 +433,8 @@ export function MenuBarPopoverView({
   const barChartData = React.useMemo(() => {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const now = new Date();
-    const result: { day: string; value: number; height: number; peak?: boolean; label?: string }[] = [];
+    const result: { day: string; value: number; height: number; peak?: boolean; label?: string }[] =
+      [];
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 86_400_000);
@@ -425,7 +478,9 @@ export function MenuBarPopoverView({
       <div className="flex items-center justify-between px-3.5 pt-3 pb-2 border-b border-slate-200 dark:border-zinc-800/60 bg-slate-100/70 dark:bg-zinc-900/40 shrink-0">
         <div className="flex items-center space-x-2">
           <KuotaLogo className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-          <span className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100">KUOTA</span>
+          <span className="text-xs font-bold tracking-wider text-slate-900 dark:text-zinc-100">
+            KUOTA
+          </span>
           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             {t("header.hud")}
           </span>
@@ -452,7 +507,12 @@ export function MenuBarPopoverView({
             title="Refresh quota telemetry (⌘R)"
             className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-slate-200/60 dark:hover:bg-zinc-800/70 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-emerald-500 dark:text-emerald-400")} />
+            <RefreshCw
+              className={cn(
+                "w-3.5 h-3.5",
+                isRefreshing && "animate-spin text-emerald-500 dark:text-emerald-400",
+              )}
+            />
           </button>
         </div>
       </div>
@@ -482,7 +542,7 @@ export function MenuBarPopoverView({
             const isSelected = activeTab === snap.provider;
             const pMeta = getProviderMeta(snap.provider);
             const isExhausted =
-              snap.windows.some((w) => w.remainingPercent <= 0) ||
+              snap.windows.some((w) => (w.remainingPercent ?? 100) <= 0) ||
               snap.errorCode === "QUOTA_EXHAUSTED";
 
             return (
@@ -566,7 +626,9 @@ export function MenuBarPopoverView({
                   <span>Smart Fallback Recommendation</span>
                 </div>
                 <div className="text-[11px] text-zinc-300 leading-relaxed">
-                  {meta.name} quota is exhausted. Switch to <strong className="text-white">{fallbackAdvisor.meta.name}</strong> ({fallbackAdvisor.desc}) to continue workflow without interruption.
+                  {meta.name} quota is exhausted. Switch to{" "}
+                  <strong className="text-white">{fallbackAdvisor.meta.name}</strong> (
+                  {fallbackAdvisor.desc}) to continue workflow without interruption.
                 </div>
                 <div className="flex items-center space-x-2 pt-0.5">
                   <button
@@ -608,13 +670,17 @@ export function MenuBarPopoverView({
               <div className="space-y-2">
                 {sortedWindows.map((win, idx) => {
                   const label = formatWindowLabel(win.windowId);
-                  const remPercent = Math.min(100, Math.max(0, win.remainingPercent));
-                  const isExhausted = remPercent <= 0 || win.usedPercent >= 100;
-                  const remainingMs = win.resetAt ? new Date(win.resetAt).getTime() - Date.now() : null;
+                  const remPercent = Math.min(100, Math.max(0, win.remainingPercent ?? 0));
+                  const isExhausted = remPercent <= 0 || (win.usedPercent ?? 0) >= 100;
+                  const remainingMs = win.resetAt
+                    ? new Date(win.resetAt).getTime() - Date.now()
+                    : null;
                   const pace = resolveIdealPace(win, selectedSnapshot.provider, new Date());
 
                   // White pace marker: where your remaining quota SHOULD be based on elapsed time
-                  const idealRemPercent = pace ? Math.min(100, Math.max(0, pace.idealRemainingPercent)) : null;
+                  const idealRemPercent = pace
+                    ? Math.min(100, Math.max(0, pace.idealRemainingPercent))
+                    : null;
                   const paceDelta = idealRemPercent !== null ? remPercent - idealRemPercent : null;
                   const isOverspent = paceDelta !== null && paceDelta < -4;
                   const isConserving = paceDelta !== null && paceDelta > 4;
@@ -650,7 +716,9 @@ export function MenuBarPopoverView({
                               isExhausted
                                 ? "text-rose-400"
                                 : isOverspent
-                                  ? selectedSnapshot.provider === "claude" ? "text-orange-400" : "text-amber-400"
+                                  ? selectedSnapshot.provider === "claude"
+                                    ? "text-orange-400"
+                                    : "text-amber-400"
                                   : "text-zinc-100",
                             )}
                           >
@@ -659,7 +727,10 @@ export function MenuBarPopoverView({
                         </div>
                         {win.resetAt && (
                           <span className="text-xs text-zinc-400 font-medium font-mono">
-                            {t("pacing.resets_in")} {remainingMs != null ? formatRemainingDuration(remainingMs) : formatResetDate(win.resetAt)}
+                            {t("pacing.resets_in")}{" "}
+                            {remainingMs != null
+                              ? formatRemainingDuration(remainingMs)
+                              : formatResetDate(win.resetAt)}
                           </span>
                         )}
                       </div>
@@ -668,7 +739,10 @@ export function MenuBarPopoverView({
                       <div className="w-full h-2 rounded-full bg-zinc-800/90 overflow-hidden relative">
                         {/* 1. Colored progress bar: Represents REMAINING QUOTA */}
                         <div
-                          className={cn("h-full rounded-full transition-all duration-300", barColor)}
+                          className={cn(
+                            "h-full rounded-full transition-all duration-300",
+                            barColor,
+                          )}
                           style={{ width: `${remPercent}%` }}
                         />
                         {/* 2. White Ideal Pace Bar: Represents where your remaining quota SHOULD be based on elapsed time */}
@@ -686,14 +760,25 @@ export function MenuBarPopoverView({
                           {paceDelta !== null ? (
                             isConserving ? (
                               <span className="text-emerald-400 font-medium">
-                                {t("pacing.on_pace")} · +{paceDelta.toFixed(0)}% {t("pacing.in_reserve")}
+                                {t("pacing.on_pace")} · +{paceDelta.toFixed(0)}%{" "}
+                                {t("pacing.in_reserve")}
                               </span>
                             ) : isOverspent ? (
-                              <span className={cn("font-medium", selectedSnapshot.provider === "claude" ? "text-orange-400" : "text-amber-400")}>
-                                {t("pacing.overspent")} · {Math.abs(paceDelta).toFixed(0)}% {t("pacing.behind_target")}
+                              <span
+                                className={cn(
+                                  "font-medium",
+                                  selectedSnapshot.provider === "claude"
+                                    ? "text-orange-400"
+                                    : "text-amber-400",
+                                )}
+                              >
+                                {t("pacing.overspent")} · {Math.abs(paceDelta).toFixed(0)}%{" "}
+                                {t("pacing.behind_target")}
                               </span>
                             ) : (
-                              <span className="text-cyan-400 font-medium">{t("pacing.on_pace")}</span>
+                              <span className="text-cyan-400 font-medium">
+                                {t("pacing.on_pace")}
+                              </span>
                             )
                           ) : remPercent > 50 ? (
                             `${(remPercent - 50).toFixed(0)}% ${t("pacing.in_reserve")}`
@@ -701,7 +786,10 @@ export function MenuBarPopoverView({
                             `${remPercent.toFixed(0)}% ${t("pacing.left")}`
                           )}
                         </span>
-                        <span className="text-zinc-500 font-mono">{t("pacing.used")}: {win.usedPercent.toFixed(0)}%</span>
+                        <span className="text-zinc-500 font-mono">
+                          {t("pacing.used")}:{" "}
+                          {win.usedPercent != null ? win.usedPercent.toFixed(0) : "0"}%
+                        </span>
                       </div>
                     </div>
                   );
@@ -722,7 +810,10 @@ export function MenuBarPopoverView({
                   </span>
                   {selectedSnapshot.resetCredits.resetsAt && (
                     <span className="text-zinc-500 font-mono text-[11px]">
-                      ⏱ {formatRemainingDuration(new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now())}
+                      ⏱{" "}
+                      {formatRemainingDuration(
+                        new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now(),
+                      )}
                     </span>
                   )}
                 </div>
@@ -752,7 +843,7 @@ export function MenuBarPopoverView({
                 <div>
                   <div className="text-[11px] text-zinc-400">Primary Quota</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
-                    {selectedSnapshot.windows[0]
+                    {selectedSnapshot.windows[0]?.remainingPercent != null
                       ? `${selectedSnapshot.windows[0].remainingPercent.toFixed(0)}% left`
                       : selectedSnapshot.credits?.hasCredits
                         ? `${selectedSnapshot.credits.balance.toLocaleString()} cr`
@@ -763,14 +854,16 @@ export function MenuBarPopoverView({
                   <div className="text-[11px] text-zinc-400">Primary Reset</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
                     {selectedSnapshot.windows[0]?.resetAt
-                      ? formatRemainingDuration(new Date(selectedSnapshot.windows[0].resetAt).getTime() - Date.now())
+                      ? formatRemainingDuration(
+                          new Date(selectedSnapshot.windows[0].resetAt).getTime() - Date.now(),
+                        )
                       : "Rolling"}
                   </div>
                 </div>
                 <div>
                   <div className="text-[11px] text-zinc-400">Secondary Quota</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
-                    {selectedSnapshot.windows[1]
+                    {selectedSnapshot.windows[1]?.remainingPercent != null
                       ? `${selectedSnapshot.windows[1].remainingPercent.toFixed(0)}% left`
                       : selectedSnapshot.resetCredits
                         ? `${selectedSnapshot.resetCredits.availableCount} reset cr`
@@ -781,9 +874,13 @@ export function MenuBarPopoverView({
                   <div className="text-[11px] text-zinc-400">Secondary Reset</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
                     {selectedSnapshot.windows[1]?.resetAt
-                      ? formatRemainingDuration(new Date(selectedSnapshot.windows[1].resetAt).getTime() - Date.now())
+                      ? formatRemainingDuration(
+                          new Date(selectedSnapshot.windows[1].resetAt).getTime() - Date.now(),
+                        )
                       : selectedSnapshot.resetCredits?.resetsAt
-                        ? formatRemainingDuration(new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now())
+                        ? formatRemainingDuration(
+                            new Date(selectedSnapshot.resetCredits.resetsAt).getTime() - Date.now(),
+                          )
                         : "—"}
                   </div>
                 </div>
@@ -799,8 +896,11 @@ export function MenuBarPopoverView({
                   <div className="text-[11px] text-zinc-400">Balance / Usage</div>
                   <div className="text-sm font-bold text-zinc-100 font-mono">
                     {selectedSnapshot.balance?.balances[0]?.totalBalance != null
-                      ? formatCurrencyAmount(selectedSnapshot.balance.balances[0].totalBalance, selectedSnapshot.balance.balances[0].currency)
-                      : selectedSnapshot.windows[0]
+                      ? formatCurrencyAmount(
+                          selectedSnapshot.balance.balances[0].totalBalance,
+                          selectedSnapshot.balance.balances[0].currency,
+                        )
+                      : selectedSnapshot.windows[0]?.usedPercent != null
                         ? `${selectedSnapshot.windows[0].usedPercent.toFixed(0)}% used`
                         : "—"}
                   </div>
@@ -811,7 +911,10 @@ export function MenuBarPopoverView({
               <div className="pt-2 border-t border-zinc-800/60">
                 <div className="flex items-end justify-between h-14 px-1 gap-2 pt-2">
                   {barChartData.map((bar, i) => (
-                    <div key={bar.day} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                    <div
+                      key={bar.day}
+                      className="flex-1 flex flex-col items-center justify-end h-full group relative"
+                    >
                       {bar.peak && (
                         <span className="absolute -top-3 text-[10px] font-bold text-cyan-300 font-mono">
                           {bar.label}
@@ -837,8 +940,12 @@ export function MenuBarPopoverView({
                 <span>Recent windows</span>
                 <span className="font-mono text-[11px]">≥ $86.10 · ≥ 1.1B</span>
               </div>
-              <div className="text-[11px] text-zinc-400">Partial estimate · Recorded token subtotal</div>
-              <div className="text-[10.5px] text-zinc-500 font-mono">Top model: gpt-4o / sonnet-3-7 / gpt-6.1-sol</div>
+              <div className="text-[11px] text-zinc-400">
+                Partial estimate · Recorded token subtotal
+              </div>
+              <div className="text-[10.5px] text-zinc-500 font-mono">
+                Top model: gpt-4o / sonnet-3-7 / gpt-6.1-sol
+              </div>
               <div className="text-[10px] text-zinc-500 italic pt-1 border-t border-zinc-800/50">
                 Estimated from token usage · not a subscription bill
               </div>
@@ -860,7 +967,9 @@ export function MenuBarPopoverView({
                   <div className="h-full bg-cyan-400 rounded-full" style={{ width: "65%" }} />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                  <span>Balance: {selectedSnapshot.balance.balances[0].totalBalance.toFixed(2)}</span>
+                  <span>
+                    Balance: {selectedSnapshot.balance.balances[0].totalBalance.toFixed(2)}
+                  </span>
                   <span>100K tokens pool</span>
                 </div>
               </div>
@@ -904,10 +1013,15 @@ export function MenuBarPopoverView({
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                   </span>
                   <div className="text-xs truncate">
-                    <span className="text-slate-600 dark:text-zinc-400 font-medium">{t("header.foreground")}: </span>
-                    <strong className="text-slate-900 dark:text-white font-semibold">{frontmostInfo.appName}</strong>
+                    <span className="text-slate-600 dark:text-zinc-400 font-medium">
+                      {t("header.foreground")}:{" "}
+                    </span>
+                    <strong className="text-slate-900 dark:text-white font-semibold">
+                      {frontmostInfo.appName}
+                    </strong>
                     <span className="text-slate-500 dark:text-zinc-400 text-[11px] ml-1.5 font-normal">
-                      &rarr; {t("header.mapped_to")} {getProviderMeta(frontmostInfo.mappedProvider).name}
+                      &rarr; {t("header.mapped_to")}{" "}
+                      {getProviderMeta(frontmostInfo.mappedProvider).name}
                     </span>
                   </div>
                 </div>
@@ -920,7 +1034,9 @@ export function MenuBarPopoverView({
 
             <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400 px-0.5">
               <span>ACTIVE SERVICES ({filteredSnapshots.length})</span>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">Click to focus</span>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">
+                Click to focus
+              </span>
             </div>
 
             {filteredSnapshots.length === 0 ? (
@@ -933,7 +1049,7 @@ export function MenuBarPopoverView({
                   const pMeta = getProviderMeta(snap.provider);
                   const pWindows = sortWindowsForDisplay(snap.windows);
                   const isExhausted =
-                    snap.windows.some((w) => w.remainingPercent <= 0) ||
+                    snap.windows.some((w) => (w.remainingPercent ?? 100) <= 0) ||
                     snap.errorCode === "QUOTA_EXHAUSTED";
 
                   let displayRight = "";
@@ -942,13 +1058,15 @@ export function MenuBarPopoverView({
                   if (isExhausted) {
                     displayRight = "Exhausted";
                     rightColor = "text-rose-400";
-                  } else if (pWindows.length > 0) {
+                  } else if (pWindows.length > 0 && pWindows[0]?.remainingPercent != null) {
                     const pPace = resolveIdealPace(pWindows[0], snap.provider, new Date());
                     const pRem = pWindows[0].remainingPercent;
                     const pOverspent = pPace && pRem < pPace.idealRemainingPercent - 4;
                     displayRight = `${pRem.toFixed(0)}% ${t("pacing.left")}`;
                     rightColor = pOverspent
-                      ? (snap.provider === "claude" ? "text-orange-400" : "text-amber-400")
+                      ? snap.provider === "claude"
+                        ? "text-orange-400"
+                        : "text-amber-400"
                       : pRem < 20
                         ? "text-amber-400"
                         : "text-zinc-100";
@@ -988,29 +1106,40 @@ export function MenuBarPopoverView({
                       </div>
 
                       <div className="flex items-center space-x-2 shrink-0">
-                        {pWindows.length > 0 && !isExhausted && (
+                        {pWindows.length > 0 &&
+                          !isExhausted &&
                           (() => {
                             const pWin = pWindows[0];
-                            const pPace = resolveIdealPace(pWin, snap.provider, new Date());
-                            const pRem = Math.min(100, Math.max(0, pWin.remainingPercent));
-                            const pIdealRem = pPace ? Math.min(100, Math.max(0, pPace.idealRemainingPercent)) : null;
+                            const pPace = pWin
+                              ? resolveIdealPace(pWin, snap.provider, new Date())
+                              : null;
+                            const pRem = Math.min(100, Math.max(0, pWin?.remainingPercent ?? 0));
+                            const pIdealRem = pPace
+                              ? Math.min(100, Math.max(0, pPace.idealRemainingPercent))
+                              : null;
                             const pDelta = pIdealRem !== null ? pRem - pIdealRem : null;
                             const pOverspent = pDelta !== null && pDelta < -4;
 
                             const pBarColor = pOverspent
-                              ? (snap.provider === "claude" ? "bg-[#da7756]" : "bg-amber-400")
-                              : (snap.provider === "claude"
-                                  ? "bg-[#da7756]"
-                                  : snap.provider === "codex"
-                                    ? "bg-[#5c82ff]"
-                                    : snap.provider === "antigravity" || snap.provider === "opencodego"
-                                      ? "bg-emerald-400"
-                                      : "bg-cyan-400");
+                              ? snap.provider === "claude"
+                                ? "bg-[#da7756]"
+                                : "bg-amber-400"
+                              : snap.provider === "claude"
+                                ? "bg-[#da7756]"
+                                : snap.provider === "codex"
+                                  ? "bg-[#5c82ff]"
+                                  : snap.provider === "antigravity" ||
+                                      snap.provider === "opencodego"
+                                    ? "bg-emerald-400"
+                                    : "bg-cyan-400";
 
                             return (
                               <div className="w-14 h-1.5 rounded-full bg-zinc-800 overflow-hidden relative">
                                 <div
-                                  className={cn("h-full rounded-full transition-all duration-300", pBarColor)}
+                                  className={cn(
+                                    "h-full rounded-full transition-all duration-300",
+                                    pBarColor,
+                                  )}
                                   style={{ width: `${pRem}%` }}
                                 />
                                 {/* White Ideal Pace Marker: time remaining position */}
@@ -1022,8 +1151,7 @@ export function MenuBarPopoverView({
                                 )}
                               </div>
                             );
-                          })()
-                        )}
+                          })()}
                         <span className={cn("font-mono text-xs font-bold", rightColor)}>
                           {displayRight}
                         </span>
@@ -1042,7 +1170,9 @@ export function MenuBarPopoverView({
       <div className="p-3 border-t border-slate-200 dark:border-zinc-800/80 bg-slate-50/90 dark:bg-zinc-900/60 space-y-2 shrink-0 text-xs">
         {/* Menu Bar Display Mode Switcher */}
         <div className="flex items-center justify-between pt-0.5 px-0.5">
-          <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">{t("tray.display_mode")}:</span>
+          <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">
+            {t("tray.display_mode")}:
+          </span>
           <div className="flex items-center space-x-0.5 bg-slate-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg text-[10px]">
             {[
               { id: "icon_only", label: t("tray.icon_only") },
@@ -1072,7 +1202,9 @@ export function MenuBarPopoverView({
           <div className="p-2 rounded-xl bg-gradient-to-r from-blue-600/20 to-indigo-600/10 border border-blue-500/40 flex items-center justify-between text-xs animate-in fade-in slide-in-from-top-1 duration-200">
             <div className="flex items-center space-x-1.5 text-blue-500 dark:text-blue-400 font-semibold text-[11px]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>v{updateCheck.result.targetVersion} {t("update.available")}</span>
+              <span>
+                v{updateCheck.result.targetVersion} {t("update.available")}
+              </span>
             </div>
             <button
               type="button"
@@ -1091,7 +1223,12 @@ export function MenuBarPopoverView({
             className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-white dark:bg-zinc-800/70 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium transition-colors border border-slate-200 dark:border-zinc-700/50 shadow-xs cursor-pointer"
           >
             <div className="flex items-center space-x-1.5">
-              <RefreshCw className={cn("w-3 h-3 text-slate-500 dark:text-zinc-400", isRefreshing && "animate-spin")} />
+              <RefreshCw
+                className={cn(
+                  "w-3 h-3 text-slate-500 dark:text-zinc-400",
+                  isRefreshing && "animate-spin",
+                )}
+              />
               <span>{t("nav.refresh")}</span>
             </div>
             <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">⌘ R</span>
@@ -1111,7 +1248,10 @@ export function MenuBarPopoverView({
 
         <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-slate-500 dark:text-zinc-500">
           <div className="flex items-center space-x-1.5">
-            <span className="hover:text-slate-800 dark:hover:text-zinc-300 cursor-pointer" onClick={handleOpenDashboard}>
+            <span
+              className="hover:text-slate-800 dark:hover:text-zinc-300 cursor-pointer"
+              onClick={handleOpenDashboard}
+            >
               About Kuota (v0.1.1)
             </span>
             <span>·</span>
@@ -1122,7 +1262,9 @@ export function MenuBarPopoverView({
               className="hover:text-blue-500 dark:hover:text-blue-400 transition-colors flex items-center space-x-1 cursor-pointer disabled:opacity-50"
               title="Manual check for Kuota updates"
             >
-              <RefreshCw className={cn("w-2.5 h-2.5", updateCheck.checking && "animate-spin text-blue-500")} />
+              <RefreshCw
+                className={cn("w-2.5 h-2.5", updateCheck.checking && "animate-spin text-blue-500")}
+              />
               <span className="text-[10px] font-medium">
                 {updateCheck.checking
                   ? t("update.checking")

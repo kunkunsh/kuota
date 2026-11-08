@@ -184,7 +184,13 @@ async function resolveToken(options: ClaudeOptions): Promise<string | null> {
 
 async function tryReadLocalPlanUsage(): Promise<QuotaSnapshot | null> {
   if (process.platform !== "darwin") return null;
-  const path = join(homedir(), "Library", "Application Support", "Claude", "plan-usage-history.json");
+  const path = join(
+    homedir(),
+    "Library",
+    "Application Support",
+    "Claude",
+    "plan-usage-history.json",
+  );
   try {
     const raw = JSON.parse(await readFile(path, "utf8"));
     if (Array.isArray(raw?.samples) && raw.samples.length > 0) {

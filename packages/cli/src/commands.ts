@@ -182,12 +182,7 @@ export async function runCli(
             return;
           }
           if (shell === "zsh") {
-            output.writeStdout(
-              [
-                "# Add to ~/.zshrc:",
-                "RPROMPT='$(kuota prompt)'",
-              ].join("\n"),
-            );
+            output.writeStdout(["# Add to ~/.zshrc:", "RPROMPT='$(kuota prompt)'"].join("\n"));
             return;
           }
           if (shell === "tmux") {
@@ -204,10 +199,14 @@ export async function runCli(
         }
 
         const selector = Option.getOrUndefined(provider);
-        const fmt = (Option.getOrUndefined(format) ?? "minimal") as "minimal" | "detailed" | "starship";
-        const ids: ProviderId[] = selector && isProviderId(selector)
-          ? [selector as ProviderId]
-          : PROVIDER_METADATA.map((item) => item.id);
+        const fmt = (Option.getOrUndefined(format) ?? "minimal") as
+          | "minimal"
+          | "detailed"
+          | "starship";
+        const ids: ProviderId[] =
+          selector && isProviderId(selector)
+            ? [selector as ProviderId]
+            : PROVIDER_METADATA.map((item) => item.id);
         const snapshots = yield* readAll(ids, providers);
         const text = formatPromptString(snapshots, fmt, selector);
         if (text) {

@@ -12,12 +12,7 @@ import {
   type QuotaSnapshot,
 } from "@kuota/core";
 import { createLocalJsonlJournal, defaultHistoryDirectory, type ReadResult } from "@kuota/history";
-import {
-  PROVIDER_METADATA,
-  builtInProviders,
-  readAll,
-  type QuotaProvider,
-} from "@kuota/providers";
+import { PROVIDER_METADATA, builtInProviders, readAll, type QuotaProvider } from "@kuota/providers";
 
 const DAY = 86_400_000;
 
@@ -45,12 +40,14 @@ export interface CollectResult {
   errors: { code: string }[];
 }
 
-export async function collectSnapshots(options: {
-  directory?: string;
-  providers?: readonly QuotaProvider[];
-  providerId?: ProviderId;
-  now?: Date;
-} = {}): Promise<CollectResult> {
+export async function collectSnapshots(
+  options: {
+    directory?: string;
+    providers?: readonly QuotaProvider[];
+    providerId?: ProviderId;
+    now?: Date;
+  } = {},
+): Promise<CollectResult> {
   const directory = options.directory ?? defaultHistoryDirectory();
   const providers = options.providers ?? builtInProviders();
   const now = options.now ?? new Date();
@@ -87,13 +84,15 @@ export async function collectSnapshots(options: {
   return { collected, errors };
 }
 
-export async function queryHistory(options: {
-  directory?: string;
-  from?: string;
-  to?: string;
-  provider?: string;
-  windowId?: string;
-} = {}): Promise<ReadResult> {
+export async function queryHistory(
+  options: {
+    directory?: string;
+    from?: string;
+    to?: string;
+    provider?: string;
+    windowId?: string;
+  } = {},
+): Promise<ReadResult> {
   const directory = options.directory ?? defaultHistoryDirectory();
   const now = new Date();
   const to = options.to ?? now.toISOString();
@@ -108,13 +107,15 @@ export async function queryHistory(options: {
   });
 }
 
-export async function queryForecasts(options: {
-  directory?: string;
-  provider?: string;
-  windowId?: string;
-  mode?: ForecastMode;
-  now?: Date;
-} = {}): Promise<{ forecasts: QuotaForecastV1[]; invalidLines: number }> {
+export async function queryForecasts(
+  options: {
+    directory?: string;
+    provider?: string;
+    windowId?: string;
+    mode?: ForecastMode;
+    now?: Date;
+  } = {},
+): Promise<{ forecasts: QuotaForecastV1[]; invalidLines: number }> {
   const directory = options.directory ?? defaultHistoryDirectory();
   const end = options.now ?? new Date();
   const mode = options.mode ?? "all-window";

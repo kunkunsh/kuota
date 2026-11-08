@@ -72,9 +72,7 @@ const mockSnapshots: QuotaSnapshot[] = [
   },
 ];
 
-function computeSeriesFromEvents(
-  events: readonly QuotaHistoryEventV1[],
-): Record<string, number[]> {
+function computeSeriesFromEvents(events: readonly QuotaHistoryEventV1[]): Record<string, number[]> {
   const result: Record<string, number[]> = {};
   for (const e of events) {
     if (
@@ -179,7 +177,10 @@ function DevApp() {
   const prevSnapshotsRef = React.useRef<QuotaSnapshot[]>([]);
 
   React.useEffect(() => {
-    if (typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)) {
+    if (
+      typeof window !== "undefined" &&
+      ("__TAURI_INTERNALS__" in window || "__TAURI__" in window)
+    ) {
       import("@tauri-apps/api/webviewWindow")
         .then(({ getCurrentWebviewWindow }) => {
           try {

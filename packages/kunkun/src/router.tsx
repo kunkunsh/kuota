@@ -26,11 +26,7 @@ import {
   AppWindow,
   RefreshCw,
 } from "lucide-react";
-import type {
-  QuotaForecastV1,
-  QuotaHistoryEventV1,
-  QuotaSnapshot,
-} from "@kuota/core";
+import type { QuotaForecastV1, QuotaHistoryEventV1, QuotaSnapshot } from "@kuota/core";
 import { OverviewView } from "./components/views/overview-view.js";
 import { HistoryView } from "./components/views/history-view.js";
 import { ProviderDetailView } from "./components/views/provider-detail-view.js";
@@ -89,8 +85,7 @@ function DashboardLayout() {
   const { t } = useI18n();
 
   const isDesktop =
-    typeof window !== "undefined" &&
-    ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
 
   const handleStartDragging = React.useCallback(async (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -173,7 +168,8 @@ function DashboardLayout() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive =
-                currentPath === item.to || (item.to === "/overview" && (currentPath === "/" || currentPath === ""));
+                currentPath === item.to ||
+                (item.to === "/overview" && (currentPath === "/" || currentPath === ""));
               return (
                 <Link
                   key={item.to}
@@ -187,7 +183,9 @@ function DashboardLayout() {
                 >
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? "text-emerald-500 dark:text-emerald-400" : "text-slate-500 dark:text-zinc-400"
+                      isActive
+                        ? "text-emerald-500 dark:text-emerald-400"
+                        : "text-slate-500 dark:text-zinc-400"
                     }`}
                   />
                   <span>{t(item.labelKey, item.fallback)}</span>
@@ -222,7 +220,10 @@ function DashboardLayout() {
           className="h-11 shrink-0 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-[#0c0c0e] flex items-center justify-between px-4 select-none cursor-default backdrop-blur-md"
         >
           <div data-tauri-drag-region className="flex items-center space-x-2 flex-1 h-full">
-            <span data-tauri-drag-region className="text-xs font-semibold text-slate-800 dark:text-zinc-200 capitalize">
+            <span
+              data-tauri-drag-region
+              className="text-xs font-semibold text-slate-800 dark:text-zinc-200 capitalize"
+            >
               {currentTitle}
             </span>
             <span data-tauri-drag-region className="text-slate-400 dark:text-zinc-600 text-xs">
@@ -248,7 +249,9 @@ function DashboardLayout() {
                 {ctx.isRefreshing ? (
                   <>
                     <Loader size="xs" variant="emerald" />
-                    <span className="text-emerald-500 dark:text-emerald-400 font-medium">Probing...</span>
+                    <span className="text-emerald-500 dark:text-emerald-400 font-medium">
+                      Probing...
+                    </span>
                   </>
                 ) : (
                   <>
@@ -258,7 +261,10 @@ function DashboardLayout() {
                 )}
               </button>
             )}
-            <span className="flex items-center space-x-1.5 text-[11px] text-slate-500 dark:text-zinc-400" data-no-drag>
+            <span
+              className="flex items-center space-x-1.5 text-[11px] text-slate-500 dark:text-zinc-400"
+              data-no-drag
+            >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   ctx.isRefreshing ? "bg-amber-400 animate-ping" : "bg-emerald-500 animate-pulse"
@@ -474,9 +480,7 @@ export function createKuotaRouter(initialPath?: string) {
     }
   }
 
-  const history = isBrowser
-    ? createHashHistory()
-    : createMemoryHistory({ initialEntries });
+  const history = isBrowser ? createHashHistory() : createMemoryHistory({ initialEntries });
 
   return createRouter({
     routeTree,

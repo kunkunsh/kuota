@@ -88,10 +88,12 @@ export function computeTrayTitle(
   }
 
   if (mode === "provider_label") {
-    const firstWithWindow = active.find((s) => s.windows.length > 0);
+    const firstWithWindow = active.find(
+      (s) => s.windows.length > 0 && s.windows[0]?.remainingPercent != null,
+    );
     if (firstWithWindow) {
       const meta = getProviderMeta(firstWithWindow.provider);
-      const rem = firstWithWindow.windows[0].remainingPercent;
+      const rem = firstWithWindow.windows[0]?.remainingPercent ?? 0;
       const short = meta.shortName || meta.name;
       const name = short.charAt(0).toUpperCase() + short.slice(1);
       return `${name} ${rem.toFixed(0)}%`;
@@ -100,14 +102,12 @@ export function computeTrayTitle(
 
   // Default: primary_percent
   const primary = active.find((s) => s.windows.length > 0) || active[0];
-  if (primary.windows[0]?.remainingPercent != null) {
+  if (primary?.windows[0]?.remainingPercent != null) {
     return `${primary.windows[0].remainingPercent.toFixed(0)}%`;
   }
-  if (primary.balance?.balances[0]?.totalBalance != null) {
+  if (primary?.balance?.balances[0]?.totalBalance != null) {
     const b = primary.balance.balances[0];
-    return b.currency === "CNY"
-      ? `¥${b.totalBalance.toFixed(0)}`
-      : `$${b.totalBalance.toFixed(2)}`;
+    return b.currency === "CNY" ? `¥${b.totalBalance.toFixed(0)}` : `$${b.totalBalance.toFixed(2)}`;
   }
 
   return "Kuota";
@@ -175,12 +175,13 @@ export function formatPromptString(
   const meta = getProviderMeta(snap.provider);
   const name = meta.shortName || meta.name;
   const isExhausted =
-    snap.windows.some((w) => w.remainingPercent <= 0) || snap.errorCode === "QUOTA_EXHAUSTED";
+    snap.windows.some((w) => (w.remainingPercent ?? 100) <= 0) ||
+    snap.errorCode === "QUOTA_EXHAUSTED";
 
   let val = "";
   if (isExhausted) {
     val = "0%";
-  } else if (snap.windows.length > 0) {
+  } else if (snap.windows.length > 0 && snap.windows[0]?.remainingPercent != null) {
     val = `${snap.windows[0].remainingPercent.toFixed(0)}%`;
   } else if (snap.balance?.balances?.[0]?.totalBalance != null) {
     const b = snap.balance.balances[0];

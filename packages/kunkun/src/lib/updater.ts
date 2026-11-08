@@ -15,8 +15,7 @@ export const CURRENT_APP_VERSION = "0.1.2";
  */
 export async function checkForUpdates(): Promise<UpdateResult> {
   const isDesktop =
-    typeof window !== "undefined" &&
-    ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
 
   if (isDesktop) {
     try {
@@ -46,7 +45,10 @@ export async function checkForUpdates(): Promise<UpdateResult> {
       const data = await res.json();
       const tagName: string = data.tag_name || "";
       // Strip 'app-v' or 'v'
-      const cleanTarget = tagName.replace(/^app-v/, "").replace(/^v/, "").trim();
+      const cleanTarget = tagName
+        .replace(/^app-v/, "")
+        .replace(/^v/, "")
+        .trim();
 
       const isNewer = compareSemver(cleanTarget, CURRENT_APP_VERSION) > 0;
       return {
@@ -76,8 +78,7 @@ export async function checkForUpdates(): Promise<UpdateResult> {
  */
 export async function installUpdate(): Promise<{ success: boolean; message?: string }> {
   const isDesktop =
-    typeof window !== "undefined" &&
-    ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
+    typeof window !== "undefined" && ("__TAURI_INTERNALS__" in window || "__TAURI__" in window);
 
   if (isDesktop) {
     try {
@@ -91,7 +92,11 @@ export async function installUpdate(): Promise<{ success: boolean; message?: str
 
   // In web mode, open the releases download page
   if (typeof window !== "undefined") {
-    window.open("https://github.com/kunkunsh/kuota/releases/latest", "_blank", "noopener,noreferrer");
+    window.open(
+      "https://github.com/kunkunsh/kuota/releases/latest",
+      "_blank",
+      "noopener,noreferrer",
+    );
   }
   return { success: true };
 }

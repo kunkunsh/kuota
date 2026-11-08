@@ -43,17 +43,29 @@ export function AlertsView() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">Configured Alert Rules</CardTitle>
-          <CardDescription className="text-slate-500 dark:text-zinc-400">Evaluated locally during periodic snapshot collection.</CardDescription>
+          <CardTitle className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
+            Configured Alert Rules
+          </CardTitle>
+          <CardDescription className="text-slate-500 dark:text-zinc-400">
+            Evaluated locally during periodic snapshot collection.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow className="border-slate-200 dark:border-zinc-800">
-                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Target Window</TableHead>
-                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Trigger Condition</TableHead>
-                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Delivery Channel</TableHead>
-                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">State</TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                  Target Window
+                </TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                  Trigger Condition
+                </TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                  Delivery Channel
+                </TableHead>
+                <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                  State
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-slate-200/60 dark:divide-zinc-800/60">

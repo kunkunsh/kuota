@@ -35,7 +35,7 @@ export const deepseekProvider = defineHttpProvider({
         grantedBalance: b.granted_balance != null ? parseFloat(b.granted_balance) : undefined,
         toppedUpBalance: b.topped_up_balance != null ? parseFloat(b.topped_up_balance) : undefined,
       }))
-      .sort((a, b) => {
+      .sort((a: QuotaBalanceItem, b: QuotaBalanceItem) => {
         if (a.totalBalance > 0 && b.totalBalance <= 0) return -1;
         if (b.totalBalance > 0 && a.totalBalance <= 0) return 1;
         return 0;

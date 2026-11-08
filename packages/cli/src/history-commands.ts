@@ -107,7 +107,9 @@ export function historyCommands(
         const ids = selected ? [selected] : PROVIDER_METADATA.map((m) => m.id);
 
         const runBatch = async () => {
-          const snapshots: readonly QuotaSnapshot[] = await Effect.runPromise(readAll(ids, providers));
+          const snapshots: readonly QuotaSnapshot[] = await Effect.runPromise(
+            readAll(ids, providers),
+          );
           const store = journal();
           const deviceId = runtime.deviceId ?? (await loadDeviceId(directory));
           const recordedAt = now().toISOString();
@@ -151,23 +153,28 @@ export function historyCommands(
 
         if (daemon) {
           if (!asJson) {
-            output.writeStdout(`[kuota daemon] Scheduled periodic snapshot every ${interval} minutes. Press Ctrl+C to stop.`);
+            output.writeStdout(
+              `[kuota daemon] Scheduled periodic snapshot every ${interval} minutes. Press Ctrl+C to stop.`,
+            );
           }
           yield* Effect.promise(
             () =>
               new Promise<void>((resolve) => {
-                const timer = setInterval(async () => {
-                  try {
-                    const res = await runBatch();
-                    if (!asJson) {
-                      output.writeStdout(
-                        `[${new Date().toLocaleTimeString()}] Collected snapshots: ${res.collected.map((c) => `${c.provider}(${c.written})`).join(", ")}`,
-                      );
+                const timer = setInterval(
+                  async () => {
+                    try {
+                      const res = await runBatch();
+                      if (!asJson) {
+                        output.writeStdout(
+                          `[${new Date().toLocaleTimeString()}] Collected snapshots: ${res.collected.map((c) => `${c.provider}(${c.written})`).join(", ")}`,
+                        );
+                      }
+                    } catch {
+                      // non-fatal in daemon
                     }
-                  } catch {
-                    // non-fatal in daemon
-                  }
-                }, Math.max(1, interval) * 60_000);
+                  },
+                  Math.max(1, interval) * 60_000,
+                );
 
                 const stop = () => {
                   clearInterval(timer);

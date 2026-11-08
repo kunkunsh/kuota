@@ -22,11 +22,7 @@ export interface ConnectionsViewProps {
   onNavigate?: (route: string) => void;
 }
 
-export function ConnectionsView({
-  snapshots = [],
-  onRefresh,
-  onNavigate,
-}: ConnectionsViewProps) {
+export function ConnectionsView({ snapshots = [], onRefresh, onNavigate }: ConnectionsViewProps) {
   const [customModalOpen, setCustomModalOpen] = React.useState(false);
   const [customName, setCustomName] = React.useState("");
   const [customEndpoint, setCustomEndpoint] = React.useState("");
@@ -75,7 +71,8 @@ export function ConnectionsView({
             </span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-zinc-400">
-            Real-time authentication and probe status verified against local CLI sessions and OS Keychain credentials.
+            Real-time authentication and probe status verified against local CLI sessions and OS
+            Keychain credentials.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -88,7 +85,12 @@ export function ConnectionsView({
             <Plus className="w-3.5 h-3.5 mr-1" />
             Add Custom Provider
           </Button>
-          <Button variant="outline" size="sm" className="text-xs border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 cursor-pointer shadow-2xs" onClick={onRefresh}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 cursor-pointer shadow-2xs"
+            onClick={onRefresh}
+          >
             <RefreshCw className="w-3.5 h-3.5 mr-1" />
             Probe All Adapters
           </Button>
@@ -100,8 +102,12 @@ export function ConnectionsView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Active &amp; Connected</div>
-              <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{activeCount}</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Active &amp; Connected
+              </div>
+              <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                {activeCount}
+              </div>
             </div>
             <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-5 h-5" />
@@ -112,8 +118,12 @@ export function ConnectionsView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Awaiting Credentials</div>
-              <div className="text-2xl font-bold font-mono text-slate-800 dark:text-zinc-300">{unconfiguredCount}</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Awaiting Credentials
+              </div>
+              <div className="text-2xl font-bold font-mono text-slate-800 dark:text-zinc-300">
+                {unconfiguredCount}
+              </div>
             </div>
             <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700/50 text-slate-600 dark:text-zinc-400">
               <Key className="w-5 h-5" />
@@ -124,7 +134,9 @@ export function ConnectionsView({
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Supported Adapters</div>
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                Supported Adapters
+              </div>
               <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
                 {PROVIDER_CATALOG.length + customList.length}
               </div>
@@ -171,7 +183,9 @@ export function ConnectionsView({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-medium text-slate-700 dark:text-zinc-300">Billing Model</label>
+                  <label className="text-[11px] font-medium text-slate-700 dark:text-zinc-300">
+                    Billing Model
+                  </label>
                   <select
                     value={customModel}
                     onChange={(e) => setCustomModel(e.target.value as any)}
@@ -185,7 +199,9 @@ export function ConnectionsView({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-medium text-slate-700 dark:text-zinc-300">Endpoint URL</label>
+                  <label className="text-[11px] font-medium text-slate-700 dark:text-zinc-300">
+                    Endpoint URL
+                  </label>
                   <input
                     type="url"
                     required
@@ -242,10 +258,14 @@ export function ConnectionsView({
               </span>
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 dark:text-zinc-400">
-              Zero auto-login policy: Kuota strictly reads existing authenticated CLI sessions or explicit OS Keychain keys.
+              Zero auto-login policy: Kuota strictly reads existing authenticated CLI sessions or
+              explicit OS Keychain keys.
             </CardDescription>
           </div>
-          <Badge variant="outline" className="text-[10px] text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-700">
+          <Badge
+            variant="outline"
+            className="text-[10px] text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900 border-slate-200 dark:border-zinc-700"
+          >
             Iconify Logos
           </Badge>
         </CardHeader>
@@ -254,12 +274,24 @@ export function ConnectionsView({
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-200 dark:border-zinc-800">
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Provider</TableHead>
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Category</TableHead>
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Billing Model</TableHead>
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Telemetry Source</TableHead>
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Auth / Env Key</TableHead>
-                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium text-right">Connection Status</TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                    Provider
+                  </TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                    Category
+                  </TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                    Billing Model
+                  </TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                    Telemetry Source
+                  </TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                    Auth / Env Key
+                  </TableHead>
+                  <TableHead className="text-slate-600 dark:text-zinc-400 font-medium text-right">
+                    Connection Status
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-slate-200/60 dark:divide-zinc-800/60">
@@ -270,7 +302,10 @@ export function ConnectionsView({
                   const isBinaryMissing = snap?.errorCode === "BINARY_NOT_FOUND";
 
                   return (
-                    <TableRow key={a.id} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/30 transition-colors">
+                    <TableRow
+                      key={a.id}
+                      className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/30 transition-colors"
+                    >
                       <TableCell className="font-semibold text-slate-900 dark:text-zinc-100 whitespace-nowrap">
                         <div className="flex items-center space-x-2.5">
                           <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center">
@@ -324,7 +359,9 @@ export function ConnectionsView({
                             <span>{a.envKeys[0]}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400 dark:text-zinc-500">Local CLI Session</span>
+                          <span className="text-slate-400 dark:text-zinc-500">
+                            Local CLI Session
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
@@ -366,14 +403,19 @@ export function ConnectionsView({
 
                 {/* Custom Providers */}
                 {customList.map((c, i) => (
-                  <TableRow key={`custom-${i}`} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/30">
+                  <TableRow
+                    key={`custom-${i}`}
+                    className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/30"
+                  >
                     <TableCell className="font-semibold text-slate-900 dark:text-zinc-100">
                       <div className="flex items-center space-x-2">
                         <ProviderIcon provider="custom" size={18} />
                         <span>{c.name}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-600 dark:text-zinc-400">Custom</TableCell>
+                    <TableCell className="text-xs text-slate-600 dark:text-zinc-400">
+                      Custom
+                    </TableCell>
                     <TableCell className="text-xs text-slate-700 dark:text-zinc-300">
                       <Badge variant="secondary" className="text-[10px]">
                         {c.billingModel}
@@ -382,7 +424,9 @@ export function ConnectionsView({
                     <TableCell className="text-xs font-mono text-slate-500 dark:text-zinc-400 truncate max-w-[180px]">
                       {c.endpoint}
                     </TableCell>
-                    <TableCell className="text-xs font-mono text-slate-500 dark:text-zinc-400">Custom Key</TableCell>
+                    <TableCell className="text-xs font-mono text-slate-500 dark:text-zinc-400">
+                      Custom Key
+                    </TableCell>
                     <TableCell className="text-right">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                         <CheckCircle2 className="w-3 h-3 mr-1 inline" />

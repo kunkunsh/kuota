@@ -93,7 +93,8 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Settings View
     "settings.title": "Settings & Preferences",
-    "settings.description": "Configure API credentials, appearance, update checks, and notification thresholds",
+    "settings.description":
+      "Configure API credentials, appearance, update checks, and notification thresholds",
     "settings.general": "General",
     "settings.menubar": "Menu Bar Icon & Display",
     "settings.menubar_desc": "Customize status bar icon and live telemetry mode",

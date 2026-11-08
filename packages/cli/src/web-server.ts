@@ -4,7 +4,14 @@ import { join, extname, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
 import { Effect } from "effect";
-import { PROVIDER_METADATA, readAll, type QuotaProvider, builtInProviders, readConfigSync, writeConfig } from "@kuota/providers";
+import {
+  PROVIDER_METADATA,
+  readAll,
+  type QuotaProvider,
+  builtInProviders,
+  readConfigSync,
+  writeConfig,
+} from "@kuota/providers";
 import { collectSnapshots, queryHistory, queryForecasts } from "./history-service.js";
 import type { CliOutput } from "./commands.js";
 
@@ -300,9 +307,12 @@ export async function startWebServer(
       }, 3000);
 
       // Periodic 15-minute background snapshot collection
-      const collectInterval = setInterval(() => {
-        void collectSnapshots({ providers }).catch(() => {});
-      }, 15 * 60 * 1000);
+      const collectInterval = setInterval(
+        () => {
+          void collectSnapshots({ providers }).catch(() => {});
+        },
+        15 * 60 * 1000,
+      );
 
       const clearCollectTimer = () => clearInterval(collectInterval);
       process.on("SIGINT", clearCollectTimer);

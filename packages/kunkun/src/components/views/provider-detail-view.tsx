@@ -85,11 +85,21 @@ export function ProviderDetailView({
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-200 dark:border-zinc-800">
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Currency</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Total Balance</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Paid Cash</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Granted</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Usage</TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Currency
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Total Balance
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Paid Cash
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Granted
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Usage
+                        </TableHead>
                         <TableHead className="text-slate-600 dark:text-zinc-400 font-medium text-right">
                           Limit
                         </TableHead>
@@ -99,7 +109,10 @@ export function ProviderDetailView({
                       {snapshot.balance.balances.map((b, idx) => (
                         <TableRow key={`${b.currency}-${idx}`}>
                           <TableCell className="font-semibold text-slate-800 dark:text-zinc-200">
-                            <Badge variant="outline" className="text-[10px] font-mono border-slate-300 dark:border-zinc-700">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-mono border-slate-300 dark:border-zinc-700"
+                            >
                               {b.currency}
                             </Badge>
                           </TableCell>
@@ -142,11 +155,21 @@ export function ProviderDetailView({
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-200 dark:border-zinc-800">
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Window ID</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Used %</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Remaining %</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Reset At</TableHead>
-                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">Progress</TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Window ID
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Used %
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Remaining %
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Reset At
+                        </TableHead>
+                        <TableHead className="text-slate-600 dark:text-zinc-400 font-medium">
+                          Progress
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-slate-200 dark:divide-zinc-800/60">
@@ -226,11 +249,15 @@ export function ProviderDetailView({
               </div>
               <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-zinc-800">
                 <span className="text-slate-500 dark:text-zinc-400">Billing Model</span>
-                <span className="text-slate-800 dark:text-zinc-300 capitalize">{meta.billingModel}</span>
+                <span className="text-slate-800 dark:text-zinc-300 capitalize">
+                  {meta.billingModel}
+                </span>
               </div>
               <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-zinc-800">
                 <span className="text-slate-500 dark:text-zinc-400">Source Method</span>
-                <span className="font-mono text-[11px] text-slate-800 dark:text-zinc-300">{snapshot.source}</span>
+                <span className="font-mono text-[11px] text-slate-800 dark:text-zinc-300">
+                  {snapshot.source}
+                </span>
               </div>
               <div className="flex items-center justify-between py-1.5 border-b border-slate-200 dark:border-zinc-800">
                 <span className="text-slate-500 dark:text-zinc-400">Observed At</span>
@@ -240,7 +267,9 @@ export function ProviderDetailView({
               </div>
               <div className="flex items-center justify-between py-1.5">
                 <span className="text-slate-500 dark:text-zinc-400">Error Code</span>
-                <span className="text-slate-800 dark:text-zinc-300 font-mono">{snapshot.errorCode ?? "None"}</span>
+                <span className="text-slate-800 dark:text-zinc-300 font-mono">
+                  {snapshot.errorCode ?? "None"}
+                </span>
               </div>
             </CardContent>
           </Card>

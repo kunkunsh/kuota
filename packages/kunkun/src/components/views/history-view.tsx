@@ -1,22 +1,10 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card.js";
 import { Badge } from "../ui/badge.js";
-import {
-  resolveIdealPace,
-  type QuotaForecastV1,
-  type QuotaHistoryEventV1,
-} from "@kuota/core";
+import { resolveIdealPace, type QuotaForecastV1, type QuotaHistoryEventV1 } from "@kuota/core";
 import { ActivityTerrain } from "../charts/activity-terrain.js";
 import { AnimatedCodeBlock } from "../ui/animated-code-block.js";
-import {
-  TrendingUp,
-  Clock,
-  Layers,
-  AlertTriangle,
-  FileCode,
-  X,
-  Activity,
-} from "lucide-react";
+import { TrendingUp, Clock, Layers, AlertTriangle, FileCode, X, Activity } from "lucide-react";
 
 export interface HistoryViewProps {
   events?: readonly QuotaHistoryEventV1[];
@@ -85,22 +73,24 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
   }
 
   // Windows for current provider
-  const availableWindows = React.useMemo ? (() => {
-    try {
-      return React.useMemo(() => {
-        const wins = new Set<string>();
-        for (const e of events) {
-          if (e.provider === provider && "windowId" in e && e.windowId) {
-            wins.add(e.windowId);
-          }
+  const availableWindows = React.useMemo
+    ? (() => {
+        try {
+          return React.useMemo(() => {
+            const wins = new Set<string>();
+            for (const e of events) {
+              if (e.provider === provider && "windowId" in e && e.windowId) {
+                wins.add(e.windowId);
+              }
+            }
+            const list = Array.from(wins);
+            return list.length > 0 ? list : ["primary", "weekly"];
+          }, [events, provider]);
+        } catch {
+          return ["primary", "weekly"];
         }
-        const list = Array.from(wins);
-        return list.length > 0 ? list : ["primary", "weekly"];
-      }, [events, provider]);
-    } catch {
-      return ["primary", "weekly"];
-    }
-  })() : ["primary", "weekly"];
+      })()
+    : ["primary", "weekly"];
 
   try {
     React.useEffect(() => {
@@ -129,9 +119,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
     )
     .sort((a, b) => new Date(a.observedAt).getTime() - new Date(b.observedAt).getTime());
 
-  const currentForecast = forecasts.find(
-    (f) => f.provider === provider && f.windowId === windowId,
-  );
+  const currentForecast = forecasts.find((f) => f.provider === provider && f.windowId === windowId);
 
   const latestEvent = currentEvents[currentEvents.length - 1];
   const earliestEvent = currentEvents[0];
@@ -256,7 +244,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       <div className="flex flex-col space-y-3 pb-3 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <div className="text-xs text-slate-400 dark:text-zinc-500 font-medium">
-            Kuota / Analytics / <span className="text-slate-700 dark:text-zinc-300">History & Forecast</span>
+            Kuota / Analytics /{" "}
+            <span className="text-slate-700 dark:text-zinc-300">History & Forecast</span>
           </div>
           <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 mt-1">
             History & Forecast
@@ -280,7 +269,11 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 {allProviderIds.map((id) => {
                   const meta = DEFAULT_PROVIDERS.find((p) => p.id === id);
                   return (
-                    <option key={id} value={id} className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">
+                    <option
+                      key={id}
+                      value={id}
+                      className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                    >
                       {meta ? meta.name : id}
                     </option>
                   );
@@ -297,7 +290,11 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 onChange={(e) => setWindowId(e.target.value)}
               >
                 {availableWindows.map((w) => (
-                  <option key={w} value={w} className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">
+                  <option
+                    key={w}
+                    value={w}
+                    className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                  >
                     {w}
                   </option>
                 ))}
@@ -312,9 +309,24 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={range}
                 onChange={(e) => setRange(e.target.value)}
               >
-                <option value="7d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 7 days</option>
-                <option value="14d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 14 days</option>
-                <option value="30d" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Last 30 days</option>
+                <option
+                  value="7d"
+                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                >
+                  Last 7 days
+                </option>
+                <option
+                  value="14d"
+                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                >
+                  Last 14 days
+                </option>
+                <option
+                  value="30d"
+                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                >
+                  Last 30 days
+                </option>
               </select>
             </div>
 
@@ -326,14 +338,26 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 value={mode}
                 onChange={(e) => setMode(e.target.value as any)}
               >
-                <option value="all-window" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">All-window (full epoch)</option>
-                <option value="recent-activity" className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100">Recent-activity (48h)</option>
+                <option
+                  value="all-window"
+                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                >
+                  All-window (full epoch)
+                </option>
+                <option
+                  value="recent-activity"
+                  className="bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100"
+                >
+                  Recent-activity (48h)
+                </option>
               </select>
             </div>
           </div>
 
           <div className="flex items-center space-x-2 text-xs">
-            <span className={`w-2 h-2 rounded-full ${latestEvent ? "bg-emerald-400 animate-pulse" : "bg-slate-400 dark:bg-zinc-600"}`} />
+            <span
+              className={`w-2 h-2 rounded-full ${latestEvent ? "bg-emerald-400 animate-pulse" : "bg-slate-400 dark:bg-zinc-600"}`}
+            />
             <span className="text-slate-700 dark:text-zinc-300 font-medium">Last observation:</span>
             <span className="text-slate-500 dark:text-zinc-400">
               {latestEvent
@@ -355,7 +379,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                   Quota Usage — History & Forecast
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-500 dark:text-zinc-400">
-                  {providerDisplayName} ({windowId}). Real immutable measurements from local JSONL journal. Forecast model: {mode}.
+                  {providerDisplayName} ({windowId}). Real immutable measurements from local JSONL
+                  journal. Forecast model: {mode}.
                 </CardDescription>
               </div>
             </div>
@@ -427,7 +452,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                           strokeDasharray="3 3"
                           strokeWidth="1"
                         />
-                        <rect x={svgGeometry.resetX - 18} y="4" width="36" height="14" rx="3" fill="#27272a" />
+                        <rect
+                          x={svgGeometry.resetX - 18}
+                          y="4"
+                          width="36"
+                          height="14"
+                          rx="3"
+                          fill="#27272a"
+                        />
                         <text
                           x={svgGeometry.resetX}
                           y="14"
@@ -451,7 +483,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                       strokeDasharray="3 3"
                       strokeWidth="1.2"
                     />
-                    <rect x={svgGeometry.nowX - 15} y="4" width="30" height="14" rx="3" fill="#27272a" />
+                    <rect
+                      x={svgGeometry.nowX - 15}
+                      y="4"
+                      width="30"
+                      height="14"
+                      rx="3"
+                      fill="#27272a"
+                    />
                     <text
                       x={svgGeometry.nowX}
                       y="14"
@@ -465,12 +504,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
 
                     {/* Observed Solid Line */}
                     {svgGeometry.pathD && (
-                      <path
-                        d={svgGeometry.pathD}
-                        fill="none"
-                        stroke="#22c55e"
-                        strokeWidth="2.5"
-                      />
+                      <path d={svgGeometry.pathD} fill="none" stroke="#22c55e" strokeWidth="2.5" />
                     )}
 
                     {/* Sample dots */}
@@ -586,7 +620,8 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 ) : (
                   /* Empty state */
                   <text x="300" y="110" fill="#71717a" fontSize="11" textAnchor="middle">
-                    No snapshot logs recorded for this window yet. Telemetry daemon samples every 15 min.
+                    No snapshot logs recorded for this window yet. Telemetry daemon samples every 15
+                    min.
                   </text>
                 )}
               </svg>
@@ -598,7 +633,12 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 <div className="flex items-center space-x-2">
                   <Activity className="w-4 h-4 text-cyan-400 shrink-0" />
                   <span>
-                    <strong>{currentEvents.length} snapshot{currentEvents.length === 1 ? "" : "s"} recorded.</strong> Background daemon records every 15 minutes. Trend slopes refine as new points arrive.
+                    <strong>
+                      {currentEvents.length} snapshot{currentEvents.length === 1 ? "" : "s"}{" "}
+                      recorded.
+                    </strong>{" "}
+                    Background daemon records every 15 minutes. Trend slopes refine as new points
+                    arrive.
                   </span>
                 </div>
                 <span className="text-[10px] text-cyan-400 font-mono">15m interval</span>
@@ -653,10 +693,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               </div>
               <div>
                 <div className="text-sm font-bold text-slate-900 dark:text-zinc-100">
-                  {latestEvent?.usedPercent !== undefined ? `${latestEvent.usedPercent}% used` : "No Telemetry"}
+                  {latestEvent?.usedPercent !== undefined
+                    ? `${latestEvent.usedPercent}% used`
+                    : "No Telemetry"}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-zinc-400">
-                  {latestEvent ? `${latestEvent.usedPercent}% of ${windowId} quota consumed` : "Awaiting first sample"}
+                  {latestEvent
+                    ? `${latestEvent.usedPercent}% of ${windowId} quota consumed`
+                    : "Awaiting first sample"}
                 </div>
               </div>
             </CardContent>
@@ -666,7 +710,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Linear Pacing</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                  Linear Pacing
+                </div>
                 {pace ? (
                   <>
                     <div
@@ -679,13 +725,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                       }`}
                     >
                       {pace.paceStatus === "ahead"
-                        ? `+${(pace.idealUsedPercent - pace.actualUsedPercent).toFixed(1)}% in reserve`
+                        ? `+${(pace.idealUsedPercent - (latestEvent?.usedPercent ?? 0)).toFixed(1)}% in reserve`
                         : pace.paceStatus === "behind"
-                          ? `+${(pace.actualUsedPercent - pace.idealUsedPercent).toFixed(1)}% above pace`
+                          ? `+${((latestEvent?.usedPercent ?? 0) - pace.idealUsedPercent).toFixed(1)}% above pace`
                           : "On pace with schedule"}
                     </div>
                     <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                      Ideal budget: {pace.idealUsedPercent.toFixed(1)}% · Actual: {pace.actualUsedPercent}%
+                      Ideal budget: {pace.idealUsedPercent.toFixed(1)}% · Actual:{" "}
+                      {latestEvent?.usedPercent ?? 0}%
                     </div>
                   </>
                 ) : (
@@ -693,7 +740,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                     <div className="text-base font-bold text-slate-700 dark:text-zinc-300 mt-0.5">
                       {latestEvent?.resetAt ? "Calculating pace..." : "No reset schedule"}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Window has no fixed deadline</div>
+                    <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                      Window has no fixed deadline
+                    </div>
                   </>
                 )}
               </div>
@@ -707,7 +756,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Projected Exhaustion</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                  Projected Exhaustion
+                </div>
                 <div className="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
                   {currentForecast?.exhaustedAt
                     ? new Date(currentForecast.exhaustedAt).toLocaleDateString(undefined, {
@@ -723,7 +774,7 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                 <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                   {currentForecast?.exhaustedAt
                     ? `Expected to hit 100% before reset`
-                    : currentForecast?.reasons?.[0] ?? "Usage slope is within quota limit"}
+                    : (currentForecast?.reasons?.[0] ?? "Usage slope is within quota limit")}
                 </div>
               </div>
               <div className="p-2.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
@@ -736,7 +787,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Forecast Confidence</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                  Forecast Confidence
+                </div>
                 <div className="mt-1">
                   <Badge
                     variant="outline"
@@ -764,7 +817,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">Telemetry Samples</div>
+                <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                  Telemetry Samples
+                </div>
                 <div className="text-base font-bold text-slate-900 dark:text-zinc-100 mt-0.5">
                   {currentEvents.length} recorded
                 </div>
@@ -805,7 +860,9 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
             </CardDescription>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-slate-500 dark:text-zinc-400">{events.length} total events in journal</span>
+            <span className="text-xs text-slate-500 dark:text-zinc-400">
+              {events.length} total events in journal
+            </span>
           </div>
         </CardHeader>
 
@@ -834,7 +891,10 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
                     .reverse()
                     .slice(0, 10)
                     .map((event) => (
-                      <tr key={event.eventId} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors">
+                      <tr
+                        key={event.eventId}
+                        className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors"
+                      >
                         <td className="py-2.5 font-mono text-slate-500 dark:text-zinc-400">
                           {new Date(event.recordedAt).toLocaleString()}
                         </td>
@@ -884,7 +944,14 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
       <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs">
         <AlertTriangle className="w-4 h-4 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-amber-700 dark:text-amber-300">Continuous Local History:</span> All snapshots are strictly stored locally in append-only JSONL files at <code className="font-mono text-amber-700 dark:text-amber-300">~/Library/Application Support/kuota/history/</code>. No usage data or API keys are ever transmitted off this device.
+          <span className="font-semibold text-amber-700 dark:text-amber-300">
+            Continuous Local History:
+          </span>{" "}
+          All snapshots are strictly stored locally in append-only JSONL files at{" "}
+          <code className="font-mono text-amber-700 dark:text-amber-300">
+            ~/Library/Application Support/kuota/history/
+          </code>
+          . No usage data or API keys are ever transmitted off this device.
         </div>
       </div>
 
@@ -915,10 +982,12 @@ export function HistoryView({ events = [], forecasts = [] }: HistoryViewProps) {
               />
 
               <div className="rounded-xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 p-3 space-y-2 text-slate-600 dark:text-zinc-400">
-                <div className="font-semibold text-slate-900 dark:text-zinc-200">Field Provenance Guarantee</div>
+                <div className="font-semibold text-slate-900 dark:text-zinc-200">
+                  Field Provenance Guarantee
+                </div>
                 <p className="text-[11px] leading-normal text-slate-500 dark:text-zinc-400">
-                  Snapshot timestamps reflect the true vendor fetch time. No API tokens,
-                  keys, passwords, or session cookies are recorded in this immutable envelope.
+                  Snapshot timestamps reflect the true vendor fetch time. No API tokens, keys,
+                  passwords, or session cookies are recorded in this immutable envelope.
                 </p>
               </div>
             </div>

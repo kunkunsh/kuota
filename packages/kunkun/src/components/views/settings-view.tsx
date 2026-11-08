@@ -23,7 +23,13 @@ import {
 } from "lucide-react";
 import { ThemeSegmentedSelector, useTheme } from "../../lib/theme.js";
 import { useI18n, LanguageSegmentedSelector } from "../../lib/i18n.js";
-import { checkForUpdates, installUpdate, CURRENT_APP_VERSION, type UpdateResult } from "../../lib/updater.js";
+import { cn } from "../../lib/utils.js";
+import {
+  checkForUpdates,
+  installUpdate,
+  CURRENT_APP_VERSION,
+  type UpdateResult,
+} from "../../lib/updater.js";
 import { KuotaLogo } from "../ui/kuota-logo.js";
 import { PROVIDER_CATALOG, type ProviderCatalogEntry } from "@kuota/core";
 import { ProviderIcon } from "../ui/provider-icon.js";
@@ -105,7 +111,9 @@ export function SettingsView() {
 
           for (const p of PROVIDER_CATALOG) {
             try {
-              const pass = (await invoke("get_keychain_password", { provider: p.id })) as string | null;
+              const pass = (await invoke("get_keychain_password", { provider: p.id })) as
+                | string
+                | null;
               if (pass && pass.length > 0) {
                 saved[p.id] = true;
                 vals[p.id] = pass;
@@ -305,7 +313,9 @@ export function SettingsView() {
         await invoke("save_user_config", {
           config: { ...existing, enableNotifications: enabled },
         });
-        setStatusNotice(enabled ? "Native desktop notifications enabled" : "Notifications disabled");
+        setStatusNotice(
+          enabled ? "Native desktop notifications enabled" : "Notifications disabled",
+        );
       } catch {}
     }
     setTimeout(() => setStatusNotice(null), 3000);
@@ -335,7 +345,8 @@ export function SettingsView() {
           Settings &amp; Configuration
         </h2>
         <p className="text-xs text-slate-500 dark:text-zinc-400">
-          OS Keychain credentials, appearance themes, local scheduler parameters, and retention policies.
+          OS Keychain credentials, appearance themes, local scheduler parameters, and retention
+          policies.
         </p>
       </div>
 
@@ -354,7 +365,9 @@ export function SettingsView() {
           <CardContent className="space-y-4 text-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-slate-800 dark:text-zinc-200">{t("theme.appearance")}</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  {t("theme.appearance")}
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Select color theme for web dashboard, desktop chrome, and vector icons
                 </div>
@@ -364,7 +377,9 @@ export function SettingsView() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-slate-800 dark:text-zinc-200">{t("lang.language")}</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  {t("lang.language")}
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Switch between English and 简体中文 interface translations
                 </div>
@@ -379,14 +394,18 @@ export function SettingsView() {
                     <div className="p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 flex items-center justify-center shadow-2xs">
                       <KuotaLogo size={32} withBackground={false} theme={resolvedTheme} />
                     </div>
-                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">Unboxed Glyph</span>
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">
+                      Unboxed Glyph
+                    </span>
                   </div>
 
                   <div className="flex flex-col items-center space-y-1">
                     <div className="p-2.5 rounded-lg border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 flex items-center justify-center shadow-2xs">
                       <KuotaLogo size={32} withBackground={true} theme={resolvedTheme} />
                     </div>
-                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">Squircle Icon</span>
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-500">
+                      Squircle Icon
+                    </span>
                   </div>
                 </div>
 
@@ -395,8 +414,11 @@ export function SettingsView() {
                     Kuota Vector System A ({resolvedTheme} mode)
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                    Mint arc (<code className="text-[10px] text-emerald-600 dark:text-emerald-400">#36D7A2</code>),{" "}
-                    {resolvedTheme === "dark" ? "ivory" : "graphite"} glyph (
+                    Mint arc (
+                    <code className="text-[10px] text-emerald-600 dark:text-emerald-400">
+                      #36D7A2
+                    </code>
+                    ), {resolvedTheme === "dark" ? "ivory" : "graphite"} glyph (
                     <code className="text-[10px] text-slate-700 dark:text-zinc-300">
                       {resolvedTheme === "dark" ? "#F6F8F5" : "#1C2026"}
                     </code>
@@ -405,7 +427,10 @@ export function SettingsView() {
                 </div>
               </div>
 
-              <Badge variant="outline" className="text-[10px] self-start sm:self-center text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">
+              <Badge
+                variant="outline"
+                className="text-[10px] self-start sm:self-center text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700"
+              >
                 SVG Master
               </Badge>
             </div>
@@ -438,10 +463,10 @@ export function SettingsView() {
                   onClick={handleManualCheckUpdates}
                   className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", updateStatus.checking && "animate-spin")} />
-                  <span>
-                    {updateStatus.checking ? t("update.checking") : t("update.check")}
-                  </span>
+                  <RefreshCw
+                    className={cn("w-3.5 h-3.5", updateStatus.checking && "animate-spin")}
+                  />
+                  <span>{updateStatus.checking ? t("update.checking") : t("update.check")}</span>
                 </button>
               </div>
             </div>
@@ -520,9 +545,12 @@ export function SettingsView() {
           <CardContent className="space-y-4 text-xs">
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div className="space-y-0.5 pr-4">
-                <div className="font-medium text-slate-800 dark:text-zinc-200">Show Menu Bar Icon</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  Show Menu Bar Icon
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Display Kuota in the macOS menu bar with live quota stats. Click to toggle HUD popover.
+                  Display Kuota in the macOS menu bar with live quota stats. Click to toggle HUD
+                  popover.
                 </div>
               </div>
               <button
@@ -542,12 +570,18 @@ export function SettingsView() {
 
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div className="space-y-0.5">
-                <div className="font-medium text-slate-800 dark:text-zinc-200">Auto-Dismiss on Blur (Focus Loss)</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  Auto-Dismiss on Blur (Focus Loss)
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Like native system monitors (Stats, iStat Menus), the popover closes immediately when clicking outside.
+                  Like native system monitors (Stats, iStat Menus), the popover closes immediately
+                  when clicking outside.
                 </div>
               </div>
-              <Badge variant="outline" className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+              <Badge
+                variant="outline"
+                className="text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+              >
                 Active
               </Badge>
             </div>
@@ -555,9 +589,12 @@ export function SettingsView() {
             {/* Menu Bar Status Display Mode */}
             <div className="py-2 border-b border-slate-200 dark:border-zinc-800 space-y-2">
               <div className="space-y-0.5">
-                <div className="font-medium text-slate-800 dark:text-zinc-200">Status Bar Display Format</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  Status Bar Display Format
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Choose what telemetry appears directly next to the menu bar icon in the macOS status bar
+                  Choose what telemetry appears directly next to the menu bar icon in the macOS
+                  status bar
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
@@ -579,8 +616,12 @@ export function SettingsView() {
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200">{mode.label}</span>
-                      <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">{mode.preview}</span>
+                      <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200">
+                        {mode.label}
+                      </span>
+                      <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400">
+                        {mode.preview}
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -596,7 +637,8 @@ export function SettingsView() {
                     <span>Low Quota Sound Alerts</span>
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                    Send native macOS banner notifications with sound when remaining quota drops below threshold or resets.
+                    Send native macOS banner notifications with sound when remaining quota drops
+                    below threshold or resets.
                   </div>
                 </div>
                 <button
@@ -616,7 +658,9 @@ export function SettingsView() {
 
               {enableNotifications && (
                 <div className="flex items-center space-x-2 pt-1 pl-1">
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">Warning Threshold:</span>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    Warning Threshold:
+                  </span>
                   {[10, 15, 20, 25].map((thresh) => (
                     <button
                       key={thresh}
@@ -653,7 +697,8 @@ export function SettingsView() {
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Credentials are stored directly in your OS Keychain (Apple Keychain / Windows Credential Manager). Zero plaintext files.
+                Credentials are stored directly in your OS Keychain (Apple Keychain / Windows
+                Credential Manager). Zero plaintext files.
               </CardDescription>
             </div>
             {statusNotice && (
@@ -686,14 +731,18 @@ export function SettingsView() {
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center space-x-1.5">
-                            <span className="font-semibold text-slate-900 dark:text-zinc-100 truncate">{p.name}</span>
+                            <span className="font-semibold text-slate-900 dark:text-zinc-100 truncate">
+                              {p.name}
+                            </span>
                             {isSaved && (
                               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded px-1.5 py-0.2 shrink-0">
                                 Protected
                               </span>
                             )}
                           </div>
-                          <span className="font-mono text-[10px] text-slate-500 dark:text-zinc-500">{envName}</span>
+                          <span className="font-mono text-[10px] text-slate-500 dark:text-zinc-500">
+                            {envName}
+                          </span>
                         </div>
                       </div>
 
@@ -731,7 +780,9 @@ export function SettingsView() {
                     <div className="relative flex items-center">
                       <input
                         type={isShown ? "text" : "password"}
-                        placeholder={isSaved ? "••••••••••••••••••••••••" : `Paste ${p.shortName} API key...`}
+                        placeholder={
+                          isSaved ? "••••••••••••••••••••••••" : `Paste ${p.shortName} API key...`
+                        }
                         value={currentVal}
                         onChange={(e) =>
                           setKeyValues((prev) => ({ ...prev, [p.id]: e.target.value }))
@@ -756,7 +807,9 @@ export function SettingsView() {
                     {/* Action buttons */}
                     <div className="flex items-center justify-between text-[11px] pt-0.5">
                       <span className="text-[10px] text-slate-500 dark:text-zinc-500 capitalize">
-                        {p.billingModel === "subscription" ? "Quota Subscription" : "Prepaid Wallet"}
+                        {p.billingModel === "subscription"
+                          ? "Quota Subscription"
+                          : "Prepaid Wallet"}
                       </span>
 
                       <div className="flex items-center space-x-2">
@@ -789,10 +842,15 @@ export function SettingsView() {
             <div className="flex items-center space-x-2.5 text-[11px] text-slate-600 dark:text-zinc-400 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 mt-2">
               <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>
-                <strong className="text-slate-800 dark:text-zinc-200">Zero Plaintext Guarantee:</strong> Entered API keys are stored via{" "}
-                <code className="text-emerald-700 dark:text-emerald-300 font-mono">tauri-plugin-keyring</code> in your native OS
-                Keychain (Apple Keychain on macOS, Windows Credential Manager on Windows). They are never saved
-                in plaintext files or synced to the cloud.
+                <strong className="text-slate-800 dark:text-zinc-200">
+                  Zero Plaintext Guarantee:
+                </strong>{" "}
+                Entered API keys are stored via{" "}
+                <code className="text-emerald-700 dark:text-emerald-300 font-mono">
+                  tauri-plugin-keyring
+                </code>{" "}
+                in your native OS Keychain (Apple Keychain on macOS, Windows Credential Manager on
+                Windows). They are never saved in plaintext files or synced to the cloud.
               </span>
             </div>
           </CardContent>
@@ -805,12 +863,16 @@ export function SettingsView() {
               <Clock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
               <span>Sampling Cadence</span>
             </CardTitle>
-            <CardDescription className="text-slate-500 dark:text-zinc-400">Frequency of automated background quota checks</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
+              Frequency of automated background quota checks
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-slate-800 dark:text-zinc-200">Adaptive Sampling</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  Adaptive Sampling
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   15 min while active coding, 60 min background
                 </div>
@@ -825,22 +887,36 @@ export function SettingsView() {
 
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <div>
-                <div className="font-medium text-slate-800 dark:text-zinc-200">Sleeping Device Mode</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  Sleeping Device Mode
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Skip checks on lid close; no catch-up synthetic events
                 </div>
               </div>
-              <Badge variant="outline" className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">Enabled</Badge>
+              <Badge
+                variant="outline"
+                className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700"
+              >
+                Enabled
+              </Badge>
             </div>
 
             <div className="flex items-center justify-between py-2">
               <div>
-                <div className="font-medium text-slate-800 dark:text-zinc-200">429 Rate Limit Cooldown</div>
+                <div className="font-medium text-slate-800 dark:text-zinc-200">
+                  429 Rate Limit Cooldown
+                </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
                   Enforce strict 15-minute wait before retry
                 </div>
               </div>
-              <Badge variant="outline" className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700">Enforced</Badge>
+              <Badge
+                variant="outline"
+                className="text-slate-600 dark:text-zinc-400 border-slate-300 dark:border-zinc-700"
+              >
+                Enforced
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -852,20 +928,28 @@ export function SettingsView() {
               <HardDrive className="w-4 h-4 text-sky-500 dark:text-sky-400" />
               <span>Local Storage &amp; Retention</span>
             </CardTitle>
-            <CardDescription className="text-slate-500 dark:text-zinc-400">Disk space policy for historical JSONL events</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-zinc-400">
+              Disk space policy for historical JSONL events
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <span className="text-slate-600 dark:text-zinc-300">Retention Horizon</span>
-              <span className="font-medium text-slate-900 dark:text-zinc-100">400 days (local JSONL)</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">
+                400 days (local JSONL)
+              </span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-zinc-800">
               <span className="text-slate-600 dark:text-zinc-300">Partition Strategy</span>
-              <span className="font-medium text-slate-900 dark:text-zinc-100">UTC Day (events-YYYY-MM-DD.jsonl)</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">
+                UTC Day (events-YYYY-MM-DD.jsonl)
+              </span>
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-slate-600 dark:text-zinc-300">Max Partition File Size</span>
-              <span className="font-medium text-slate-900 dark:text-zinc-100">16 MiB with auto-rotation</span>
+              <span className="font-medium text-slate-900 dark:text-zinc-100">
+                16 MiB with auto-rotation
+              </span>
             </div>
           </CardContent>
         </Card>

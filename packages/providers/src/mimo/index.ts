@@ -61,7 +61,6 @@ export const mimoProvider = defineHttpProvider({
       normalizeWindow({
         windowId: "monthly.token_plan",
         usedPercent: isExhausted ? 100 : 0,
-        remainingPercent: isExhausted ? 0 : 100,
         resetAt: null,
       }),
     ];
