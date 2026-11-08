@@ -7,7 +7,7 @@ export interface UpdateResult {
   error?: string;
 }
 
-export const CURRENT_APP_VERSION = "0.1.1";
+export const CURRENT_APP_VERSION = "0.1.2";
 
 /**
  * Checks for updates both in native desktop (via Tauri v2 updater)

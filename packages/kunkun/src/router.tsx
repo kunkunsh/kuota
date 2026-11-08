@@ -203,7 +203,7 @@ function DashboardLayout() {
               className="w-1.5 h-1.5 rounded-full bg-emerald-500"
               title="All adapters healthy"
             />
-            <span>v0.1.1</span>
+            <span>v0.1.2</span>
           </div>
           <div className="flex items-center space-x-1">
             <LanguageToggleButton />

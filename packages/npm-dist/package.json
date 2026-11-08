@@ -1,6 +1,6 @@
 {
   "name": "@kunkun.sh/kuota",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Truthful multi-provider AI quota monitoring, forecasting, and parsing library & CLI suite (OpenAI Codex, Claude Code, Google Antigravity)",
   "keywords": [
     "ai",
