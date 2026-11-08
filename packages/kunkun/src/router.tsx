@@ -448,7 +448,11 @@ export function createKuotaRouter(initialPath?: string) {
 
   let initialEntries: string[] = ["/overview"];
   if (initialPath) {
-    initialEntries = [initialPath.startsWith("/") ? initialPath : `/${initialPath}`];
+    const formatted = initialPath.startsWith("/") ? initialPath : `/${initialPath}`;
+    initialEntries = [formatted];
+    if (isBrowser && (!window.location.hash || window.location.hash === "#/")) {
+      window.location.hash = formatted;
+    }
   } else if (isBrowser) {
     const urlParams = new URLSearchParams(window.location.search);
     const hash = window.location.hash.replace(/^#/, "");

@@ -164,12 +164,32 @@ async function loadQuotaStatus(forceFresh = false): Promise<QuotaSnapshot[] | nu
   return null;
 }
 
+function detectIsTray(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  if (
+    params.get("window") === "tray" ||
+    params.get("view") === "popover" ||
+    params.get("route") === "popover" ||
+    params.get("tray") === "true"
+  ) {
+    return true;
+  }
+  if (window.location.hash.includes("popover")) {
+    return true;
+  }
+  try {
+    const label = (window as any)?.__TAURI_INTERNALS__?.metadata?.currentWebview?.label;
+    if (label === "tray") return true;
+  } catch {}
+  return false;
+}
+
 function DevApp() {
   const params = new URLSearchParams(window.location.search);
   const initialRoute = (params.get("route") || "overview") as any;
   const islandMode = (params.get("mode") || "launcher") as any;
-  const isTrayParam = params.get("window") === "tray" || params.get("route") === "popover";
-  const [isTray, setIsTray] = React.useState<boolean>(isTrayParam);
+  const [isTray, setIsTray] = React.useState<boolean>(detectIsTray);
   const [snapshots, setSnapshots] = React.useState<QuotaSnapshot[]>([]);
   const [historyEvents, setHistoryEvents] = React.useState<QuotaHistoryEventV1[]>([]);
   const [forecasts, setForecasts] = React.useState<QuotaForecastV1[]>([]);
@@ -280,12 +300,9 @@ function DevApp() {
 
   if (isTray) {
     return (
-      <KuotaDashboard
-        initialRoute="popover"
-        islandMode={islandMode}
+      <MenuBarPopoverView
         snapshots={snapshots}
         forecasts={forecasts}
-        series={computeSeriesFromEvents(historyEvents)}
         events={historyEvents}
         isRefreshing={loading}
         onRefresh={() => fetchLiveStatus(true)}

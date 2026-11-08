@@ -2,6 +2,7 @@ import * as React from "react";
 import { ThemeProvider } from "./lib/theme.js";
 import { I18nProvider } from "./lib/i18n.js";
 import type { QuotaForecastV1, QuotaHistoryEventV1, QuotaSnapshot } from "@kuota/core";
+import { MenuBarPopoverView } from "./components/views/menu-bar-popover-view.js";
 import {
   createKuotaRouter,
   KuotaRouterProvider,
@@ -132,6 +133,18 @@ function KuotaDashboardInner({
       setInternalRefreshing(false);
     }
   }, [activeRefreshing, onRefresh]);
+
+  if (initialRoute === "popover") {
+    return (
+      <MenuBarPopoverView
+        snapshots={snapshots}
+        forecasts={forecasts}
+        events={resolvedEvents}
+        isRefreshing={activeRefreshing}
+        onRefresh={handleRefresh}
+      />
+    );
+  }
 
   // Convert initialRoute into TanStack Router path
   const initialPath: string = initialRoute.startsWith("/") ? initialRoute : `/${initialRoute}`;
