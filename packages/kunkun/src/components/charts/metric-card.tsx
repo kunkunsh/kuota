@@ -169,7 +169,7 @@ export function MetricCard({
       </div>
 
       {/* Segmented Horizontal Share Bar */}
-      <div className="h-1.5 w-full rounded-full bg-zinc-800 overflow-hidden flex space-x-0.5">
+      <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden flex space-x-0.5">
         {segments.map((seg, i) => (
           <div
             key={i}

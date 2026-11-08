@@ -44,7 +44,7 @@ export function TokenBarChart({
             </div>
 
             {/* Stacked token bar */}
-            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800">
               <div
                 className="bg-sky-500 h-full"
                 style={{ width: `${inPct}%` }}

@@ -735,8 +735,8 @@ export function MenuBarPopoverView({
                         )}
                       </div>
 
-                      {/* True Paced Bar: Colored fill = Remaining Quota; White vertical line = Target Remaining Pace */}
-                      <div className="w-full h-2 rounded-full bg-zinc-800/90 overflow-hidden relative">
+                      {/* True Paced Bar: Colored fill = Remaining Quota; Pace vertical line = Target Remaining Pace */}
+                      <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-zinc-800/90 overflow-hidden relative">
                         {/* 1. Colored progress bar: Represents REMAINING QUOTA */}
                         <div
                           className={cn(
@@ -745,10 +745,10 @@ export function MenuBarPopoverView({
                           )}
                           style={{ width: `${remPercent}%` }}
                         />
-                        {/* 2. White Ideal Pace Bar: Represents where your remaining quota SHOULD be based on elapsed time */}
+                        {/* 2. Ideal Pace Bar: Represents where your remaining quota SHOULD be based on elapsed time */}
                         {idealRemPercent !== null && (
                           <div
-                            className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)] z-10"
+                            className="absolute top-0 bottom-0 w-0.5 bg-slate-900 dark:bg-white shadow-[0_0_3px_rgba(0,0,0,0.5)] dark:shadow-[0_0_6px_rgba(255,255,255,0.95)] z-10"
                             style={{ left: `${idealRemPercent}%` }}
                             title={`Target remaining pace at this point in cycle: ${idealRemPercent.toFixed(1)}%`}
                           />
@@ -963,7 +963,7 @@ export function MenuBarPopoverView({
                     )}
                   </span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
                   <div className="h-full bg-cyan-400 rounded-full" style={{ width: "65%" }} />
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-zinc-400">
@@ -1134,7 +1134,7 @@ export function MenuBarPopoverView({
                                     : "bg-cyan-400";
 
                             return (
-                              <div className="w-14 h-1.5 rounded-full bg-zinc-800 overflow-hidden relative">
+                              <div className="w-14 h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden relative">
                                 <div
                                   className={cn(
                                     "h-full rounded-full transition-all duration-300",

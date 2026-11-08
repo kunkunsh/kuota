@@ -69,7 +69,7 @@ export function PacedProgress({
     <div className={cn("flex flex-col space-y-1.5 w-full", className)} {...props}>
       <div
         className={cn(
-          "relative w-full overflow-hidden rounded-full bg-zinc-900/90 border border-zinc-800/80 shadow-inner",
+          "relative w-full overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-900/90 border border-slate-300/80 dark:border-zinc-800/80 shadow-inner",
           heightClass,
         )}
         role="progressbar"
@@ -91,10 +91,10 @@ export function PacedProgress({
           />
         )}
 
-        {/* White Ideal Pace Marker: Exactly one marker per window when known */}
+        {/* Ideal Pace Marker: Stands out on both light and dark tracks */}
         {idealRemaining !== null && (
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_5px_rgba(255,255,255,0.95)] z-10"
+            className="absolute top-0 bottom-0 w-0.5 bg-slate-900 dark:bg-white shadow-[0_0_3px_rgba(0,0,0,0.4)] dark:shadow-[0_0_5px_rgba(255,255,255,0.95)] z-10"
             style={{ left: `${idealRemaining}%` }}
             title={`Ideal remaining pace at this point in cycle: ${idealRemaining.toFixed(1)}% (${quality})`}
           />
@@ -103,18 +103,23 @@ export function PacedProgress({
 
       {/* Legend & Pace Delta */}
       {showLegend && (
-        <div className="flex items-center justify-between gap-2 text-[11px] text-zinc-400 pt-0.5">
+        <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-zinc-400 pt-0.5">
           <div className="min-w-0 truncate">
             {remaining !== null ? (
-              <span className="font-semibold text-zinc-100 whitespace-nowrap">
+              <span className="font-semibold text-slate-900 dark:text-zinc-100 whitespace-nowrap">
                 {remaining.toFixed(0)}% left
               </span>
             ) : (
-              <span className="text-zinc-500 whitespace-nowrap">Unmeasured</span>
+              <span className="text-slate-400 dark:text-zinc-500 whitespace-nowrap">
+                Unmeasured
+              </span>
             )}
             {idealRemaining !== null && (
-              <span className="ml-1.5 text-zinc-400 whitespace-nowrap">
-                · ideal <span className="text-white font-medium">{idealRemaining.toFixed(0)}%</span>
+              <span className="ml-1.5 text-slate-500 dark:text-zinc-400 whitespace-nowrap">
+                · ideal{" "}
+                <span className="text-slate-900 dark:text-white font-medium">
+                  {idealRemaining.toFixed(0)}%
+                </span>
               </span>
             )}
           </div>
@@ -124,10 +129,10 @@ export function PacedProgress({
               className={cn(
                 "text-[10px] font-medium px-1.5 py-0.5 rounded whitespace-nowrap shrink-0",
                 paceDelta < -5
-                  ? "bg-amber-950/60 text-amber-400 border border-amber-800/40"
+                  ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-800/40"
                   : paceDelta > 5
-                    ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/40"
-                    : "bg-zinc-800 text-zinc-300",
+                    ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/40"
+                    : "bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700",
               )}
             >
               {paceDelta < -5

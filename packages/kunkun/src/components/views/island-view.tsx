@@ -322,7 +322,7 @@ export function IslandView({
                 <span className="text-base font-extrabold text-zinc-100">$3.68</span>
                 <span className="text-[10px] text-zinc-500">USD available</span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-zinc-800/80 overflow-hidden flex space-x-0.5">
+              <div className="h-1.5 w-full rounded-full bg-slate-200 dark:bg-zinc-800/80 overflow-hidden flex space-x-0.5">
                 <div
                   className="h-full bg-blue-500"
                   style={{ width: "95%" }}

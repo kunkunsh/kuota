@@ -11,11 +11,14 @@ export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     return (
       <div
         ref={ref}
-        className={cn("relative h-2.5 w-full overflow-hidden rounded-full bg-zinc-800", className)}
+        className={cn(
+          "relative h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-zinc-800",
+          className,
+        )}
         {...props}
       >
         <div
-          className="h-full bg-zinc-100 transition-all duration-300"
+          className="h-full bg-slate-900 dark:bg-zinc-100 transition-all duration-300"
           style={{ width: `${clamped}%` }}
         />
       </div>

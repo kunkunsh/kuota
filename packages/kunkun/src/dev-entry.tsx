@@ -268,7 +268,7 @@ function DevApp() {
 
   if (loading && snapshots.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen w-full bg-[#09090b] text-zinc-100">
+      <div className="flex items-center justify-center h-screen w-full bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100">
         <Loader
           size="md"
           title="Connecting to local AI quota providers..."
