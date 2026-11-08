@@ -206,6 +206,7 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building Kuota desktop application")
         .run(|app, event| match event {
+            #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { .. } => {
                 if let Some(win) = app.get_webview_window("main") {
                     let _ = win.show();
